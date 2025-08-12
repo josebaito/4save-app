@@ -86,7 +86,7 @@ export async function GET() {
       .select('*')
       .limit(1);
     
-    let tableStructure = 'Desconhecida';
+    let tableStructure: any = 'Desconhecida';
     if (sampleData && sampleData.length > 0) {
       const sample = sampleData[0];
       tableStructure = {
