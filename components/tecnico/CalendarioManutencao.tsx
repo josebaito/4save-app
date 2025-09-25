@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Calendar } from '@/components/ui/calendar';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Clock, Calendar as CalendarIcon, AlertTriangle, CheckCircle } from 'lucide-react';
+import { Clock, Calendar as CalendarIcon } from 'lucide-react';
 import { db } from '@/lib/db/supabase';
 import { toast } from 'sonner';
 import { format, parseISO, isAfter, isBefore, addDays, isSameDay, isToday } from 'date-fns';
@@ -23,21 +23,47 @@ export function CalendarioManutencao() {
   const [eventDates, setEventDates] = useState<Date[]>([]);
   const [selectedDateEvents, setSelectedDateEvents] = useState<{tickets: Ticket[], cronogramas: CronogramaManutencao[]}>({tickets: [], cronogramas: []});
 
-  useEffect(() => {
-    if (session?.user?.id) {
-      loadData();
-    }
-  }, [session?.user?.id]);
+  const updateSelectedDateEvents = useCallback((selectedDate: Date, currentTickets: Ticket[], currentCronogramas: CronogramaManutencao[]) => {
+    // Filtrar tickets para a data selecionada
+    const ticketsForDate = currentTickets.filter(ticket => {
+      try {
+        const ticketDate = parseISO(ticket.created_at);
+        return isSameDay(ticketDate, selectedDate);
+      } catch {
+        return false;
+      }
+    });
+    
+    // Filtrar cronogramas para a data selecionada
+    const cronogramasForDate = currentCronogramas.filter(cronograma => {
+      if (!cronograma.proxima_manutencao) return false;
+      try {
+        const cronogramaDate = parseISO(cronograma.proxima_manutencao);
+        return isSameDay(cronogramaDate, selectedDate);
+      } catch {
+        return false;
+      }
+    });
+    
+    setSelectedDateEvents({
+      tickets: ticketsForDate,
+      cronogramas: cronogramasForDate
+    });
+  }, []);
 
-  useEffect(() => {
-    if (date) {
-      updateSelectedDateEvents(date);
-    }
-  }, [date, tickets, cronogramas]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
+      
+      // ✅ NOVO: Verificação completa do sistema (cronogramas + tickets sem técnico)
+      console.log('🔍 Verificando sistema completo...');
+      const resultado = await db.verificarSistemaCompleto();
+      if (resultado.ticketsCriados > 0 || resultado.ticketsAtribuidos > 0) {
+        console.log(`✅ ${resultado.ticketsCriados} tickets criados, ${resultado.ticketsAtribuidos} tickets atribuídos`);
+        if (resultado.tecnicosAtribuidos > 0) {
+          console.log(`👤 ${resultado.tecnicosAtribuidos} técnicos atribuídos automaticamente`);
+        }
+      }
       
       // Carregar tickets do técnico
       const ticketsData = await db.getTicketsByTecnico(session!.user!.id);
@@ -45,9 +71,18 @@ export function CalendarioManutencao() {
       setTickets(ticketsManutencao);
       
       // Carregar cronogramas de manutenção
-      // Idealmente, filtrar apenas os cronogramas relevantes para este técnico
+      // Filtrar apenas os cronogramas dos contratos que têm tickets atribuídos ao técnico
       const cronogramasData = await db.getCronogramasManutencao();
-      setCronogramas(cronogramasData);
+      
+      // Obter IDs dos contratos dos tickets do técnico
+      const contratosIds = ticketsManutencao.map(ticket => ticket.contrato_id).filter(Boolean);
+      
+      // Filtrar cronogramas apenas dos contratos do técnico
+      const cronogramasFiltrados = cronogramasData.filter(cronograma => 
+        contratosIds.includes(cronograma.contrato_id)
+      );
+      
+      setCronogramas(cronogramasFiltrados);
       
       // Calcular datas com eventos
       const dates: Date[] = [];
@@ -57,8 +92,8 @@ export function CalendarioManutencao() {
         try {
           const date = parseISO(ticket.created_at);
           dates.push(date);
-        } catch (e) {
-          console.error('Erro ao processar data de ticket:', e);
+        } catch {
+          console.error('Erro ao processar data de ticket');
         }
       });
       
@@ -68,8 +103,8 @@ export function CalendarioManutencao() {
           try {
             const date = parseISO(cronograma.proxima_manutencao);
             dates.push(date);
-          } catch (e) {
-            console.error('Erro ao processar data de cronograma:', e);
+          } catch {
+            console.error('Erro ao processar data de cronograma');
           }
         }
       });
@@ -78,7 +113,7 @@ export function CalendarioManutencao() {
       
       // Atualizar eventos para a data selecionada
       if (date) {
-        updateSelectedDateEvents(date);
+        updateSelectedDateEvents(date, ticketsManutencao, cronogramasData);
       }
     } catch (error) {
       console.error('Erro ao carregar dados do calendário:', error);
@@ -86,40 +121,26 @@ export function CalendarioManutencao() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [date, updateSelectedDateEvents, session]);
 
-  const updateSelectedDateEvents = (selectedDate: Date) => {
-    // Filtrar tickets para a data selecionada
-    const ticketsForDate = tickets.filter(ticket => {
-      try {
-        const ticketDate = parseISO(ticket.created_at);
-        return isSameDay(ticketDate, selectedDate);
-      } catch (e) {
-        return false;
-      }
-    });
-    
-    // Filtrar cronogramas para a data selecionada
-    const cronogramasForDate = cronogramas.filter(cronograma => {
-      if (!cronograma.proxima_manutencao) return false;
-      try {
-        const cronogramaDate = parseISO(cronograma.proxima_manutencao);
-        return isSameDay(cronogramaDate, selectedDate);
-      } catch (e) {
-        return false;
-      }
-    });
-    
-    setSelectedDateEvents({
-      tickets: ticketsForDate,
-      cronogramas: cronogramasForDate
-    });
-  };
+  useEffect(() => {
+    if (session?.user?.id) {
+      loadData();
+    }
+  }, [session?.user?.id, loadData]);
+
+  useEffect(() => {
+    if (date) {
+      updateSelectedDateEvents(date, tickets, cronogramas);
+    }
+  }, [date, tickets, cronogramas, updateSelectedDateEvents]);
+
+
 
   const formatarData = (dataString: string) => {
     try {
       return format(parseISO(dataString), 'dd/MM/yyyy', { locale: ptBR });
-    } catch (e) {
+    } catch {
       return 'Data inválida';
     }
   };
@@ -127,30 +148,30 @@ export function CalendarioManutencao() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pendente':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-900/30 text-yellow-300';
       case 'em_curso':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-900/30 text-blue-300';
       case 'finalizado':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-900/30 text-green-300';
       case 'cancelado':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-900/30 text-red-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-600 text-slate-200';
     }
   };
 
   const getPrioridadeColor = (prioridade: string) => {
     switch (prioridade) {
       case 'baixa':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-900/30 text-green-300';
       case 'media':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-yellow-900/30 text-yellow-300';
       case 'alta':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-900/30 text-orange-300';
       case 'urgente':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-900/30 text-red-300';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-600 text-slate-200';
     }
   };
 
@@ -159,7 +180,7 @@ export function CalendarioManutencao() {
       const data = parseISO(dataString);
       const hoje = new Date();
       return isAfter(data, hoje) && isBefore(data, addDays(hoje, 7));
-    } catch (e) {
+    } catch {
       return false;
     }
   };
@@ -169,7 +190,7 @@ export function CalendarioManutencao() {
       const data = parseISO(dataString);
       const hoje = new Date();
       return isBefore(data, hoje);
-    } catch (e) {
+    } catch {
       return false;
     }
   };
@@ -184,7 +205,7 @@ export function CalendarioManutencao() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-4 text-gray-500">
+          <div className="text-center py-4 text-slate-300">
             Carregando calendário...
           </div>
         </CardContent>
@@ -228,7 +249,7 @@ export function CalendarioManutencao() {
             </h3>
             
             {selectedDateEvents.tickets.length === 0 && selectedDateEvents.cronogramas.length === 0 ? (
-              <div className="text-center py-4 text-gray-500">
+              <div className="text-center py-4 text-slate-300">
                 Nenhum evento para esta data.
               </div>
             ) : (
@@ -245,7 +266,7 @@ export function CalendarioManutencao() {
                 {/* Tab de Tickets */}
                 <TabsContent value="tickets" className="space-y-4 mt-4">
                   {selectedDateEvents.tickets.length === 0 ? (
-                    <div className="text-center py-4 text-gray-500">
+                    <div className="text-center py-4 text-slate-300">
                       Nenhum ticket para esta data.
                     </div>
                   ) : (
@@ -253,12 +274,12 @@ export function CalendarioManutencao() {
                       {selectedDateEvents.tickets.map((ticket) => (
                         <div 
                           key={ticket.id} 
-                          className="p-3 rounded-lg border border-gray-200"
+                          className="p-3 rounded-lg border border-slate-600/30 bg-slate-700/20"
                         >
                           <div className="flex justify-between items-start">
                             <div>
-                              <h4 className="font-medium">{ticket.titulo}</h4>
-                              <p className="text-sm text-gray-600">
+                              <h4 className="font-medium text-white">{ticket.titulo}</h4>
+                              <p className="text-sm text-slate-300">
                                 Cliente: {ticket.cliente?.nome || 'N/A'}
                               </p>
                             </div>
@@ -272,13 +293,13 @@ export function CalendarioManutencao() {
                             </div>
                           </div>
                           <div className="mt-2">
-                            <p className="text-sm text-gray-600 line-clamp-2">{ticket.descricao}</p>
+                            <p className="text-sm text-slate-300 line-clamp-2">{ticket.descricao}</p>
                           </div>
                           <div className="mt-2">
                             <Button 
                               variant="outline" 
                               size="sm"
-                              className="w-full"
+                              className="w-full border-slate-600 text-slate-300 hover:bg-slate-600 hover:text-white"
                               onClick={() => window.location.href = `/tecnico/ticket/${ticket.id}`}
                             >
                               Ver Ticket
@@ -293,7 +314,7 @@ export function CalendarioManutencao() {
                 {/* Tab de Cronogramas */}
                 <TabsContent value="cronogramas" className="space-y-4 mt-4">
                   {selectedDateEvents.cronogramas.length === 0 ? (
-                    <div className="text-center py-4 text-gray-500">
+                    <div className="text-center py-4 text-slate-300">
                       Nenhum cronograma para esta data.
                     </div>
                   ) : (
@@ -301,37 +322,37 @@ export function CalendarioManutencao() {
                       {selectedDateEvents.cronogramas.map((cronograma) => (
                         <div 
                           key={cronograma.id} 
-                          className={`p-3 rounded-lg border ${isVencida(cronograma.proxima_manutencao) ? 'border-red-200 bg-red-50' : isProxima(cronograma.proxima_manutencao) ? 'border-yellow-200 bg-yellow-50' : 'border-gray-200'}`}
+                          className={`p-3 rounded-lg border ${isVencida(cronograma.proxima_manutencao) ? 'border-red-500/30 bg-red-500/10' : isProxima(cronograma.proxima_manutencao) ? 'border-yellow-500/30 bg-yellow-500/10' : 'border-slate-600/30 bg-slate-700/20'}`}
                         >
                           <div className="flex justify-between items-start">
                             <div>
-                              <h4 className="font-medium">
+                              <h4 className="font-medium text-white">
                                 {cronograma.contrato?.descricao || `Contrato #${cronograma.contrato_id.substring(0, 8)}`}
                               </h4>
-                              <p className="text-sm text-gray-600">
+                              <p className="text-sm text-slate-300">
                                 Cliente: {cronograma.contrato?.cliente?.nome || 'N/A'}
                               </p>
                             </div>
                             <div className="flex gap-2">
-                              <Badge className={`${cronograma.tipo_manutencao === 'preventiva' ? 'bg-blue-100 text-blue-800' : cronograma.tipo_manutencao === 'corretiva' ? 'bg-red-100 text-red-800' : 'bg-purple-100 text-purple-800'}`}>
+                              <Badge className={`${cronograma.tipo_manutencao === 'preventiva' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : cronograma.tipo_manutencao === 'corretiva' ? 'bg-red-500/20 text-red-300 border-red-500/30' : 'bg-purple-500/20 text-purple-300 border-purple-500/30'}`}>
                                 {cronograma.tipo_manutencao}
                               </Badge>
-                              <Badge className="bg-gray-100 text-gray-800">
+                              <Badge className="bg-slate-600/50 text-slate-200 border-slate-500/50">
                                 {cronograma.frequencia}
                               </Badge>
                             </div>
                           </div>
                           <div className="mt-2 flex flex-wrap gap-4">
                             <div className="flex items-center gap-1">
-                              <CalendarIcon className="h-4 w-4 text-gray-500" />
-                              <span className="text-sm">
-                                Próxima: <span className={`font-medium ${isVencida(cronograma.proxima_manutencao) ? 'text-red-600' : isProxima(cronograma.proxima_manutencao) ? 'text-yellow-600' : ''}`}>{formatarData(cronograma.proxima_manutencao)}</span>
+                              <CalendarIcon className="h-4 w-4 text-slate-400" />
+                              <span className="text-sm text-slate-300">
+                                Próxima: <span className={`font-medium ${isVencida(cronograma.proxima_manutencao) ? 'text-red-400' : isProxima(cronograma.proxima_manutencao) ? 'text-yellow-400' : 'text-slate-300'}`}>{formatarData(cronograma.proxima_manutencao)}</span>
                               </span>
                             </div>
                             {cronograma.ultima_manutencao && (
                               <div className="flex items-center gap-1">
-                                <Clock className="h-4 w-4 text-gray-500" />
-                                <span className="text-sm">
+                                <Clock className="h-4 w-4 text-slate-400" />
+                                <span className="text-sm text-slate-300">
                                   Última: {formatarData(cronograma.ultima_manutencao)}
                                 </span>
                               </div>

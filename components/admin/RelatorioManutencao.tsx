@@ -1,12 +1,12 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, PieChart, Pie, Cell } from 'recharts';
-import { FileText, Download, Filter, RefreshCw } from 'lucide-react';
+import { FileText, Download, RefreshCw } from 'lucide-react';
 import { toast } from 'sonner';
 
 type RelatorioData = {
@@ -53,11 +53,7 @@ export function RelatorioManutencao() {
   const [loading, setLoading] = useState(true);
   const [periodo, setPeriodo] = useState('3'); // 3 meses por padrão
 
-  useEffect(() => {
-    carregarRelatorio();
-  }, [periodo]);
-
-  const carregarRelatorio = async () => {
+  const carregarRelatorio = useCallback(async () => {
     try {
       setLoading(true);
       const response = await fetch(`/api/relatorios/manutencao?periodo=${periodo}`);
@@ -74,7 +70,12 @@ export function RelatorioManutencao() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [periodo]);
+
+  useEffect(() => {
+    carregarRelatorio();
+  }, [periodo, carregarRelatorio]);
+
 
   const exportarPDF = () => {
     toast.info('Exportação de PDF em desenvolvimento');

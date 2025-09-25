@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Camera, Video, X, AlertCircle, CheckCircle } from 'lucide-react';
+import { Camera, Video, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface MediaCaptureProps {
@@ -14,8 +14,9 @@ export function MediaCapture({ onCapture, type, disabled = false }: MediaCapture
   const [isSupported, setIsSupported] = useState(true);
   const [isVideoReady, setIsVideoReady] = useState(false);
   const [isRecording, setIsRecording] = useState(false);
-  const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown' | 'not-supported'>('unknown');
+  // const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown' | 'not-supported'>('unknown');
   const [isLoading, setIsLoading] = useState(false);
+  const [hasStream, setHasStream] = useState(false);
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -35,11 +36,11 @@ export function MediaCapture({ onCapture, type, disabled = false }: MediaCapture
     // Verificar permissões (igual ao teste completo)
     if (navigator.permissions && navigator.permissions.query) {
       navigator.permissions.query({ name: 'camera' as PermissionName })
-        .then(permission => {
-          setPermissionStatus(permission.state);
+        .then(() => {
+          // setPermissionStatus(permission.state);
         })
         .catch(() => {
-          setPermissionStatus('not-supported');
+          // setPermissionStatus('not-supported');
         });
     }
   }, []);
@@ -83,7 +84,7 @@ export function MediaCapture({ onCapture, type, disabled = false }: MediaCapture
         video.removeEventListener('play', handlePlay);
       };
     }
-  }, [streamRef.current]);
+  }, [hasStream]);
 
     const startCapture = async () => {
     try {
@@ -100,12 +101,13 @@ export function MediaCapture({ onCapture, type, disabled = false }: MediaCapture
       });
       
       streamRef.current = stream;
+      setHasStream(true);
       console.log('✅ Stream obtido:', stream.getTracks().map(t => t.kind));
       console.log('📊 Stream ativo:', stream.active);
       console.log('📊 Stream id:', stream.id);
       
       setIsLoading(false);
-      setPermissionStatus('granted');
+      // setPermissionStatus('granted');
 
     } catch (error) {
       console.error('❌ Erro no teste:', error);
@@ -117,7 +119,7 @@ export function MediaCapture({ onCapture, type, disabled = false }: MediaCapture
         switch (error.name) {
           case 'NotAllowedError':
             errorMessage = 'Permissão negada pelo usuário';
-            setPermissionStatus('denied');
+            // setPermissionStatus('denied');
             break;
           case 'NotFoundError':
             errorMessage = 'Nenhuma câmera encontrada';
@@ -231,6 +233,7 @@ export function MediaCapture({ onCapture, type, disabled = false }: MediaCapture
       mediaRecorderRef.current.stop();
     }
     
+    setHasStream(false);
     setIsVideoReady(false);
     setIsRecording(false);
     setIsLoading(false);

@@ -14,7 +14,11 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  // Permitir acesso externo
+  // Configurações de performance
+  experimental: {
+    optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],
+  },
+  // Permitir acesso externo (removido transpilePackages conflitante)
   serverExternalPackages: ['@supabase/supabase-js'],
   // Configurações para desenvolvimento em rede
   webpack: (config, { isServer }) => {
@@ -24,6 +28,7 @@ const nextConfig: NextConfig = {
         fs: false,
       };
     }
+    
     return config;
   },
   // Headers para CORS

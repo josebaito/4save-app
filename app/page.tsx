@@ -28,14 +28,14 @@ export default function HomePage() {
 
   if (status === 'loading') {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-        <Card className="w-96">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
+        <Card className="w-96 bg-white/10 backdrop-blur-xl border-white/20">
           <CardHeader>
-            <CardTitle className="text-center">4Save</CardTitle>
+            <CardTitle className="text-center text-white">4Save</CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-center py-8">
-            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
-            <span className="ml-2 text-gray-600">Carregando...</span>
+            <Loader2 className="h-8 w-8 animate-spin text-blue-400" />
+            <span className="ml-2 text-slate-300">Carregando...</span>
           </CardContent>
         </Card>
       </div>
@@ -43,13 +43,13 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
-      <Card className="w-96">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-900 via-blue-900 to-slate-800">
+      <Card className="w-96 bg-white/10 backdrop-blur-xl border-white/20">
         <CardHeader>
-          <CardTitle className="text-center">4Save</CardTitle>
+          <CardTitle className="text-center text-white">4Save</CardTitle>
         </CardHeader>
         <CardContent className="text-center">
-          <p className="text-gray-600">Redirecionando...</p>
+          <p className="text-slate-300">Redirecionando...</p>
         </CardContent>
       </Card>
     </div>

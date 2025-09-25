@@ -8,7 +8,7 @@ import { CalendarioManutencao } from '@/components/tecnico/CalendarioManutencao'
 import { NotificacoesManutencao } from '@/components/tecnico/NotificacoesManutencao';
 import { HistoricoManutencao } from '@/components/tecnico/HistoricoManutencao';
 import { EstatisticasManutencao } from '@/components/tecnico/EstatisticasManutencao';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+// import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Bell, CheckCircle } from 'lucide-react';
 
@@ -30,8 +30,8 @@ export default function ManutencaoTecnicoPage() {
       <TecnicoLayout>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Carregando...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
+            <p className="mt-2 text-slate-400">Carregando...</p>
           </div>
         </div>
       </TecnicoLayout>
@@ -42,7 +42,7 @@ export default function ManutencaoTecnicoPage() {
     <TecnicoLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight">Manutenções</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Manutenções</h1>
         </div>
         
         <div className="mb-6">

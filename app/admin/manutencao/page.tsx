@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { AdminLayout } from '@/components/admin/AdminLayout';
-import { DashboardManutencao } from '@/components/admin/DashboardManutencao';
+import { ModernDashboardManutencao } from '@/components/admin/ModernDashboardManutencao';
 
 export default function ManutencaoPage() {
   const { data: session, status } = useSession();
@@ -24,8 +24,8 @@ export default function ManutencaoPage() {
       <AdminLayout>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Carregando...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
+            <p className="mt-2 text-slate-400">Carregando...</p>
           </div>
         </div>
       </AdminLayout>
@@ -34,7 +34,7 @@ export default function ManutencaoPage() {
 
   return (
     <AdminLayout>
-      <DashboardManutencao />
+      <ModernDashboardManutencao />
     </AdminLayout>
   );
 }

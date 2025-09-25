@@ -1,4 +1,4 @@
-import { useState } from 'react';
+// import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -14,7 +14,7 @@ interface FormularioTratamentoAguaProps {
 }
 
 export function FormularioTratamentoAgua({ dados, onChange, disabled = false }: FormularioTratamentoAguaProps) {
-  const updateField = (field: keyof DadosEspecificosProduto, value: any) => {
+  const updateField = (field: keyof DadosEspecificosProduto, value: unknown) => {
     onChange({
       ...dados,
       [field]: value

@@ -4,6 +4,33 @@ import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Camera, AlertCircle, CheckCircle, X } from 'lucide-react';
 
+// Client-side only component for window location info
+function WindowLocationInfo() {
+  const [locationInfo, setLocationInfo] = useState<{
+    href: string;
+    protocol: string;
+    hostname: string;
+  } | null>(null);
+
+  useEffect(() => {
+    setLocationInfo({
+      href: window.location.href,
+      protocol: window.location.protocol,
+      hostname: window.location.hostname,
+    });
+  }, []);
+
+  if (!locationInfo) return <div>Carregando informações...</div>;
+
+  return (
+    <>
+      <div>URL: {locationInfo.href}</div>
+      <div>Protocolo: {locationInfo.protocol}</div>
+      <div>Hostname: {locationInfo.hostname}</div>
+    </>
+  );
+}
+
 export function CameraTest() {
   const [isSupported, setIsSupported] = useState<boolean | null>(null);
   const [permissionStatus, setPermissionStatus] = useState<string>('unknown');
@@ -82,7 +109,7 @@ export function CameraTest() {
         try {
           await videoRef.current.play();
           setTestResult('✅ Câmera funcionando perfeitamente!');
-        } catch (playError) {
+        } catch {
           setTestResult('⚠️ Câmera acessível, mas autoplay bloqueado. Clique no vídeo para ativar.');
         }
       }
@@ -219,9 +246,7 @@ export function CameraTest() {
       <div className="mt-4 p-3 bg-gray-100 rounded text-xs">
         <div className="font-medium mb-2">Informações de Debug:</div>
         <div>User Agent: {userAgent.substring(0, 60)}...</div>
-        <div>URL: {window.location.href}</div>
-        <div>Protocolo: {window.location.protocol}</div>
-        <div>Hostname: {window.location.hostname}</div>
+        <WindowLocationInfo />
       </div>
     </div>
   );

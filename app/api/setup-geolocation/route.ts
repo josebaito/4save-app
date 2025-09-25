@@ -139,7 +139,7 @@ export async function POST() {
     }
     
     // 5. Verificar se tudo está funcionando
-    const { data: testData, error: testError } = await supabase
+    const { error: testError } = await supabase
       .from('tecnico_locations')
       .select('*')
       .limit(1);
@@ -186,13 +186,13 @@ export async function GET() {
     console.log('🔍 Verificando status do sistema de geolocalização...');
     
     // Verificar se a tabela existe
-    const { data: tableExists, error: tableError } = await supabase
+    const { error: tableError } = await supabase
       .from('tecnico_locations')
       .select('*')
       .limit(1);
     
     // Verificar se há dados
-    const { data: locations, error: locationsError } = await supabase
+    const { data: locations } = await supabase
       .from('tecnico_locations')
       .select('*');
     

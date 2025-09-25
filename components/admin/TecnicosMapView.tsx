@@ -46,7 +46,7 @@ export function TecnicosMapView() {
       setIsLoading(true);
       console.log('🗺️ Buscando localizações dos técnicos...');
       
-      const data = await db.getAllTecnicoLocations();
+      const data = await db.getAllTecnicoLocations() as TecnicoLocation[];
       
       console.log(`📍 Encontradas ${data.length} localizações:`, data);
       

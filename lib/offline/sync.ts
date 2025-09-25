@@ -3,7 +3,7 @@ import { db } from '@/lib/db/supabase';
 import type { RelatorioTecnico } from '@/types';
 
 export interface OfflineData {
-  tickets: any[];
+  tickets: unknown[];
   relatorios: RelatorioTecnico[];
   lastSync: string;
 }

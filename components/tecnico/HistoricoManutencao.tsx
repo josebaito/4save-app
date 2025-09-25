@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -18,13 +18,7 @@ export function HistoricoManutencao() {
   const [ticketsFinalizados, setTicketsFinalizados] = useState<Ticket[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (session?.user?.id) {
-      loadData();
-    }
-  }, [session?.user?.id]);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
       
@@ -47,8 +41,8 @@ export function HistoricoManutencao() {
           const historicoTicket = await db.getHistoricoManutencao();
           const filtrado = historicoTicket.filter(h => h.ticket_id === ticket.id);
           historicoData.push(...filtrado);
-        } catch (e) {
-          console.error('Erro ao buscar histórico para ticket:', e);
+        } catch {
+          console.error('Erro ao buscar histórico para ticket');
         }
       }
       
@@ -59,12 +53,19 @@ export function HistoricoManutencao() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session]);
+
+  useEffect(() => {
+    if (session?.user?.id) {
+      loadData();
+    }
+  }, [session?.user?.id, loadData]);
+
 
   const formatarData = (dataString: string) => {
     try {
       return format(parseISO(dataString), 'dd/MM/yyyy', { locale: ptBR });
-    } catch (e) {
+    } catch {
       return 'Data inválida';
     }
   };
@@ -79,7 +80,7 @@ export function HistoricoManutencao() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-4 text-gray-500">
+          <div className="text-center py-4 text-slate-300">
             Carregando histórico...
           </div>
         </CardContent>
@@ -97,7 +98,7 @@ export function HistoricoManutencao() {
       </CardHeader>
       <CardContent>
         {historico.length === 0 && ticketsFinalizados.length === 0 ? (
-          <div className="text-center py-4 text-gray-500">
+          <div className="text-center py-4 text-slate-300">
             Nenhum registro de manutenção encontrado.
           </div>
         ) : (
@@ -113,7 +114,7 @@ export function HistoricoManutencao() {
                     <h3 className="font-medium">
                       {registro.contrato?.descricao || `Contrato #${registro.contrato_id.substring(0, 8)}`}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-slate-300">
                       Cliente: {registro.contrato?.cliente?.nome || 'N/A'}
                     </p>
                   </div>
@@ -132,7 +133,7 @@ export function HistoricoManutencao() {
                   )}
                   {registro.data_agendada && (
                     <div className="flex items-center gap-1">
-                      <CalendarIcon className="h-4 w-4 text-gray-500" />
+                      <CalendarIcon className="h-4 w-4 text-slate-300" />
                       <span className="text-sm">
                         Agendada: {formatarData(registro.data_agendada)}
                       </span>
@@ -141,7 +142,7 @@ export function HistoricoManutencao() {
                 </div>
                 {registro.observacoes && (
                   <div className="mt-2">
-                    <p className="text-sm text-gray-600">{registro.observacoes}</p>
+                    <p className="text-sm text-slate-300">{registro.observacoes}</p>
                   </div>
                 )}
                 {registro.ticket_id && (
@@ -171,7 +172,7 @@ export function HistoricoManutencao() {
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="font-medium">{ticket.titulo}</h3>
-                      <p className="text-sm text-gray-600">
+                      <p className="text-sm text-slate-300">
                         Cliente: {ticket.cliente?.nome || 'N/A'}
                       </p>
                     </div>
@@ -180,11 +181,11 @@ export function HistoricoManutencao() {
                     </Badge>
                   </div>
                   <div className="mt-2">
-                    <p className="text-sm text-gray-600 line-clamp-2">{ticket.descricao}</p>
+                    <p className="text-sm text-slate-300 line-clamp-2">{ticket.descricao}</p>
                   </div>
                   {ticket.updated_at && (
                     <div className="mt-2 flex items-center gap-1">
-                      <Clock className="h-4 w-4 text-gray-500" />
+                      <Clock className="h-4 w-4 text-slate-300" />
                       <span className="text-sm">
                         Finalizado: {formatarData(ticket.updated_at)}
                       </span>

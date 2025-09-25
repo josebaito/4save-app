@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/supabase';
-import { format, parseISO, isAfter, isBefore, addDays } from 'date-fns';
+import { parseISO, isAfter, isBefore, addDays } from 'date-fns';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
 

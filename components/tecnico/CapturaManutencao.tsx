@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+// import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Label } from '@/components/ui/label';
 import { UploadWrapper } from '@/components/UploadWrapper';
-import { UploadVideoWrapper } from '@/components/UploadVideoWrapper';
+// import { UploadVideoWrapper } from '@/components/UploadVideoWrapper';
 import { Camera, Video, CheckCircle, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import type { DadosEspecificosProduto } from '@/types';
@@ -16,7 +16,7 @@ interface CapturaManutencaoProps {
 }
 
 export function CapturaManutencao({ dados, onChange, disabled = false }: CapturaManutencaoProps) {
-  const updateField = (field: keyof DadosEspecificosProduto, value: any) => {
+  const updateField = (field: keyof DadosEspecificosProduto, value: unknown) => {
     onChange({
       ...dados,
       [field]: value

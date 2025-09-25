@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { Input } from "@/components/ui/input";
+// import { Input } from "@/components/ui/input";
 import {
   ArrowLeft,
   ArrowRight,
@@ -19,8 +19,8 @@ import {
   Calendar,
   User,
   FileText,
-  Upload,
-  PenTool,
+  // Upload,
+  // PenTool,
   Save,
   X,
   Clock,
@@ -81,6 +81,7 @@ export default function TicketDetailsPage() {
     | "inicio"
     | "escolha"
     | "formularios"
+    | "dados_instalacao"
     | "equipamentos"
     | "final"
     | "concluido"
@@ -92,7 +93,7 @@ export default function TicketDetailsPage() {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  const [startTime, setStartTime] = useState<Date | null>(null);
+  // const [startTime, setStartTime] = useState<Date | null>(null);
   const autoSaveRef = useRef<NodeJS.Timeout | null>(null); // Referência para o intervalo de salvamento automático
 
   // Form states
@@ -188,8 +189,55 @@ export default function TicketDetailsPage() {
     }
   };
 
+  // ✅ NOVA FUNÇÃO: Salvar tempo atual no relatório
+  const salvarTempoAtual = useCallback(async () => {
+    if (!relatorio) return;
+
+    try {
+      await db.updateRelatorio(relatorio.id, {
+        tempo_execucao: timerSeconds,
+      });
+      console.log("Tempo atual salvo:", timerSeconds, "segundos");
+    } catch (error) {
+      console.error("Erro ao salvar tempo atual:", error);
+
+      // ✅ MELHORIA: Salvar offline se não conseguir salvar online
+      if (!offlineSync.isOnline()) {
+        const relatorioOffline = {
+          ...relatorio,
+          tempo_execucao: timerSeconds,
+        };
+        offlineSync.saveOfflineRelatorio(relatorioOffline);
+        toast.info("Dados salvos offline - serão sincronizados quando online");
+      }
+    }
+  }, [relatorio, timerSeconds]);
+
+  // ✅ NOVA FUNÇÃO: Parar salvamento automático
+  const stopAutoSave = useCallback(() => {
+    if (autoSaveRef.current) {
+      clearInterval(autoSaveRef.current);
+      autoSaveRef.current = null;
+    }
+  }, []);
+
+  // ✅ NOVA FUNÇÃO: Iniciar salvamento automático periódico
+  const startAutoSave = useCallback(() => {
+    // Parar qualquer intervalo existente primeiro
+    stopAutoSave();
+    
+    // Configurar novo intervalo de salvamento automático (a cada 5 minutos = 300000ms)
+    autoSaveRef.current = setInterval(async () => {
+      if (relatorio && isTimerRunning) {
+        console.log("Salvamento automático do tempo:", timerSeconds, "segundos");
+        await salvarTempoAtual();
+        toast.info("Tempo salvo automaticamente", { duration: 2000 });
+      }
+    }, 300000); // 5 minutos
+  }, [relatorio, isTimerRunning, timerSeconds, salvarTempoAtual, stopAutoSave]);
+
   // Timer functions
-  const startTimer = () => {
+  const startTimer = useCallback(() => {
     if (isTimerRunning) {
       console.log("Timer já está rodando, ignorando...");
       return;
@@ -205,14 +253,14 @@ export default function TicketDetailsPage() {
     }
 
     setIsTimerRunning(true);
-    setStartTime(new Date());
+    // setStartTime(new Date());
     timerRef.current = setInterval(() => {
       setTimerSeconds((prev) => prev + 1);
     }, 1000);
     
     // ✅ NOVA MELHORIA: Iniciar salvamento automático a cada 5 minutos
     startAutoSave();
-  };
+  }, [isTimerRunning, timerSeconds, startAutoSave]);
 
   const stopTimer = () => {
     console.log("Parando timer...");
@@ -307,14 +355,14 @@ export default function TicketDetailsPage() {
           );
           // Garantir que os dados tenham a estrutura correta
           const dadosCarregados = foundTicket.relatorio
-            .dados_especificos as any;
+            .dados_especificos as Record<string, unknown>;
           const dadosCompletos = {
             distancias_equipamentos:
               dadosCarregados.distancias_equipamentos || {},
             fotos_equipamentos_cliente:
               dadosCarregados.fotos_equipamentos_cliente || [],
             ...dadosCarregados,
-          };
+          } as typeof dadosEspecificos;
           setDadosEspecificos(dadosCompletos);
         } else {
           console.log("Nenhum dado específico encontrado no relatório");
@@ -352,10 +400,12 @@ export default function TicketDetailsPage() {
         } else if (
           foundTicket.relatorio.fotos_antes &&
           foundTicket.relatorio.fotos_antes.length > 0 &&
-          foundTicket.relatorio.observacoes_iniciais
+          foundTicket.relatorio.observacoes_iniciais &&
+          (!foundTicket.relatorio.dados_especificos || 
+           Object.keys(foundTicket.relatorio.dados_especificos).length <= 1)
         ) {
-          // Se tem relatório inicial completo, vai para escolha
-          setCurrentStep("escolha");
+          // Se tem relatório inicial completo mas não tem dados específicos, vai para dados da instalação
+          setCurrentStep("dados_instalacao");
           if (foundTicket.status === "em_curso") {
             startTimer();
           }
@@ -383,7 +433,7 @@ export default function TicketDetailsPage() {
     } finally {
       setLoading(false);
     }
-  }, [session, router, ticketId, ticket]); // Adicionado ticket nas dependências
+  }, [session, router, ticketId, ticket, startTimer]); // Adicionado startTimer nas dependências
 
   useEffect(() => {
     if (status === "loading") return;
@@ -404,7 +454,7 @@ export default function TicketDetailsPage() {
         }
       });
     }
-  }, [session, status, router, ticketId, localizacaoGPS]); // Adicionado localizacaoGPS nas dependências
+  }, [session, status, router, ticketId, localizacaoGPS, loadTicketData]); // Adicionado loadTicketData nas dependências
 
   // Cleanup timer on unmount
   useEffect(() => {
@@ -437,7 +487,7 @@ export default function TicketDetailsPage() {
     return () => {
       clearInterval(interval);
     };
-  }, [session?.user?.id]);
+  }, [session?.user?.id, session?.user?.type]);
 
   // Debug: monitorar mudanças no currentStep
   useEffect(() => {
@@ -543,60 +593,15 @@ export default function TicketDetailsPage() {
     }
   };
 
-  // ✅ NOVA FUNÇÃO: Salvar tempo atual no relatório
-  const salvarTempoAtual = async () => {
-    if (!relatorio) return;
 
-    try {
-      await db.updateRelatorio(relatorio.id, {
-        tempo_execucao: timerSeconds,
-      });
-      console.log("Tempo atual salvo:", timerSeconds, "segundos");
-    } catch (error) {
-      console.error("Erro ao salvar tempo atual:", error);
-
-      // ✅ MELHORIA: Salvar offline se não conseguir salvar online
-      if (!offlineSync.isOnline()) {
-        const relatorioOffline = {
-          ...relatorio,
-          tempo_execucao: timerSeconds,
-        };
-        offlineSync.saveOfflineRelatorio(relatorioOffline);
-        toast.info("Dados salvos offline - serão sincronizados quando online");
-      }
-    }
-  };
-
-  // ✅ NOVA FUNÇÃO: Iniciar salvamento automático periódico
-  const startAutoSave = () => {
-    // Parar qualquer intervalo existente primeiro
-    stopAutoSave();
-    
-    // Configurar novo intervalo de salvamento automático (a cada 5 minutos = 300000ms)
-    autoSaveRef.current = setInterval(async () => {
-      if (relatorio && isTimerRunning) {
-        console.log("Salvamento automático do tempo:", timerSeconds, "segundos");
-        await salvarTempoAtual();
-        toast.info("Tempo salvo automaticamente", { duration: 2000 });
-      }
-    }, 300000); // 5 minutos
-  };
-
-  // ✅ NOVA FUNÇÃO: Parar salvamento automático
-  const stopAutoSave = () => {
-    if (autoSaveRef.current) {
-      clearInterval(autoSaveRef.current);
-      autoSaveRef.current = null;
-    }
-  };
 
   // ✅ NOVA FUNÇÃO: Salvar relatório com fallback offline
-  const salvarRelatorioComFallback = async (relatorioData: any) => {
+  const salvarRelatorioComFallback = async (relatorioData: Partial<RelatorioTecnico>) => {
     try {
       if (relatorio) {
         await db.updateRelatorio(relatorio.id, relatorioData);
       } else {
-        const novoRelatorio = await db.createRelatorio(relatorioData);
+        const novoRelatorio = await db.createRelatorio(relatorioData as Omit<RelatorioTecnico, 'id' | 'created_at' | 'updated_at'>);
         setRelatorio(novoRelatorio);
       }
       return true;
@@ -609,7 +614,7 @@ export default function TicketDetailsPage() {
           ...relatorioData,
           pendingSync: true,
         };
-        offlineSync.saveOfflineRelatorio(relatorioOffline);
+        offlineSync.saveOfflineRelatorio(relatorioOffline as RelatorioTecnico);
         toast.info("Relatório salvo offline - será sincronizado quando online");
         return true;
       }
@@ -955,7 +960,7 @@ export default function TicketDetailsPage() {
           </Card>
         )}
 
-        {/* Step: Durante o Serviço */}
+        {/* Step: Relatório Inicial (Fotos ANTES) */}
         {currentStep === "formularios" && (
           <div className="space-y-6">
             {/* Upload Fotos ANTES */}
@@ -1097,7 +1102,7 @@ export default function TicketDetailsPage() {
               </p>
               <div className="flex gap-4">
                 <Button
-                  onClick={() => setCurrentStep("formularios")}
+                  onClick={() => setCurrentStep("dados_instalacao")}
                   className="flex-1 bg-green-600 hover:bg-green-700"
                 >
                   <CheckCircle className="mr-2 h-4 w-4" />
@@ -1117,7 +1122,7 @@ export default function TicketDetailsPage() {
         )}
 
         {/* Step: Formulários Específicos */}
-        {currentStep === "formularios" && (
+        {currentStep === "dados_instalacao" && (
           <div className="space-y-6">
             {/* Formulário Específico por Tipo de Produto */}
             <FormularioEspecifico

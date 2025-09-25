@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createSupabaseClient } from '@/lib/db/supabase';
 
 export async function GET() {
@@ -35,7 +35,7 @@ export async function GET() {
     const { data: existingLocations, error: locationsError } = await supabase
       .from('tecnico_locations')
       .select('*')
-      .eq('tecnico_id', testUser.id);
+      .eq('tecnico_id', testUser.id as string);
     
     if (locationsError) {
       console.log('❌ Erro ao verificar localizações existentes:', locationsError);
@@ -91,7 +91,7 @@ export async function POST() {
     
     // Testar a função updateTecnicoLocation
     const result = await db.updateTecnicoLocation({
-      tecnico_id: testUser.id,
+      tecnico_id: testUser.id as string,
       latitude: 38.7223,
       longitude: -9.1393,
       accuracy: 15,
@@ -104,7 +104,7 @@ export async function POST() {
     const { data: insertedLocation, error: checkError } = await supabase
       .from('tecnico_locations')
       .select('*')
-      .eq('tecnico_id', testUser.id)
+      .eq('tecnico_id', testUser.id as string)
       .single();
     
     if (checkError) {

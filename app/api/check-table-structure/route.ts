@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 import { createSupabaseClient } from '@/lib/db/supabase';
 
 export async function GET() {
@@ -27,11 +27,11 @@ export async function GET() {
     await supabase
       .from('tecnico_locations')
       .delete()
-      .eq('tecnico_id', testUserId);
+      .eq('tecnico_id', testUserId as string);
     
     // Teste 1: Tentar inserir sem accuracy
     console.log('🧪 Teste 1: Inserção sem accuracy...');
-    const { data: test1Data, error: test1Error } = await supabase
+    const { error: test1Error } = await supabase
       .from('tecnico_locations')
       .insert({
         tecnico_id: testUserId,
@@ -51,12 +51,12 @@ export async function GET() {
       await supabase
         .from('tecnico_locations')
         .delete()
-        .eq('tecnico_id', testUserId);
+        .eq('tecnico_id', testUserId as string);
     }
     
     // Teste 2: Tentar inserir com accuracy
     console.log('🧪 Teste 2: Inserção com accuracy...');
-    const { data: test2Data, error: test2Error } = await supabase
+    const { error: test2Error } = await supabase
       .from('tecnico_locations')
       .insert({
         tecnico_id: testUserId,
@@ -77,7 +77,7 @@ export async function GET() {
       await supabase
         .from('tecnico_locations')
         .delete()
-        .eq('tecnico_id', testUserId);
+        .eq('tecnico_id', testUserId as string);
     }
     
     // Verificar estrutura atual
@@ -86,7 +86,7 @@ export async function GET() {
       .select('*')
       .limit(1);
     
-    let tableStructure: any = 'Desconhecida';
+    let tableStructure: string | { hasAccuracy: boolean; columns: string[] } = 'Desconhecida';
     if (sampleData && sampleData.length > 0) {
       const sample = sampleData[0];
       tableStructure = {

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,15 +16,16 @@ import {
 import { TecnicoLayout } from '@/components/tecnico/TecnicoLayout';
 import { NotificacoesManutencao } from '@/components/tecnico/NotificacoesManutencao';
 import { db } from '@/lib/db/supabase';
-import type { Ticket } from '@/types';
+import { useOptimizedTecnicoDashboard } from '@/lib/hooks/useOptimizedTecnicoDashboard';
+// import type { Ticket } from '@/types';
 import { toast } from 'sonner';
 
 export default function TecnicoDashboard() {
   const { data: session, status } = useSession();
   const router = useRouter();
-  const [tickets, setTickets] = useState<Ticket[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [lastTicketCount, setLastTicketCount] = useState(0);
+  
+  // Usar hook otimizado
+  const { tickets, loading, lastTicketCount, loadTickets, invalidateCache } = useOptimizedTecnicoDashboard();
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -33,56 +34,23 @@ export default function TecnicoDashboard() {
       router.push('/');
       return;
     }
-
-    loadTickets();
   }, [session, status, router]);
 
-  // Heartbeat para manter status online
+  // Verificar novos tickets
   useEffect(() => {
-    if (!session?.user?.id || session.user.type !== 'tecnico') return;
-    
-    const heartbeat = async () => {
-      try {
-        await db.updateTecnicoOnlineStatus(session.user.id, true);
-      } catch (error) {
-        console.error('Erro no heartbeat:', error);
-      }
-    };
-    
-    // Heartbeat a cada 30 segundos
-    const interval = setInterval(heartbeat, 30000);
-    
-    return () => {
-      clearInterval(interval);
-    };
-  }, [session?.user?.id]);
-
-  const loadTickets = async () => {
-    try {
-      if (session?.user?.id) {
-        const data = await db.getTicketsByTecnico(session.user.id);
-        
-        // Verificar se há novos tickets
-        if (lastTicketCount > 0 && data.length > lastTicketCount) {
-          const novosTickets = data.length - lastTicketCount;
-          toast.success(`🎉 ${novosTickets} novo(s) ticket(s) atribuído(s) a você!`);
-        }
-        
-        setTickets(data);
-        setLastTicketCount(data.length);
-      }
-    } catch (error) {
-      console.error('Error loading tickets:', error);
-      toast.error('Erro ao carregar tickets');
-    } finally {
-      setLoading(false);
+    if (lastTicketCount > 0 && tickets.length > lastTicketCount) {
+      const novosTickets = tickets.length - lastTicketCount;
+      toast.success(`🎉 ${novosTickets} novo(s) ticket(s) atribuído(s) a você!`);
     }
-  };
+  }, [tickets.length, lastTicketCount]);
 
   const handleStartTicket = async (ticketId: string) => {
     try {
       await db.updateTicket(ticketId, { status: 'em_curso' });
       toast.success('Ticket iniciado com sucesso!');
+      
+      // Invalidar cache e recarregar
+      invalidateCache();
       loadTickets();
     } catch (error) {
       console.error('Error starting ticket:', error);
@@ -128,51 +96,14 @@ export default function TecnicoDashboard() {
     }
   };
 
-  // Função para visualizar relatório
-  const handleViewReport = async (ticket: Ticket) => {
-    try {
-      // Buscar relatório do ticket
-      const relatorio = await db.getRelatorioByTicket(ticket.id);
-      
-      if (!relatorio) {
-        toast.error('Relatório não encontrado para este ticket');
-        return;
-      }
-
-      // Gerar PDF do relatório
-      const response = await fetch('/api/generate-pdf', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ticketId: ticket.id }),
-      });
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        
-        // Abrir PDF em nova aba
-        window.open(url, '_blank');
-        window.URL.revokeObjectURL(url);
-      } else {
-        const errorText = await response.text();
-        console.error('Erro ao gerar PDF:', response.status, errorText);
-        toast.error('Erro ao gerar PDF do relatório');
-      }
-    } catch (error) {
-      console.error('Erro ao visualizar relatório:', error);
-      toast.error('Erro ao visualizar relatório');
-    }
-  };
 
   if (status === 'loading' || loading) {
     return (
       <TecnicoLayout>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Carregando tickets...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
+            <p className="mt-2 text-slate-400">Carregando tickets...</p>
           </div>
         </div>
       </TecnicoLayout>
@@ -188,8 +119,8 @@ export default function TecnicoDashboard() {
       <div className="space-y-6">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-gray-900">Meus Tickets</h1>
-          <p className="text-gray-600">Gerencie seus atendimentos técnicos</p>
+          <h1 className="text-3xl font-bold text-white">Meus Tickets</h1>
+          <p className="text-slate-400">Gerencie seus atendimentos técnicos</p>
         </div>
         
         {/* MELHORIA: Notificações de Manutenção */}
@@ -197,46 +128,46 @@ export default function TecnicoDashboard() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+          <Card className="bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-white/15">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-slate-200">
                 Pendentes
               </CardTitle>
-              <Clock className="h-5 w-5 text-yellow-600" />
+              <Clock className="h-5 w-5 text-yellow-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{ticketsPendentes.length}</div>
-              <p className="text-xs text-gray-600 mt-1">
+              <div className="text-2xl font-bold text-white">{ticketsPendentes.length}</div>
+              <p className="text-xs text-slate-300 mt-1">
                 Aguardando início
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+          <Card className="bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-white/15">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-slate-200">
                 Em Curso
               </CardTitle>
-              <PlayCircle className="h-5 w-5 text-blue-600" />
+              <PlayCircle className="h-5 w-5 text-blue-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{ticketsEmCurso.length}</div>
-              <p className="text-xs text-gray-600 mt-1">
+              <div className="text-2xl font-bold text-white">{ticketsEmCurso.length}</div>
+              <p className="text-xs text-slate-300 mt-1">
                 Em atendimento
               </p>
             </CardContent>
           </Card>
 
-          <Card className="border-0 shadow-lg hover:shadow-xl transition-shadow">
+          <Card className="bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-white/15">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium text-gray-600">
+              <CardTitle className="text-sm font-medium text-slate-200">
                 Finalizados
               </CardTitle>
-              <CheckCircle className="h-5 w-5 text-green-600" />
+              <CheckCircle className="h-5 w-5 text-green-400" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold text-gray-900">{ticketsFinalizados.length}</div>
-              <p className="text-xs text-gray-600 mt-1">
+              <div className="text-2xl font-bold text-white">{ticketsFinalizados.length}</div>
+              <p className="text-xs text-slate-300 mt-1">
                 Concluídos
               </p>
             </CardContent>
@@ -245,10 +176,10 @@ export default function TecnicoDashboard() {
 
         {/* Tickets Em Curso */}
         {ticketsEmCurso.length > 0 && (
-          <Card className="border-0 shadow-lg">
+          <Card className="bg-white/10 border-white/20 shadow-xl">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <PlayCircle className="h-5 w-5 text-blue-600" />
+              <CardTitle className="flex items-center gap-2 text-white">
+                <PlayCircle className="h-5 w-5 text-blue-400" />
                 Tickets em Andamento
               </CardTitle>
             </CardHeader>
@@ -257,17 +188,17 @@ export default function TecnicoDashboard() {
                 {ticketsEmCurso.map((ticket) => (
                   <div
                     key={ticket.id}
-                    className="flex items-center justify-between p-4 bg-blue-50 rounded-xl border border-blue-200"
+                    className="flex items-center justify-between p-4 bg-blue-500/20 rounded-xl border border-blue-500/30"
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         {getPriorityIcon(ticket.prioridade)}
-                        <h4 className="font-semibold text-gray-900">{ticket.titulo}</h4>
+                        <h4 className="font-semibold text-white">{ticket.titulo}</h4>
                       </div>
-                      <p className="text-sm text-gray-600 mb-1">
+                      <p className="text-sm text-slate-300 mb-1">
                         Cliente: {ticket.cliente?.nome}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-slate-400">
                         {new Date(ticket.created_at).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
@@ -290,10 +221,10 @@ export default function TecnicoDashboard() {
         )}
 
         {/* Tickets Pendentes */}
-        <Card className="border-0 shadow-lg">
+        <Card className="bg-white/10 border-white/20 shadow-xl">
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <FileText className="h-5 w-5" />
+            <CardTitle className="flex items-center gap-2 text-white">
+              <FileText className="h-5 w-5 text-slate-300" />
               Tickets Disponíveis ({ticketsPendentes.length})
             </CardTitle>
           </CardHeader>
@@ -303,20 +234,20 @@ export default function TecnicoDashboard() {
                 {ticketsPendentes.map((ticket) => (
                   <div
                     key={ticket.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                    className="flex items-center justify-between p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors border border-white/10"
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
                         {getPriorityIcon(ticket.prioridade)}
-                        <h4 className="font-semibold text-gray-900">{ticket.titulo}</h4>
+                        <h4 className="font-semibold text-white">{ticket.titulo}</h4>
                       </div>
-                      <p className="text-sm text-gray-600 mb-1">
+                      <p className="text-sm text-slate-300 mb-1">
                         Cliente: {ticket.cliente?.nome}
                       </p>
-                      <p className="text-sm text-gray-500 mb-1">
+                      <p className="text-sm text-slate-400 mb-1">
                         {ticket.descricao}
                       </p>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-xs text-slate-400">
                         Criado em: {new Date(ticket.created_at).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
@@ -330,7 +261,7 @@ export default function TecnicoDashboard() {
                       <Button
                         onClick={() => handleStartTicket(ticket.id)}
                         variant="outline"
-                        className="flex items-center gap-2"
+                        className="flex items-center gap-2 text-slate-200 border-slate-400 hover:bg-slate-600"
                       >
                         <PlayCircle className="h-4 w-4" />
                         Iniciar
@@ -340,10 +271,10 @@ export default function TecnicoDashboard() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <FileText className="h-12 w-12 mx-auto mb-3 text-gray-400" />
-                <p>Nenhum ticket pendente</p>
-                <p className="text-sm mt-1">
+              <div className="text-center py-8 text-slate-400">
+                <FileText className="h-12 w-12 mx-auto mb-3 text-slate-500" />
+                <p className="text-slate-300">Nenhum ticket pendente</p>
+                <p className="text-sm mt-1 text-slate-400">
                   Todos os tickets foram atendidos
                 </p>
               </div>
@@ -353,10 +284,10 @@ export default function TecnicoDashboard() {
 
         {/* Tickets Finalizados */}
         {ticketsFinalizados.length > 0 && (
-          <Card className="border-0 shadow-lg">
+          <Card className="bg-white/10 border-white/20 shadow-xl">
             <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
+              <CardTitle className="flex items-center gap-2 text-white">
+                <CheckCircle className="h-5 w-5 text-green-400" />
                 Tickets Finalizados Recentes
               </CardTitle>
             </CardHeader>
@@ -365,24 +296,24 @@ export default function TecnicoDashboard() {
                 {ticketsFinalizados.slice(0, 3).map((ticket) => (
                   <div
                     key={ticket.id}
-                    className="flex items-center justify-between p-4 bg-green-50 rounded-xl border border-green-200"
+                    className="flex items-center justify-between p-4 bg-green-500/20 rounded-xl border border-green-500/30"
                   >
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900">{ticket.titulo}</h4>
-                      <p className="text-sm text-gray-600">
+                      <h4 className="font-semibold text-white">{ticket.titulo}</h4>
+                      <p className="text-sm text-slate-300">
                         Cliente: {ticket.cliente?.nome}
                       </p>
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-slate-400">
                         Finalizado em: {new Date(ticket.updated_at).toLocaleDateString('pt-BR')}
                       </p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge className="bg-green-100 text-green-800">
+                      <Badge className="bg-green-500/30 text-green-200 border-green-500/40">
                         Finalizado
                       </Badge>
                       <Button 
                         onClick={() => router.push(`/tecnico/ticket/${ticket.id}/view`)}
-                        className="bg-gray-900 text-white hover:bg-gray-800"
+                        className="bg-slate-600 text-white hover:bg-slate-500"
                       >
                         <FileText className="mr-2 h-4 w-4" />
                         Ver Relatório

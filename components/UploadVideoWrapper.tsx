@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Upload, Video, X, AlertCircle } from 'lucide-react';
+import { Upload, X, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { MediaCapture } from './MediaCapture';
 
@@ -14,7 +14,7 @@ interface UploadVideoWrapperProps {
 
 export function UploadVideoWrapper({ 
   onComplete, 
-  onError, 
+  // onError, 
   disabled = false, 
   maxFiles = 5,
   maxSize = 100 // 100MB por padrão

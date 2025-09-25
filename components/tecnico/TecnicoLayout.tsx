@@ -15,15 +15,16 @@ import {
   RefreshCw,
   Wifi,
   WifiOff,
-  User,
+  // User,
   Calendar,
-  MapPin
+  // MapPin
 } from 'lucide-react';
 import { offlineSync } from '@/lib/offline/sync';
 import { toast } from 'sonner';
 import { db } from '@/lib/db/supabase';
-import { useRouter } from 'next/navigation';
+// import { useRouter } from 'next/navigation';
 import { LocationTracker } from './LocationTracker';
+import { AdminTheme } from '../admin/AdminTheme';
 
 interface TecnicoLayoutProps {
   children: React.ReactNode;
@@ -36,8 +37,8 @@ const navigation = [
 ];
 
 export function TecnicoLayout({ children }: TecnicoLayoutProps) {
-  const { data: session, status } = useSession();
-  const router = useRouter();
+  const { data: session } = useSession();
+  // const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
@@ -88,13 +89,18 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
     return () => clearInterval(interval);
   }, []);
 
-  // Sistema de heartbeat para manter status online
+  // Sistema de heartbeat otimizado para manter status online
   useEffect(() => {
     if (!session?.user?.id || session.user.type !== 'tecnico') return;
     
+    let heartbeatCount = 0;
     const heartbeat = async () => {
       try {
         await db.updateTecnicoOnlineStatus(session.user.id, true);
+        heartbeatCount++;
+        
+        // Log a cada heartbeat para debug
+        console.log(`Heartbeat #${heartbeatCount} - Técnico online`);
       } catch (error) {
         console.error('Erro no heartbeat:', error);
       }
@@ -114,7 +120,7 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
         db.updateTecnicoOnlineStatus(session.user.id, false).catch(console.error);
       }
     };
-  }, [session?.user?.id]);
+  }, [session?.user?.id, session?.user?.type]);
 
   const handleSignOut = () => {
     // Marcar como offline antes de sair
@@ -155,7 +161,8 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 lg:flex">
+    <AdminTheme>
+      <div className="min-h-screen bg-slate-900 lg:flex">
       {/* Mobile sidebar overlay */}
       {sidebarOpen && (
         <div
@@ -167,18 +174,18 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
       {/* Sidebar */}
       <div
         className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-white shadow-lg transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0',
+          'fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-slate-800 shadow-2xl transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0',
           sidebarOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         <div className="flex flex-col h-full">
           {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-            <h2 className="text-xl font-bold text-gray-900">4Save Técnico</h2>
+          <div className="flex items-center justify-between h-16 px-6 border-b border-slate-700">
+            <h2 className="text-xl font-bold text-white">4Save Técnico</h2>
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden"
+              className="lg:hidden text-slate-400 hover:text-white"
               onClick={() => setSidebarOpen(false)}
             >
               <X className="h-4 w-4" />
@@ -196,15 +203,15 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
                   className={cn(
                     'flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-colors',
                     isActive
-                      ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                      : 'text-gray-600 hover:text-gray-900 hover:bg-gray-100'
+                      ? 'bg-blue-600 text-white shadow-lg'
+                      : 'text-slate-300 hover:text-white hover:bg-slate-700'
                   )}
                   onClick={() => setSidebarOpen(false)}
                 >
                   <item.icon
                     className={cn(
                       'mr-3 h-5 w-5',
-                      isActive ? 'text-blue-600' : 'text-gray-400'
+                      isActive ? 'text-white' : 'text-slate-400'
                     )}
                   />
                   {item.name}
@@ -214,12 +221,12 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
           </nav>
 
           {/* Actions */}
-          <div className="px-4 py-4 border-t border-gray-200 space-y-2">
+          <div className="px-4 py-4 border-t border-slate-700 space-y-2">
             {/* Status de Sincronização */}
             {syncStatus.hasPendingData && (
-              <div className="mb-2 p-2 bg-amber-50 border border-amber-200 rounded-lg">
-                <div className="flex items-center gap-2 text-amber-700">
-                  <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
+              <div className="mb-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                <div className="flex items-center gap-2 text-amber-300">
+                  <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
                   <span className="text-xs font-medium">
                     {syncStatus.pendingCount} item(s) pendente(s)
                   </span>
@@ -231,29 +238,29 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
               variant="outline"
               size="sm"
               onClick={handleSync}
-              className="w-full justify-start"
+              className="w-full justify-start text-slate-300 border-slate-600 hover:bg-slate-700"
               disabled={syncing || !isOnline}
             >
               {syncing ? (
                 <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
               ) : isOnline ? (
-                <Wifi className="mr-2 h-4 w-4 text-green-600" />
+                <Wifi className="mr-2 h-4 w-4 text-green-400" />
               ) : (
-                <WifiOff className="mr-2 h-4 w-4 text-red-600" />
+                <WifiOff className="mr-2 h-4 w-4 text-red-400" />
               )}
               {syncing ? 'Sincronizando...' : isOnline ? 'Sincronizar' : 'Offline'}
             </Button>
             
             {/* Última sincronização */}
             {syncStatus.lastSync && (
-              <p className="text-xs text-gray-500 text-center">
+              <p className="text-xs text-slate-500 text-center">
                 Última sincronização: {new Date(syncStatus.lastSync).toLocaleTimeString('pt-BR')}
               </p>
             )}
           </div>
 
           {/* User info */}
-          <div className="px-4 py-4 border-t border-gray-200">
+          <div className="px-4 py-4 border-t border-slate-700">
             <div className="flex items-center">
               <div className="flex-shrink-0">
                 <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
@@ -263,17 +270,17 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
                 </div>
               </div>
               <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-gray-900">
+                <p className="text-sm font-medium text-white">
                   {session?.user?.name}
                 </p>
-                <p className="text-xs text-gray-500">{session?.user?.email}</p>
+                <p className="text-xs text-slate-400">{session?.user?.email}</p>
               </div>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleSignOut}
-              className="w-full mt-3 justify-start text-gray-600 hover:text-red-600"
+              className="w-full mt-3 justify-start text-slate-300 hover:text-red-400 hover:bg-slate-700"
             >
               <LogOut className="mr-2 h-4 w-4" />
               Sair
@@ -284,73 +291,21 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
 
       {/* Main content */}
       <div className="flex-1 lg:flex lg:flex-col">
-        {/* Top bar */}
-        <div className="sticky top-0 z-30 bg-white border-b border-gray-200 px-4 py-4 lg:px-8">
+        {/* Top bar - apenas mobile menu */}
+        <div className="sticky top-0 z-30 bg-slate-800 border-b border-slate-700 px-4 py-4 lg:hidden">
           <div className="flex items-center justify-between">
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden"
+              className="text-slate-400 hover:text-white"
               onClick={() => setSidebarOpen(true)}
             >
               <Menu className="h-5 w-5" />
             </Button>
-            
-            <div className="hidden lg:block">
-              <h1 className="text-2xl font-semibold text-gray-900">
-                {navigation.find(item => item.href === pathname)?.name || 'Dashboard'}
-              </h1>
-            </div>
-
-            <div className="flex items-center space-x-4">
-              <span className="text-sm text-gray-600 truncate max-w-[200px] sm:max-w-none">
-                Olá, {session?.user?.name}
-              </span>
-            </div>
-          </div>
-        </div>
-
-        {/* Status Bar */}
-        <div className="bg-white border-b px-4 py-2">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <User className="h-5 w-5 text-blue-600" />
-              <span className="font-medium text-gray-900">
-                {session?.user?.name}
-              </span>
-              <div className="flex items-center gap-1">
-                <div className={`w-2 h-2 rounded-full ${isOnline ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
-                <span className="text-xs text-gray-600">
-                  {isOnline ? 'Online' : 'Offline'}
-                </span>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-2">
-              {syncing && (
-                <div className="flex items-center gap-1 text-blue-600">
-                  <RefreshCw className="h-4 w-4 animate-spin" />
-                  <span className="text-xs">Sincronizando...</span>
-                </div>
-              )}
-              
-              {syncStatus.hasPendingData && !syncing && (
-                <div className="flex items-center gap-1 text-amber-600">
-                  <div className="w-2 h-2 bg-amber-500 rounded-full animate-pulse"></div>
-                  <span className="text-xs">{syncStatus.pendingCount} pendente(s)</span>
-                </div>
-              )}
-              
-              <Button
-                onClick={handleSignOut}
-                variant="ghost"
-                size="sm"
-                className="text-gray-600 hover:text-gray-900"
-              >
-                <LogOut className="h-4 w-4 mr-1" />
-                Sair
-              </Button>
-            </div>
+            <h1 className="text-xl font-semibold text-white">
+              {navigation.find(item => item.href === pathname)?.name || 'Dashboard'}
+            </h1>
+            <div></div>
           </div>
         </div>
 
@@ -360,10 +315,11 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
         </div>
           
         {/* Page content */}
-        <main className="flex-1 p-4 lg:p-8">
+        <main className="flex-1 p-4 lg:p-8 bg-slate-900">
           {children}
         </main>
       </div>
     </div>
+    </AdminTheme>
   );
 }

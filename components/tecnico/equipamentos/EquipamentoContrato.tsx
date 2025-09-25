@@ -7,8 +7,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { UploadWrapper } from '@/components/UploadWrapper';
 import { UploadVideoWrapper } from '@/components/UploadVideoWrapper';
-import { X, Plus, Save } from 'lucide-react';
+import { X, Plus } from 'lucide-react';
 import { toast } from 'sonner';
+import Image from 'next/image';
 
 interface Equipamento {
   id: string;
@@ -25,7 +26,7 @@ interface EquipamentoContratoProps {
   disabled?: boolean;
 }
 
-export function EquipamentoContrato({ contratoId, equipamentos, onSave, disabled = false }: EquipamentoContratoProps) {
+export function EquipamentoContrato({ contratoId, equipamentos, disabled = false }: EquipamentoContratoProps) {
   const [bibliotecaEquipamentos, setBibliotecaEquipamentos] = useState<Equipamento[]>([]);
   const [equipamentosContrato, setEquipamentosContrato] = useState<Equipamento[]>(equipamentos || []);
   
@@ -68,7 +69,7 @@ export function EquipamentoContrato({ contratoId, equipamentos, onSave, disabled
   };
 
   // Atualizar equipamento da biblioteca
-  const atualizarEquipamentoBiblioteca = (id: string, campo: keyof Equipamento, valor: any) => {
+  const atualizarEquipamentoBiblioteca = (id: string, campo: keyof Equipamento, valor: unknown) => {
     const novaBiblioteca = bibliotecaEquipamentos.map(e => 
       e.id === id ? { ...e, [campo]: valor } : e
     );
@@ -132,18 +133,13 @@ export function EquipamentoContrato({ contratoId, equipamentos, onSave, disabled
   };
 
   // Atualizar equipamento do contrato
-  const atualizarEquipamentoContrato = (id: string, campo: keyof Equipamento, valor: any) => {
+  const atualizarEquipamentoContrato = (id: string, campo: keyof Equipamento, valor: unknown) => {
     const novosEquipamentos = equipamentosContrato.map(e => 
       e.id === id ? { ...e, [campo]: valor } : e
     );
     setEquipamentosContrato(novosEquipamentos);
   };
 
-  // Salvar equipamentos
-  const salvarEquipamentos = () => {
-    onSave(equipamentosContrato);
-    toast.success('Equipamentos salvos com sucesso!');
-  };
 
   return (
     <div className="space-y-6">
@@ -333,10 +329,12 @@ export function EquipamentoContrato({ contratoId, equipamentos, onSave, disabled
                   {equipamento.fotos && equipamento.fotos.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       {equipamento.fotos.map((foto, index) => (
-                        <img
+                        <Image
                           key={index}
                           src={foto}
                           alt={`Foto ${index + 1}`}
+                          width={200}
+                          height={80}
                           className="w-full h-20 object-cover rounded-lg"
                         />
                       ))}

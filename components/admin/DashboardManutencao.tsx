@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Calendar, Clock, FileText, AlertTriangle, CheckCircle, RefreshCw, Calendar as CalendarIcon, Plus, Edit, Trash2 } from 'lucide-react';
+import { Calendar, Clock, FileText, AlertTriangle, CheckCircle, Calendar as CalendarIcon, Plus, Edit, Trash2 } from 'lucide-react';
 import { RelatorioManutencao } from './RelatorioManutencao';
 import { db } from '@/lib/db/supabase';
 import { toast } from 'sonner';
@@ -177,7 +177,7 @@ export function DashboardManutencao() {
   const formatarData = (dataString: string) => {
     try {
       return format(parseISO(dataString), 'dd/MM/yyyy', { locale: ptBR });
-    } catch (e) {
+    } catch {
       return 'Data inválida';
     }
   };
@@ -217,7 +217,7 @@ export function DashboardManutencao() {
       const data = parseISO(dataString);
       const hoje = new Date();
       return isAfter(data, hoje) && isBefore(data, addDays(hoje, 7));
-    } catch (e) {
+    } catch {
       return false;
     }
   };
@@ -227,7 +227,7 @@ export function DashboardManutencao() {
       const data = parseISO(dataString);
       const hoje = new Date();
       return isBefore(data, hoje);
-    } catch (e) {
+    } catch {
       return false;
     }
   };

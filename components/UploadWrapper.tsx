@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+// import { useState } from 'react';
 import { MediaCapture } from './MediaCapture';
-import { X, Camera, Upload as UploadIcon } from 'lucide-react';
+import { X, Upload as UploadIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import Image from 'next/image';
 
 interface UploadWrapperProps {
   onComplete: (urls: string[]) => void;
@@ -17,31 +18,31 @@ interface UploadWrapperProps {
 
 export function UploadWrapper({ 
   onComplete, 
-  onError, 
+  // onError, 
   disabled = false, 
   maxFiles = 10,
-  accept = "image/*",
+  // accept = "image/*",
   currentFiles = []
 }: UploadWrapperProps) {
   // Usar currentFiles do pai ao invés de estado interno
   const uploadedFiles = currentFiles;
-  const [isCapturing, setIsCapturing] = useState(false);
+  // const [isCapturing, setIsCapturing] = useState(false);
 
-  const handleUploadComplete = (urls: string[]) => {
-    // Verificar limite de arquivos
-    if (uploadedFiles.length + urls.length > maxFiles) {
-      toast.error(`Máximo de ${maxFiles} imagens permitido`);
-      return;
-    }
+  // const handleUploadComplete = (urls: string[]) => {
+  //   // Verificar limite de arquivos
+  //   if (uploadedFiles.length + urls.length > maxFiles) {
+  //     toast.error(`Máximo de ${maxFiles} imagens permitido`);
+  //     return;
+  //   }
 
-    // Não duplicar URLs
-    const uniqueUrls = urls.filter(url => !uploadedFiles.includes(url));
-    if (uniqueUrls.length === 0) return;
+  //   // Não duplicar URLs
+  //   const uniqueUrls = urls.filter(url => !uploadedFiles.includes(url));
+  //   if (uniqueUrls.length === 0) return;
 
-    const newUrls = [...uploadedFiles, ...uniqueUrls];
-    onComplete(newUrls);
-    toast.success(`${uniqueUrls.length} imagem(ns) carregada(s)!`);
-  };
+  //   const newUrls = [...uploadedFiles, ...uniqueUrls];
+  //   onComplete(newUrls);
+  //   toast.success(`${uniqueUrls.length} imagem(ns) carregada(s)!`);
+  // };
 
   const handleCapture = (dataUrl: string) => {
     // Verificar limite de arquivos
@@ -62,13 +63,13 @@ export function UploadWrapper({
     toast.success('Imagem removida');
   };
 
-  const handleCaptureStart = () => {
-    setIsCapturing(true);
-  };
+  // const handleCaptureStart = () => {
+  //   setIsCapturing(true);
+  // };
 
-  const handleCaptureEnd = () => {
-    setIsCapturing(false);
-  };
+  // const handleCaptureEnd = () => {
+  //   setIsCapturing(false);
+  // };
 
   return (
     <div className="space-y-4">
@@ -77,9 +78,11 @@ export function UploadWrapper({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {uploadedFiles.map((file, index) => (
             <div key={index} className="relative group">
-              <img
+              <Image
                 src={file}
                 alt={`Upload ${index + 1}`}
+                width={200}
+                height={80}
                 className="w-full h-20 object-cover rounded-lg"
                 onError={(e) => {
                   console.error('Erro ao carregar imagem:', file);

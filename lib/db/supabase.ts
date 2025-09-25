@@ -11,10 +11,18 @@ import type {
   PlanoManutencao
 } from '@/types';
 
-export const createSupabaseClient = () => createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-);
+// Singleton instance para evitar múltiplas instâncias do GoTrueClient
+let supabaseInstance: ReturnType<typeof createClient> | null = null;
+
+export const createSupabaseClient = () => {
+  if (!supabaseInstance) {
+    supabaseInstance = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
+    );
+  }
+  return supabaseInstance;
+};
 
 // Função para validar UUID
 function isValidUUID(uuid: string): boolean {
@@ -32,7 +40,7 @@ export const db = {
       .order('nome');
     
     if (error) throw error;
-    return data || [];
+    return (data as unknown as Cliente[]) || [];
   },
 
   async getClienteById(id: string): Promise<Cliente | null> {
@@ -44,7 +52,7 @@ export const db = {
       .single();
     
     if (error && error.code !== 'PGRST116') throw error;
-    return data || null;
+    return (data as unknown as Cliente) || null;
   },
 
   async createCliente(cliente: Omit<Cliente, 'id' | 'created_at' | 'updated_at'>): Promise<Cliente> {
@@ -56,7 +64,7 @@ export const db = {
       .single();
     
     if (error) throw error;
-    return data;
+    return data as any;
   },
 
   async updateCliente(id: string, updates: Partial<Cliente>): Promise<Cliente> {
@@ -69,7 +77,7 @@ export const db = {
       .single();
     
     if (error) throw error;
-    return data;
+    return data as any;
   },
 
   // Contratos
@@ -84,7 +92,7 @@ export const db = {
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data || [];
+    return (data as unknown as any[]) || [];
   },
 
   async getContratoById(id: string): Promise<Contrato | null> {
@@ -99,7 +107,7 @@ export const db = {
       .single();
     
     if (error && error.code !== 'PGRST116') throw error;
-    return data || null;
+    return (data as unknown as any) || null;
   },
 
   async createContrato(contrato: Omit<Contrato, 'id' | 'created_at' | 'updated_at'>): Promise<Contrato> {
@@ -111,7 +119,7 @@ export const db = {
       .single();
     
     if (error) throw error;
-    return data;
+    return data as any;
   },
 
   async updateContrato(id: string, updates: Partial<Contrato>): Promise<Contrato> {
@@ -124,7 +132,7 @@ export const db = {
       .single();
     
     if (error) throw error;
-    return data;
+    return data as any;
   },
 
   // Tickets
@@ -141,7 +149,7 @@ export const db = {
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data || [];
+    return (data as unknown as any[]) || [];
   },
 
   async getTicketsByTecnico(tecnicoId: string): Promise<Ticket[]> {
@@ -158,7 +166,7 @@ export const db = {
       .order('created_at', { ascending: false });
     
     if (error) throw error;
-    return data || [];
+    return (data as unknown as any[]) || [];
   },
 
   async createTicket(ticket: Omit<Ticket, 'id' | 'created_at' | 'updated_at'>): Promise<Ticket> {
@@ -182,7 +190,7 @@ export const db = {
         throw new Error(`Erro ao criar ticket: ${error.message}`);
       }
       
-      return data;
+      return data as any;
     } catch (error) {
       console.error('Exceção ao criar ticket:', error);
       throw error;
@@ -199,7 +207,7 @@ export const db = {
       .single();
     
     if (error) throw error;
-    return data;
+    return data as any;
   },
 
   // Usuários
@@ -212,7 +220,7 @@ export const db = {
       .order('name');
     
     if (error) throw error;
-    return data || [];
+    return (data as unknown as any[]) || [];
   },
 
   async getTecnicosDisponiveis(): Promise<User[]> {
@@ -226,7 +234,7 @@ export const db = {
       .order('name');
     
     if (error) throw error;
-    return data || [];
+    return (data as unknown as any[]) || [];
   },
 
   async getTecnicosOnline(): Promise<User[]> {
@@ -241,12 +249,55 @@ export const db = {
       .order('name');
     
     if (error) throw error;
-    return data || [];
+    return (data as unknown as any[]) || [];
+  },
+
+  // ✅ NOVO: Buscar técnicos online que não têm tickets em processo
+  async getTecnicosOnlineDisponiveis(): Promise<User[]> {
+    const supabase = createSupabaseClient();
+    
+    // Buscar técnicos online
+    const { data: tecnicosOnline, error: tecnicosError } = await supabase
+      .from('users')
+      .select('*')
+      .eq('type', 'tecnico')
+      .eq('status', 'ativo')
+      .eq('is_online', true)
+      .eq('disponibilidade', true)
+      .order('name');
+    
+    if (tecnicosError) throw tecnicosError;
+    
+    if (!tecnicosOnline || tecnicosOnline.length === 0) {
+      return [];
+    }
+    
+    // Buscar tickets em processo para cada técnico
+    const { data: ticketsEmProcesso, error: ticketsError } = await supabase
+      .from('tickets')
+      .select('tecnico_id')
+      .eq('status', 'em_curso')
+      .in('tecnico_id', tecnicosOnline.map(t => t.id));
+    
+    if (ticketsError) throw ticketsError;
+    
+    // Filtrar técnicos que não têm tickets em processo
+    const tecnicosComTicketsEmProcesso = new Set(
+      ticketsEmProcesso?.map(t => t.tecnico_id) || []
+    );
+    
+    const tecnicosDisponiveis = tecnicosOnline.filter(
+      tecnico => !tecnicosComTicketsEmProcesso.has(tecnico.id)
+    );
+    
+    console.log(`👤 Técnicos online: ${tecnicosOnline.length}, Disponíveis (sem tickets em processo): ${tecnicosDisponiveis.length}`);
+    
+    return (tecnicosDisponiveis as unknown as User[]) || [];
   },
 
   async checkAndUpdateOnlineStatus(): Promise<void> {
     const supabase = createSupabaseClient();
-    const timeoutThreshold = 2 * 60 * 1000; // 2 minutos
+    // const timeoutThreshold = 2 * 60 * 1000; // 2 minutos
     const now = new Date();
     
     // Buscar técnicos que não atualizaram status há mais de 2 minutos
@@ -261,11 +312,11 @@ export const db = {
     // Marcar como offline se ultrapassou o timeout
     for (const tecnico of tecnicos || []) {
       if (tecnico.last_seen) {
-        const lastSeen = new Date(tecnico.last_seen);
+        const lastSeen = new Date(tecnico.last_seen as string);
         const diffMinutes = (now.getTime() - lastSeen.getTime()) / (1000 * 60);
         
         if (diffMinutes > 2) {
-          await this.updateTecnico(tecnico.id, { 
+          await this.updateTecnico(tecnico.id as string, { 
             is_online: false,
             disponibilidade: false // Também marcar como indisponível
           });
@@ -297,7 +348,7 @@ export const db = {
       .single();
     
     if (error && error.code !== 'PGRST116') throw error;
-    return data || null;
+    return (data as unknown as any) || null;
   },
 
   async updateTecnico(id: string, updates: Partial<User>): Promise<User> {
@@ -310,7 +361,7 @@ export const db = {
       .single();
     
     if (error) throw error;
-    return data;
+    return data as any;
   },
 
   async updateTecnicoLocalizacao(id: string, localizacao: string): Promise<void> {
@@ -329,11 +380,11 @@ export const db = {
   // Atribuição Inteligente
   async atribuirTecnicoInteligente(ticketId: string, tipoProduto?: string): Promise<User | null> {
     try {
-      // Buscar técnicos disponíveis
-      const tecnicosDisponiveis = await this.getTecnicosDisponiveis();
+      // Buscar técnicos disponíveis e online (que não têm tickets em processo)
+      const tecnicosDisponiveis = await this.getTecnicosOnlineDisponiveis();
       
       if (tecnicosDisponiveis.length === 0) {
-        console.log('Nenhum técnico disponível encontrado');
+        console.log('Nenhum técnico disponível e online encontrado (sem tickets em processo)');
         return null;
       }
 
@@ -366,13 +417,17 @@ export const db = {
       const tecnicoEscolhido = tecnicosPriorizados[0];
       
       if (tecnicoEscolhido) {
-        // Atualizar o ticket com o técnico escolhido
-        await this.updateTicket(ticketId, { tecnico_id: tecnicoEscolhido.id });
+        // Se ticketId foi fornecido, atualizar o ticket
+        if (ticketId) {
+          await this.updateTicket(ticketId, { tecnico_id: tecnicoEscolhido.id });
+          console.log(`Técnico ${tecnicoEscolhido.name} atribuído ao ticket ${ticketId}`);
+        } else {
+          console.log(`Técnico ${tecnicoEscolhido.name} selecionado para atribuição automática`);
+        }
         
         // Marcar técnico como indisponível temporariamente
         await this.updateTecnico(tecnicoEscolhido.id, { disponibilidade: false });
         
-        console.log(`Técnico ${tecnicoEscolhido.name} atribuído ao ticket ${ticketId}`);
         return tecnicoEscolhido;
       }
 
@@ -453,7 +508,7 @@ export const db = {
     };
   },
 
-  async aprovarRelatorio(relatorioId: string, adminId: string): Promise<void> {
+  async aprovarRelatorio(relatorioId: string): Promise<void> {
     await this.updateRelatorio(relatorioId, { 
       aprovado_admin: true,
       observacoes_qualidade: 'Aprovado pelo administrador'
@@ -532,7 +587,7 @@ export const db = {
       }
       
       console.log('Relatório criado com sucesso:', data);
-      return data;
+      return data as any;
     } catch (error) {
       console.error('Exceção ao criar relatório:', error);
       throw error;
@@ -557,7 +612,7 @@ export const db = {
     }
     
     console.log('Relatório atualizado com sucesso:', data);
-    return data;
+    return data as any;
   },
 
   async getRelatorioByTicket(ticketId: string): Promise<RelatorioTecnico | null> {
@@ -575,7 +630,7 @@ export const db = {
       console.log('Localização GPS carregada:', data.localizacao_gps);
     }
     
-    return data || null;
+    return (data as unknown as any) || null;
   },
 
   async getRelatorioById(relatorioId: string): Promise<RelatorioTecnico | null> {
@@ -593,7 +648,7 @@ export const db = {
       console.log('Localização GPS carregada:', data.localizacao_gps);
     }
     
-    return data || null;
+    return (data as unknown as any) || null;
   },
 
   async getAllRelatorios(): Promise<RelatorioTecnico[]> {
@@ -622,7 +677,7 @@ export const db = {
       throw error;
     }
     
-    return data || [];
+    return (data as unknown as any[]) || [];
   },
 
   // ✅ NOVAS FUNÇÕES PARA SISTEMA DE MANUTENÇÃO
@@ -663,7 +718,10 @@ export const db = {
         .from('cronograma_manutencao')
         .select(`
           *,
-          contrato:contratos(*)
+          contrato:contratos(
+            *,
+            cliente:clientes(*)
+          )
         `)
         .order('proxima_manutencao', { ascending: true });
       
@@ -672,7 +730,7 @@ export const db = {
         throw new Error(`Erro ao buscar cronogramas: ${error.message}`);
       }
       
-      return data || [];
+      return (data as unknown as any[]) || [];
     } catch (error) {
       console.error('Exceção ao buscar cronogramas:', error);
       throw error;
@@ -710,13 +768,13 @@ export const db = {
       console.log(`📋 Encontrados ${todosCronogramas.length} cronogramas ativos`);
       
       // Separar cronogramas vencidos e próximos
-      const cronogramasVencidos = todosCronogramas.filter(c => c.proxima_manutencao <= hojeStr);
+      const cronogramasVencidos = todosCronogramas.filter(c => (c.proxima_manutencao as string) <= hojeStr);
       const dataLimite = new Date(hoje);
       dataLimite.setDate(dataLimite.getDate() + 7);
       const dataLimiteStr = dataLimite.toISOString().split('T')[0];
       
-      const cronogramasProximos = todosCronogramas.filter(c => 
-        c.proxima_manutencao > hojeStr && c.proxima_manutencao <= dataLimiteStr
+      const cronogramasProximos = todosCronogramas.filter(c =>
+        (c.proxima_manutencao as string) > hojeStr && (c.proxima_manutencao as string) <= dataLimiteStr
       );
       
       console.log(`📅 Cronogramas vencidos: ${cronogramasVencidos.length}`);
@@ -728,16 +786,52 @@ export const db = {
         const atualizacoesCronograma = [];
         
         for (const cronograma of cronogramasVencidos) {
+          // Verificar se já existe um ticket de manutenção para este contrato na data atual
+          const { data: ticketsExistentes } = await supabase
+            .from('tickets')
+            .select('id')
+            .eq('contrato_id', cronograma.contrato_id)
+            .eq('tipo', 'manutencao')
+            .gte('created_at', hojeStr + 'T00:00:00')
+            .lt('created_at', hojeStr + 'T23:59:59');
+          
+          if (ticketsExistentes && ticketsExistentes.length > 0) {
+            console.log(`⚠️ Ticket de manutenção já existe para contrato ${cronograma.contrato_id} na data ${hojeStr}`);
+            continue;
+          }
+          
+          // Tentar atribuir técnico automaticamente
+          let tecnicoId = null;
+          const cronogramaAny = cronograma as any;
+          try {
+            const tecnicoAtribuido = await this.atribuirTecnicoInteligente('', cronogramaAny.contrato?.tipo_produto);
+            if (tecnicoAtribuido) {
+              tecnicoId = tecnicoAtribuido.id;
+              console.log(`👤 Técnico ${tecnicoAtribuido.name} atribuído automaticamente ao cronograma ${cronograma.id}`);
+            } else {
+              console.log(`⚠️ Nenhum técnico disponível para cronograma ${cronograma.id} - ticket ficará sem técnico`);
+            }
+          } catch (error) {
+            console.error(`❌ Erro ao atribuir técnico para cronograma ${cronograma.id}:`, error);
+          }
+          
           // Preparar ticket
-          ticketsParaCriar.push({
-            cliente_id: cronograma.contrato.cliente_id,
-            contrato_id: cronograma.contrato_id,
-            titulo: `Manutenção ${cronograma.tipo_manutencao} - ${cronograma.contrato.numero}`,
-            descricao: `Manutenção ${cronograma.tipo_manutencao} agendada para ${cronograma.proxima_manutencao}. Contrato: ${cronograma.contrato.numero}`,
+          const ticketData: any = {
+            cliente_id: cronogramaAny.contrato?.cliente_id,
+            contrato_id: cronogramaAny.contrato_id,
+            titulo: `Manutenção ${cronogramaAny.tipo_manutencao} - ${cronogramaAny.contrato?.numero || 'N/A'}`,
+            descricao: `Manutenção ${cronogramaAny.tipo_manutencao} agendada para ${cronogramaAny.proxima_manutencao}. Contrato: ${cronogramaAny.contrato?.numero || 'N/A'}`,
             tipo: 'manutencao',
-            prioridade: cronograma.tipo_manutencao === 'corretiva' ? 'alta' : 'media',
+            prioridade: cronogramaAny.tipo_manutencao === 'corretiva' ? 'alta' : 'media',
             status: 'pendente'
-          });
+          };
+          
+          // Adicionar técnico se foi atribuído
+          if (tecnicoId) {
+            ticketData.tecnico_id = tecnicoId;
+          }
+          
+          ticketsParaCriar.push(ticketData);
           
           // Calcular próxima data
           const proximaData = this.calcularProximaData(hoje, cronograma.frequencia);
@@ -818,7 +912,7 @@ export const db = {
   },
 
   // Função auxiliar para criar notificações em lote
-  async criarNotificacoesEmLote(cronogramas: any[]): Promise<void> {
+  async criarNotificacoesEmLote(cronogramas: CronogramaManutencao[]): Promise<void> {
     try {
       const supabase = createSupabaseClient();
       
@@ -838,20 +932,20 @@ export const db = {
           notificacoesParaCriar.push({
             tipo: 'manutencao_programada',
             titulo: `Manutenção ${cronograma.tipo_manutencao} programada`,
-            mensagem: `Manutenção ${cronograma.tipo_manutencao} programada para ${cronograma.proxima_manutencao}. Contrato: ${cronograma.contrato.numero}`,
+            mensagem: `Manutenção ${cronograma.tipo_manutencao} programada para ${cronograma.proxima_manutencao}. Contrato: ${cronograma.contrato?.numero || 'N/A'}`,
             data_programada: cronograma.proxima_manutencao,
             contrato_id: cronograma.contrato_id,
-            cliente_id: cronograma.contrato.cliente_id,
+            cliente_id: cronograma.contrato?.cliente_id,
             lida: false,
             prioridade: cronograma.tipo_manutencao === 'corretiva' ? 'alta' : 'media'
           });
         } else {
           // Criar notificação como ticket
           notificacoesParaCriar.push({
-            cliente_id: cronograma.contrato.cliente_id,
+            cliente_id: cronograma.contrato?.cliente_id,
             contrato_id: cronograma.contrato_id,
             titulo: `AVISO: Manutenção ${cronograma.tipo_manutencao} em breve`,
-            descricao: `Manutenção ${cronograma.tipo_manutencao} programada para ${cronograma.proxima_manutencao}. Contrato: ${cronograma.contrato.numero}. Por favor, prepare-se com antecedência.`,
+            descricao: `Manutenção ${cronograma.tipo_manutencao} programada para ${cronograma.proxima_manutencao}. Contrato: ${cronograma.contrato?.numero || 'N/A'}. Por favor, prepare-se com antecedência.`,
             tipo: 'manutencao',
             prioridade: 'baixa',
             status: 'pendente'
@@ -876,16 +970,16 @@ export const db = {
   },
 
   // ✅ DEPRECATED: Criar ticket de manutenção (substituído por processamento em lote)
-  async criarTicketManutencao(cronograma: any): Promise<Ticket> {
+  async criarTicketManutencao(cronograma: CronogramaManutencao): Promise<Ticket> {
     console.warn('⚠️ criarTicketManutencao está deprecated. Use gerarTicketsManutencao()');
     try {
       const supabase = createSupabaseClient();
       
       const ticket = {
-        cliente_id: cronograma.contrato.cliente_id,
+        cliente_id: cronograma.contrato?.cliente_id,
         contrato_id: cronograma.contrato_id,
-        titulo: `Manutenção ${cronograma.tipo_manutencao} - ${cronograma.contrato.numero}`,
-        descricao: `Manutenção ${cronograma.tipo_manutencao} agendada para ${cronograma.proxima_manutencao}. Contrato: ${cronograma.contrato.numero}`,
+        titulo: `Manutenção ${cronograma.tipo_manutencao} - ${cronograma.contrato?.numero || 'N/A'}`,
+        descricao: `Manutenção ${cronograma.tipo_manutencao} agendada para ${cronograma.proxima_manutencao}. Contrato: ${cronograma.contrato?.numero || 'N/A'}`,
         tipo: 'manutencao',
         prioridade: cronograma.tipo_manutencao === 'corretiva' ? 'alta' : 'media',
         status: 'pendente'
@@ -902,7 +996,7 @@ export const db = {
         throw new Error(`Erro ao criar ticket: ${error.message}`);
       }
       
-      return data;
+      return data as any;
     } catch (error) {
       console.error('Exceção ao criar ticket de manutenção:', error);
       throw error;
@@ -984,6 +1078,217 @@ export const db = {
     }
   },
 
+  // ✅ NOVO: Verificar e atribuir técnicos para tickets pendentes sem técnico
+  async verificarTicketsSemTecnico(): Promise<{ ticketsAtribuidos: number }> {
+    try {
+      const supabase = createSupabaseClient();
+      
+      console.log('🔍 Verificando tickets pendentes sem técnico...');
+      
+      // Buscar tickets pendentes sem técnico
+      const { data: ticketsSemTecnico, error: ticketsError } = await supabase
+        .from('tickets')
+        .select(`
+          *,
+          contrato:contratos(*, cliente:clientes(*))
+        `)
+        .eq('status', 'pendente')
+        .is('tecnico_id', null);
+      
+      if (ticketsError) {
+        console.error('Erro ao buscar tickets sem técnico:', ticketsError);
+        return { ticketsAtribuidos: 0 };
+      }
+      
+      if (!ticketsSemTecnico || ticketsSemTecnico.length === 0) {
+        console.log('✅ Nenhum ticket pendente sem técnico encontrado');
+        return { ticketsAtribuidos: 0 };
+      }
+      
+      console.log(`📋 Encontrados ${ticketsSemTecnico.length} tickets pendentes sem técnico`);
+      
+      let ticketsAtribuidos = 0;
+      
+      // Processar cada ticket sem técnico
+      for (const ticket of ticketsSemTecnico) {
+        const ticketAny = ticket as any;
+        
+        // Tentar atribuir técnico automaticamente
+        try {
+          const tecnicoAtribuido = await this.atribuirTecnicoInteligente(ticket.id, ticketAny.contrato?.tipo_produto);
+          
+          if (tecnicoAtribuido) {
+            ticketsAtribuidos++;
+            console.log(`👤 Técnico ${tecnicoAtribuido.nome} atribuído ao ticket ${ticket.id}`);
+          } else {
+            console.log(`⚠️ Nenhum técnico disponível para ticket ${ticket.id}`);
+          }
+        } catch (atribuicaoError) {
+          console.error(`❌ Erro ao atribuir técnico para ticket ${ticket.id}:`, atribuicaoError);
+        }
+      }
+      
+      console.log(`🎯 Processamento concluído: ${ticketsAtribuidos} tickets atribuídos`);
+      
+      return { ticketsAtribuidos };
+      
+    } catch (error) {
+      console.error('❌ Erro geral ao verificar tickets sem técnico:', error);
+      return { ticketsAtribuidos: 0 };
+    }
+  },
+
+  // ✅ NOVO: Verificação completa do sistema (cronogramas + tickets sem técnico)
+  async verificarSistemaCompleto(): Promise<{ 
+    ticketsCriados: number, 
+    ticketsAtribuidos: number, 
+    tecnicosAtribuidos: number 
+  }> {
+    try {
+      console.log('🚀 Iniciando verificação completa do sistema...');
+      
+      // 1. Verificar cronogramas vencidos e criar tickets
+      const resultadoCronogramas = await this.verificarCronogramasVencidos();
+      
+      // 2. Verificar tickets pendentes sem técnico e atribuir
+      const resultadoTickets = await this.verificarTicketsSemTecnico();
+      
+      const resultadoFinal = {
+        ticketsCriados: resultadoCronogramas.ticketsCriados,
+        ticketsAtribuidos: resultadoTickets.ticketsAtribuidos,
+        tecnicosAtribuidos: resultadoCronogramas.tecnicosAtribuidos + resultadoTickets.ticketsAtribuidos
+      };
+      
+      console.log(`🎯 Verificação completa concluída:`, resultadoFinal);
+      
+      return resultadoFinal;
+      
+    } catch (error) {
+      console.error('❌ Erro na verificação completa do sistema:', error);
+      return { ticketsCriados: 0, ticketsAtribuidos: 0, tecnicosAtribuidos: 0 };
+    }
+  },
+
+  // ✅ NOVO: Verificar e processar cronogramas vencidos de forma inteligente
+  async verificarCronogramasVencidos(): Promise<{ ticketsCriados: number, tecnicosAtribuidos: number }> {
+    try {
+      const supabase = createSupabaseClient();
+      
+      console.log('🔍 Verificando cronogramas vencidos...');
+      
+      // Buscar cronogramas vencidos (data <= hoje)
+      const hoje = new Date().toISOString().split('T')[0];
+      const { data: cronogramasVencidos, error: cronogramasError } = await supabase
+        .from('cronograma_manutencao')
+        .select(`
+          *,
+          contrato:contratos(*, cliente:clientes(*))
+        `)
+        .lte('proxima_manutencao', hoje)
+        .eq('status', 'ativo');
+      
+      if (cronogramasError) {
+        console.error('Erro ao buscar cronogramas vencidos:', cronogramasError);
+        return { ticketsCriados: 0, tecnicosAtribuidos: 0 };
+      }
+      
+      if (!cronogramasVencidos || cronogramasVencidos.length === 0) {
+        console.log('✅ Nenhum cronograma vencido encontrado');
+        return { ticketsCriados: 0, tecnicosAtribuidos: 0 };
+      }
+      
+      console.log(`📋 Encontrados ${cronogramasVencidos.length} cronogramas vencidos`);
+      
+      let ticketsCriados = 0;
+      let tecnicosAtribuidos = 0;
+      
+      // Processar cada cronograma vencido
+      for (const cronograma of cronogramasVencidos) {
+        const cronogramaAny = cronograma as any;
+        
+        // Verificar se já existe ticket para este contrato na data atual
+        const { data: ticketsExistentes } = await supabase
+          .from('tickets')
+          .select('id')
+          .eq('contrato_id', cronogramaAny.contrato_id)
+          .eq('tipo', 'manutencao')
+          .gte('created_at', `${hoje}T00:00:00`)
+          .lt('created_at', `${hoje}T23:59:59`);
+        
+        if (ticketsExistentes && ticketsExistentes.length > 0) {
+          console.log(`⏭️ Ticket já existe para contrato ${cronogramaAny.contrato_id}`);
+          continue;
+        }
+        
+        // Validar dados obrigatórios
+        if (!cronogramaAny.contrato_id) {
+          console.error('❌ Contrato ID não encontrado para cronograma:', cronogramaAny.id);
+          continue;
+        }
+        
+        if (!cronogramaAny.contrato?.cliente_id) {
+          console.error('❌ Cliente ID não encontrado para contrato:', cronogramaAny.contrato_id);
+          continue;
+        }
+        
+        // Criar ticket de manutenção
+        const ticketData = {
+          cliente_id: cronogramaAny.contrato.cliente_id,
+          contrato_id: cronogramaAny.contrato_id,
+          titulo: `Manutenção ${cronogramaAny.tipo_manutencao} - ${cronogramaAny.contrato?.numero || 'N/A'}`,
+          descricao: `Manutenção ${cronogramaAny.tipo_manutencao} agendada para ${cronogramaAny.proxima_manutencao}. Contrato: ${cronogramaAny.contrato?.numero || 'N/A'}`,
+          tipo: 'manutencao',
+          prioridade: cronogramaAny.tipo_manutencao === 'corretiva' ? 'alta' : 'media',
+          status: 'pendente'
+        };
+        
+        console.log('📝 Criando ticket com dados:', ticketData);
+        
+        const { data: novoTicket, error: ticketError } = await supabase
+          .from('tickets')
+          .insert(ticketData)
+          .select()
+          .single();
+        
+        if (ticketError) {
+          console.error('❌ Erro ao criar ticket:', {
+            error: ticketError,
+            message: ticketError.message,
+            details: ticketError.details,
+            hint: ticketError.hint,
+            code: ticketError.code
+          });
+          continue;
+        }
+        
+        ticketsCriados++;
+        console.log(`✅ Ticket criado: ${novoTicket.id}`);
+        
+        // Tentar atribuir técnico automaticamente
+        try {
+          const tecnicoAtribuido = await this.atribuirTecnicoInteligente(novoTicket.id, cronogramaAny.contrato?.tipo_produto);
+          
+          if (tecnicoAtribuido) {
+            tecnicosAtribuidos++;
+            console.log(`👤 Técnico atribuído: ${tecnicoAtribuido.nome}`);
+          } else {
+            console.log('⚠️ Nenhum técnico disponível para atribuição');
+          }
+        } catch (atribuicaoError) {
+          console.error('❌ Erro ao atribuir técnico:', atribuicaoError);
+        }
+      }
+      
+      console.log(`🎯 Processamento concluído: ${ticketsCriados} tickets criados, ${tecnicosAtribuidos} técnicos atribuídos`);
+      
+      return { ticketsCriados, tecnicosAtribuidos };
+      
+    } catch (error) {
+      console.error('❌ Erro geral ao verificar cronogramas vencidos:', error);
+      return { ticketsCriados: 0, tecnicosAtribuidos: 0 };
+    }
+  },
+
   // ✅ NOVO: Obter cronograma de manutenção por contrato
   async getCronogramaManutencao(contratoId: string): Promise<CronogramaManutencao[]> {
     try {
@@ -993,7 +1298,10 @@ export const db = {
         .from('cronograma_manutencao')
         .select(`
           *,
-          contrato:contratos(*)
+          contrato:contratos(
+            *,
+            cliente:clientes(*)
+          )
         `)
         .eq('contrato_id', contratoId)
         .order('proxima_manutencao', { ascending: true });
@@ -1003,7 +1311,7 @@ export const db = {
         throw new Error(`Erro ao buscar cronograma: ${error.message}`);
       }
       
-      return data || [];
+      return (data as unknown as any[]) || [];
     } catch (error) {
       console.error('Exceção ao buscar cronograma por contrato:', error);
       throw error;
@@ -1019,7 +1327,10 @@ export const db = {
         .from('historico_manutencao')
         .select(`
           *,
-          contrato:contratos(*),
+          contrato:contratos(
+            *,
+            cliente:clientes(*)
+          ),
           ticket:tickets(*)
         `)
         .order('data_realizada', { ascending: false });
@@ -1035,7 +1346,7 @@ export const db = {
         throw new Error(`Erro ao buscar histórico: ${error.message}`);
       }
       
-      return data || [];
+      return (data as unknown as any[]) || [];
     } catch (error) {
       console.error('Exceção ao buscar histórico:', error);
       throw error;
@@ -1070,7 +1381,7 @@ export const db = {
   },
 
   // ✅ DEPRECATED: Criar notificação para manutenção programada (substituído por criarNotificacoesEmLote)
-  async criarNotificacaoManutencao(cronograma: any): Promise<void> {
+  async criarNotificacaoManutencao(cronograma: CronogramaManutencao): Promise<void> {
     console.warn('⚠️ criarNotificacaoManutencao está deprecated. Use criarNotificacoesEmLote()');
     try {
       const supabase = createSupabaseClient();
@@ -1087,10 +1398,10 @@ export const db = {
         
         // Alternativa: Criar um ticket com status 'pendente'
         const notificacaoTicket = {
-          cliente_id: cronograma.contrato.cliente_id,
+          cliente_id: cronograma.contrato?.cliente_id,
           contrato_id: cronograma.contrato_id,
           titulo: `AVISO: Manutenção ${cronograma.tipo_manutencao} em breve`,
-          descricao: `Manutenção ${cronograma.tipo_manutencao} programada para ${cronograma.proxima_manutencao}. Contrato: ${cronograma.contrato.numero}. Por favor, prepare-se com antecedência.`,
+          descricao: `Manutenção ${cronograma.tipo_manutencao} programada para ${cronograma.proxima_manutencao}. Contrato: ${cronograma.contrato?.numero || 'N/A'}. Por favor, prepare-se com antecedência.`,
           tipo: 'manutencao',
           prioridade: 'baixa',
           status: 'pendente'
@@ -1111,10 +1422,10 @@ export const db = {
       const notificacao = {
         tipo: 'manutencao_programada',
         titulo: `Manutenção ${cronograma.tipo_manutencao} programada`,
-        mensagem: `Manutenção ${cronograma.tipo_manutencao} programada para ${cronograma.proxima_manutencao}. Contrato: ${cronograma.contrato.numero}`,
+        mensagem: `Manutenção ${cronograma.tipo_manutencao} programada para ${cronograma.proxima_manutencao}. Contrato: ${cronograma.contrato?.numero || 'N/A'}`,
         data_programada: cronograma.proxima_manutencao,
         contrato_id: cronograma.contrato_id,
-        cliente_id: cronograma.contrato.cliente_id,
+        cliente_id: cronograma.contrato?.cliente_id,
         lida: false,
         prioridade: cronograma.tipo_manutencao === 'corretiva' ? 'alta' : 'media'
       };
@@ -1134,6 +1445,48 @@ export const db = {
     }
   },
 
+  // Função para buscar localizações com dados do usuário (simula RPC)
+  async getTecnicoLocationsWithUsers(): Promise<any[]> {
+    const supabase = createSupabaseClient();
+    const { data, error } = await supabase
+      .from('tecnico_locations')
+      .select(`
+        tecnico_id,
+        latitude,
+        longitude,
+        accuracy,
+        timestamp,
+        updated_at,
+        tecnico:users(
+          name,
+          email,
+          especialidade,
+          is_online,
+          last_seen,
+          disponibilidade
+        )
+      `)
+      .order('updated_at', { ascending: false });
+    
+    if (error) throw error;
+    
+    // Transformar dados para o formato esperado
+    return (data as any[]).map(loc => ({
+      tecnico_id: loc.tecnico_id,
+      latitude: loc.latitude,
+      longitude: loc.longitude,
+      accuracy: loc.accuracy,
+      timestamp: loc.timestamp,
+      updated_at: loc.updated_at,
+      name: loc.tecnico?.name,
+      email: loc.tecnico?.email,
+      especialidade: loc.tecnico?.especialidade,
+      is_online: loc.tecnico?.is_online,
+      last_seen: loc.tecnico?.last_seen,
+      disponibilidade: loc.tecnico?.disponibilidade
+    }));
+  },
+
   // Rastreamento de técnicos em tempo real
   async updateTecnicoLocation(location: { 
     tecnico_id: string; 
@@ -1143,13 +1496,16 @@ export const db = {
     timestamp: string 
   }): Promise<unknown> {
     try {
-      console.log('📍 Atualizando localização para tecnico_id:', location.tecnico_id);
-      console.log('📍 Dados:', { 
-        lat: location.latitude, 
-        lng: location.longitude, 
-        accuracy: location.accuracy,
-        timestamp: location.timestamp 
-      });
+      // Log apenas em modo debug ou a cada 10 atualizações
+      if (Math.random() < 0.1) { // 10% de chance de log
+        console.log('📍 Atualizando localização para tecnico_id:', location.tecnico_id);
+        console.log('📍 Dados:', { 
+          lat: location.latitude, 
+          lng: location.longitude, 
+          accuracy: location.accuracy,
+          timestamp: location.timestamp 
+        });
+      }
       
       const supabase = createSupabaseClient();
       
@@ -1166,7 +1522,7 @@ export const db = {
       }
       
       // Usar upsert para evitar problemas de unique constraint
-      const locationData: any = {
+      const locationData: { tecnico_id: string; latitude: number; longitude: number; accuracy?: number; timestamp: string; updated_at: string } = {
         tecnico_id: location.tecnico_id,
         latitude: location.latitude,
         longitude: location.longitude,
@@ -1211,14 +1567,20 @@ export const db = {
             throw new Error(`Falha ao fazer upsert (sem accuracy): ${retryError.message}`);
           }
 
-          console.log('✅ Localização atualizada sem accuracy para:', location.tecnico_id);
+          // Log reduzido
+          if (Math.random() < 0.1) {
+            console.log('✅ Localização atualizada sem accuracy para:', location.tecnico_id);
+          }
           return retryData;
         }
         
         throw new Error(`Falha ao atualizar localização: ${upsertError.message}`);
       }
       
-      console.log('✅ Localização atualizada com sucesso para:', location.tecnico_id);
+      // Log reduzido
+      if (Math.random() < 0.1) {
+        console.log('✅ Localização atualizada com sucesso para:', location.tecnico_id);
+      }
       return upsertData;
     } catch (error) {
       console.error('❌ Exceção ao atualizar localização:', error);
@@ -1248,7 +1610,7 @@ export const db = {
     }
   },
 
-  async getTecnicoLocation(tecnico_id: string): Promise<any> {
+  async getTecnicoLocation(tecnico_id: string): Promise<unknown> {
     try {
       // Não precisamos mais validar se é UUID, pois agora é TEXT
       
@@ -1260,14 +1622,14 @@ export const db = {
         .single();
 
       if (error && error.code !== 'PGRST116') throw error; // Ignora erro se não encontrar
-      return data || null;
+      return (data as unknown as any) || null;
     } catch (error) {
       console.error('Erro ao buscar localização:', error);
       throw error;
     }
   },
 
-  async getAllTecnicoLocations(): Promise<any> {
+  async getAllTecnicoLocations(): Promise<unknown> {
     try {
       const supabase = createSupabaseClient();
       
@@ -1289,7 +1651,7 @@ export const db = {
         throw error;
       }
       
-      return data || [];
+      return (data as unknown as any[]) || [];
     } catch (error) {
       console.error('Erro ao buscar localizações:', error);
       throw error;

@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { Button } from '@/components/ui/button';
-import { Camera } from 'lucide-react';
+// import { Camera } from 'lucide-react';
 
 export function SimpleCameraTest() {
   const [isActive, setIsActive] = useState(false);

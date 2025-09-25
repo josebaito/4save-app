@@ -1,11 +1,12 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter, useParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 import { 
   ArrowLeft,
   FileText,
@@ -16,12 +17,12 @@ import {
   User,
   MapPin,
   Camera,
-  Video,
+  // Video,
   FileImage
 } from 'lucide-react';
 import { TecnicoLayout } from '@/components/tecnico/TecnicoLayout';
 import { db } from '@/lib/db/supabase';
-import type { Ticket } from '@/types';
+import type { Ticket, RelatorioTecnico } from '@/types';
 import { toast } from 'sonner';
 
 export default function TicketViewPage() {
@@ -31,41 +32,10 @@ export default function TicketViewPage() {
   const ticketId = params.id as string;
   
   const [ticket, setTicket] = useState<Ticket | null>(null);
-  const [relatorio, setRelatorio] = useState<any>(null);
+  const [relatorio, setRelatorio] = useState<RelatorioTecnico | null>(null);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (status === 'loading') return;
-    
-    if (!session || session.user?.type !== 'tecnico') {
-      router.push('/');
-      return;
-    }
-
-    loadTicketData();
-  }, [session, status, router]);
-
-  // Heartbeat para manter status online
-  useEffect(() => {
-    if (!session?.user?.id || session.user.type !== 'tecnico') return;
-    
-    const heartbeat = async () => {
-      try {
-        await db.updateTecnicoOnlineStatus(session.user.id, true);
-      } catch (error) {
-        console.error('Erro no heartbeat:', error);
-      }
-    };
-    
-    // Heartbeat a cada 30 segundos
-    const interval = setInterval(heartbeat, 30000);
-    
-    return () => {
-      clearInterval(interval);
-    };
-  }, [session?.user?.id]);
-
-  const loadTicketData = async () => {
+  const loadTicketData = useCallback(async () => {
     try {
       // Carregar ticket
       const tickets = await db.getTicketsByTecnico(session?.user?.id || '');
@@ -98,7 +68,39 @@ export default function TicketViewPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.user?.id, ticketId, router]);
+
+  useEffect(() => {
+    if (status === 'loading') return;
+    
+    if (!session || session.user?.type !== 'tecnico') {
+      router.push('/');
+      return;
+    }
+
+    loadTicketData();
+  }, [session, status, router, loadTicketData]);
+
+  // Heartbeat para manter status online
+  useEffect(() => {
+    if (!session?.user?.id || session.user.type !== 'tecnico') return;
+    
+    const heartbeat = async () => {
+      try {
+        await db.updateTecnicoOnlineStatus(session.user.id, true);
+      } catch (error) {
+        console.error('Erro no heartbeat:', error);
+      }
+    };
+    
+    // Heartbeat a cada 30 segundos
+    const interval = setInterval(heartbeat, 30000);
+    
+    return () => {
+      clearInterval(interval);
+    };
+  }, [session?.user?.id, session?.user?.type]);
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -220,7 +222,7 @@ export default function TicketViewPage() {
                 } else {
                   toast.error('Erro ao gerar PDF');
                 }
-              } catch (error) {
+              } catch {
                 toast.error('Erro ao gerar PDF');
               }
             }}
@@ -381,10 +383,12 @@ export default function TicketViewPage() {
                               <h6 className="text-sm font-medium text-gray-700 mb-2">Fotos dos Painéis</h6>
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                                 {relatorio.dados_especificos.fotos_paineis.map((foto: string, index: number) => (
-                                  <img
+                                  <Image
                                     key={index}
                                     src={foto}
                                     alt={`Painel ${index + 1}`}
+                                    width={200}
+                                    height={80}
                                     className="w-full h-20 object-cover rounded border"
                                   />
                                 ))}
@@ -425,10 +429,12 @@ export default function TicketViewPage() {
                               <h6 className="text-sm font-medium text-gray-700 mb-2">Fotos dos Inversores</h6>
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                                 {relatorio.dados_especificos.fotos_inversores.map((foto: string, index: number) => (
-                                  <img
+                                  <Image
                                     key={index}
                                     src={foto}
                                     alt={`Inversor ${index + 1}`}
+                                    width={200}
+                                    height={80}
                                     className="w-full h-20 object-cover rounded border"
                                   />
                                 ))}
@@ -469,10 +475,12 @@ export default function TicketViewPage() {
                               <h6 className="text-sm font-medium text-gray-700 mb-2">Fotos das Baterias</h6>
                               <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                                 {relatorio.dados_especificos.fotos_baterias.map((foto: string, index: number) => (
-                                  <img
+                                  <Image
                                     key={index}
                                     src={foto}
                                     alt={`Bateria ${index + 1}`}
+                                    width={200}
+                                    height={80}
                                     className="w-full h-20 object-cover rounded border"
                                   />
                                 ))}
@@ -509,10 +517,12 @@ export default function TicketViewPage() {
                         </h5>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                           {relatorio.dados_especificos.fotos_trabalho_maquinas.map((foto: string, index: number) => (
-                            <img
+                            <Image
                               key={index}
                               src={foto}
                               alt={`Máquina ${index + 1}`}
+                              width={200}
+                              height={80}
                               className="w-full h-20 object-cover rounded border"
                             />
                           ))}
@@ -589,9 +599,11 @@ export default function TicketViewPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {relatorio.fotos_antes.map((foto: string, index: number) => (
                   <div key={index} className="relative">
-                    <img
+                    <Image
                       src={foto}
                       alt={`Foto antes ${index + 1}`}
+                      width={200}
+                      height={128}
                       className="w-full h-32 object-cover rounded-lg border"
                     />
                     <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
@@ -617,9 +629,11 @@ export default function TicketViewPage() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                 {relatorio.fotos_depois.map((foto: string, index: number) => (
                   <div key={index} className="relative">
-                    <img
+                    <Image
                       src={foto}
                       alt={`Foto depois ${index + 1}`}
+                      width={200}
+                      height={128}
                       className="w-full h-32 object-cover rounded-lg border"
                     />
                     <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
@@ -646,9 +660,11 @@ export default function TicketViewPage() {
                 {relatorio?.assinatura_tecnico && (
                   <div>
                     <h4 className="font-semibold text-gray-900 mb-2">Assinatura do Técnico</h4>
-                    <img
+                    <Image
                       src={relatorio.assinatura_tecnico}
                       alt="Assinatura do técnico"
+                      width={300}
+                      height={150}
                       className="w-full max-w-xs h-auto border rounded-lg"
                     />
                   </div>
@@ -656,9 +672,11 @@ export default function TicketViewPage() {
                 {relatorio?.assinatura_cliente && (
                   <div>
                     <h4 className="font-semibold text-gray-900 mb-2">Assinatura do Cliente</h4>
-                    <img
+                    <Image
                       src={relatorio.assinatura_cliente}
                       alt="Assinatura do cliente"
+                      width={300}
+                      height={150}
                       className="w-full max-w-xs h-auto border rounded-lg"
                     />
                   </div>

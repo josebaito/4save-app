@@ -1,4 +1,4 @@
-import { useState } from 'react';
+// import { useState } from 'react';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -16,7 +16,7 @@ interface FormularioSolarBateriasProps {
 export function FormularioSolarBaterias({ dados, onChange, disabled = false }: FormularioSolarBateriasProps) {
   console.log('FormularioSolarBaterias - dados recebidos:', dados);
   
-  const updateField = (field: keyof DadosEspecificosProduto, value: any) => {
+  const updateField = (field: keyof DadosEspecificosProduto, value: unknown) => {
     console.log('FormularioSolarBaterias - updateField:', field, value);
     onChange({
       ...dados,

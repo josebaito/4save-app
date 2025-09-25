@@ -63,27 +63,34 @@ export default function TecnicoTicketsPage() {
     }
 
     loadTickets();
-  }, [session, status, router]);
+  }, [session, status, router, loadTickets]);
 
-  // Heartbeat para manter status online
+  // Heartbeat otimizado para manter status online
   useEffect(() => {
     if (!session?.user?.id || session.user.type !== 'tecnico') return;
     
+    let heartbeatCount = 0;
     const heartbeat = async () => {
       try {
         await db.updateTecnicoOnlineStatus(session.user.id, true);
+        heartbeatCount++;
+        
+        // Log apenas ocasionalmente para reduzir spam
+        if (heartbeatCount % 5 === 0) {
+          console.log(`Tickets page heartbeat #${heartbeatCount}`);
+        }
       } catch (error) {
         console.error('Erro no heartbeat:', error);
       }
     };
     
-    // Heartbeat a cada 30 segundos
-    const interval = setInterval(heartbeat, 30000);
+    // Heartbeat a cada 2 minutos (reduzido de 30s)
+    const interval = setInterval(heartbeat, 120000);
     
     return () => {
       clearInterval(interval);
     };
-  }, [session?.user?.id]);
+  }, [session?.user?.id, session?.user?.type]);
 
   const handleStartTicket = async (ticketId: string) => {
     try {
@@ -118,43 +125,6 @@ export default function TecnicoTicketsPage() {
     }
   };
 
-  // Função para visualizar relatório
-  const handleViewReport = async (ticket: Ticket) => {
-    try {
-      // Buscar relatório do ticket
-      const relatorio = await db.getRelatorioByTicket(ticket.id);
-      
-      if (!relatorio) {
-        toast.error('Relatório não encontrado para este ticket');
-        return;
-      }
-
-      // Gerar PDF do relatório
-      const response = await fetch('/api/generate-pdf', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ ticketId: ticket.id }),
-      });
-
-      if (response.ok) {
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
-        
-        // Abrir PDF em nova aba
-        window.open(url, '_blank');
-        window.URL.revokeObjectURL(url);
-      } else {
-        const errorText = await response.text();
-        console.error('Erro ao gerar PDF:', response.status, errorText);
-        toast.error('Erro ao gerar PDF do relatório');
-      }
-    } catch (error) {
-      console.error('Erro ao visualizar relatório:', error);
-      toast.error('Erro ao visualizar relatório');
-    }
-  };
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -236,7 +206,7 @@ export default function TecnicoTicketsPage() {
     <TecnicoLayout>
       <div className="p-4 md:p-6 space-y-6">
         <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold">Meus Tickets</h1>
+          <h1 className="text-2xl font-bold text-white">Meus Tickets</h1>
           <Button onClick={loadTickets} variant="outline" className="gap-2">
             <RefreshCw className="h-4 w-4" />
             Atualizar
@@ -247,7 +217,7 @@ export default function TecnicoTicketsPage() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div>
             <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-500" />
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
               <Input
                 type="text"
                 placeholder="Buscar por título ou cliente..."
@@ -296,23 +266,23 @@ export default function TecnicoTicketsPage() {
         {/* Lista de Tickets */}
         {loading ? (
           <div className="text-center py-8">
-            <p className="text-gray-500">Carregando tickets...</p>
+            <p className="text-slate-300">Carregando tickets...</p>
           </div>
         ) : filteredTickets.length === 0 ? (
           <Card>
             <CardContent className="pt-6 text-center py-8">
-              <p className="text-gray-500">Nenhum ticket encontrado.</p>
+              <p className="text-slate-300">Nenhum ticket encontrado.</p>
             </CardContent>
           </Card>
         ) : (
           <div className="grid gap-4">
             {filteredTickets.map((ticket) => (
-              <Card key={ticket.id} className="overflow-hidden">
+              <Card key={ticket.id} className="overflow-hidden bg-slate-800 border-slate-700">
                 <CardContent className="p-0">
                   <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
                     <div className="flex-grow space-y-2">
                       <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                        <h3 className="font-semibold text-lg">{ticket.titulo}</h3>
+                        <h3 className="font-semibold text-lg text-white">{ticket.titulo}</h3>
                         <div className="flex gap-2">
                           <Badge className={getStatusColor(ticket.status)}>
                             <span className="flex items-center gap-1">
@@ -331,22 +301,22 @@ export default function TecnicoTicketsPage() {
                         </div>
                       </div>
                       
-                      <div className="text-sm text-gray-500">
-                        Cliente: <span className="font-medium">{ticket.cliente?.nome}</span>
+                      <div className="text-sm text-slate-300">
+                        Cliente: <span className="font-medium text-slate-200">{ticket.cliente?.nome}</span>
                       </div>
                       
-                      <div className="text-sm text-gray-500 flex items-center gap-1">
+                      <div className="text-sm text-slate-300 flex items-center gap-1">
                         <CalendarClock className="h-3.5 w-3.5" />
                         Criado em: {formatDate(ticket.created_at)}
                       </div>
 
                       {/* Motivo do cancelamento */}
                       {ticket.status === 'cancelado' && ticket.motivo_cancelamento && (
-                        <div className="flex items-start gap-2 p-3 bg-red-50 border border-red-200 rounded-lg">
-                          <AlertTriangle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+                        <div className="flex items-start gap-2 p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
+                          <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
                           <div className="text-sm">
-                            <p className="font-medium text-red-800">Motivo do cancelamento:</p>
-                            <p className="text-red-700 mt-1">{ticket.motivo_cancelamento}</p>
+                            <p className="font-medium text-red-300">Motivo do cancelamento:</p>
+                            <p className="text-red-200 mt-1">{ticket.motivo_cancelamento}</p>
                           </div>
                         </div>
                       )}
@@ -379,7 +349,7 @@ export default function TecnicoTicketsPage() {
                       )}
                       
                       {ticket.status === 'cancelado' && (
-                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                        <div className="flex items-center gap-2 text-sm text-slate-300">
                           <Info className="h-4 w-4" />
                           <span>Aguardando reativação pelo admin</span>
                         </div>
@@ -422,12 +392,12 @@ export default function TecnicoTicketsPage() {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="h-4 w-4 text-yellow-600 mt-0.5 flex-shrink-0" />
+                  <AlertTriangle className="h-4 w-4 text-yellow-400 mt-0.5 flex-shrink-0" />
                   <div className="text-sm">
-                    <p className="font-medium text-yellow-800">Atenção!</p>
-                    <p className="text-yellow-700 mt-1">
+                    <p className="font-medium text-yellow-300">Atenção!</p>
+                    <p className="text-yellow-200 mt-1">
                       Ao cancelar este ticket, ele será enviado para revisão do administrador. 
                       O ticket só poderá ser reativado após aprovação.
                     </p>
@@ -436,7 +406,7 @@ export default function TecnicoTicketsPage() {
               </div>
               
               <div>
-                <label className="text-sm font-medium text-gray-700 mb-2 block">
+                <label className="text-sm font-medium mb-2 block">
                   Motivo do cancelamento *
                 </label>
                 <Textarea

@@ -5,10 +5,10 @@ import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Eye, Download, FileText, User, Calendar, Camera, Clock, MapPin, CheckCircle, XCircle, AlertTriangle } from 'lucide-react';
+import { Search, Download, FileText, MapPin, CheckCircle, XCircle } from 'lucide-react';
+import Image from 'next/image';
 import { LoadingSpinner } from '@/components/ui/loading';
 import { RelatorioCard } from '@/components/admin/RelatorioCard';
 import { db } from '@/lib/db/supabase';
@@ -26,7 +26,12 @@ export default function RelatoriosPage() {
   const [filterTipo, setFilterTipo] = useState('all');
   const [selectedRelatorio, setSelectedRelatorio] = useState<RelatorioTecnico | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [qualidadeRelatorio, setQualidadeRelatorio] = useState<any>(null);
+  const [qualidadeRelatorio, setQualidadeRelatorio] = useState<{
+    checklist_completo: boolean;
+    fotos_minimas_atingidas: boolean;
+    tempo_dentro_limite: boolean;
+    observacoes_qualidade: string[];
+  } | null>(null);
   const [isVerificandoQualidade, setIsVerificandoQualidade] = useState(false);
 
   useEffect(() => {
@@ -88,7 +93,7 @@ export default function RelatoriosPage() {
 
   const handleAprovarRelatorio = async (relatorio: RelatorioTecnico) => {
     try {
-      await db.aprovarRelatorio(relatorio.id, 'admin'); // TODO: usar ID real do admin
+      await db.aprovarRelatorio(relatorio.id);
       toast.success('Relatório aprovado!');
       loadData();
       setIsDialogOpen(false);
@@ -212,29 +217,29 @@ export default function RelatoriosPage() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Relatórios Técnicos</h1>
-            <p className="text-gray-600">Visualize e exporte todos os relatórios de atendimentos</p>
+            <h1 className="text-3xl font-bold text-white">Relatórios Técnicos</h1>
+            <p className="text-slate-400">Visualize e exporte todos os relatórios de atendimentos</p>
           </div>
         </div>
 
         {/* Filters */}
-        <Card>
+        <Card className="bg-slate-800/50 border-slate-700/50">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
               <div className="relative sm:col-span-2 lg:col-span-1">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
                 <Input
                   placeholder="Buscar por ticket, cliente ou técnico..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
                 />
               </div>
               <Select value={filterCliente} onValueChange={setFilterCliente}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
                   <SelectValue placeholder="Filtrar por cliente" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-slate-800 border-slate-700">
                   <SelectItem value="all">Todos os clientes</SelectItem>
                   {clientes.map((cliente) => (
                     <SelectItem key={cliente.id} value={cliente.id}>
@@ -244,10 +249,10 @@ export default function RelatoriosPage() {
                 </SelectContent>
               </Select>
               <Select value={filterTecnico} onValueChange={setFilterTecnico}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
                   <SelectValue placeholder="Filtrar por técnico" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-slate-800 border-slate-700">
                   <SelectItem value="all">Todos os técnicos</SelectItem>
                   {tecnicos.map((tecnico) => (
                     <SelectItem key={tecnico.id} value={tecnico.id}>
@@ -257,10 +262,10 @@ export default function RelatoriosPage() {
                 </SelectContent>
               </Select>
               <Select value={filterTipo} onValueChange={setFilterTipo}>
-                <SelectTrigger>
+                <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
                   <SelectValue placeholder="Filtrar por tipo" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-slate-800 border-slate-700">
                   <SelectItem value="all">Todos os tipos</SelectItem>
                   <SelectItem value="instalacao">Instalação</SelectItem>
                   <SelectItem value="manutencao">Manutenção</SelectItem>
@@ -274,7 +279,7 @@ export default function RelatoriosPage() {
                   setFilterTecnico('all');
                   setFilterTipo('all');
                 }}
-                className="w-full sm:w-auto"
+                className="w-full sm:w-auto border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
               >
                 Limpar Filtros
               </Button>
@@ -283,9 +288,9 @@ export default function RelatoriosPage() {
         </Card>
 
         {/* Relatórios List */}
-        <Card>
+        <Card className="bg-slate-800/50 border-slate-700/50">
           <CardHeader>
-            <CardTitle>
+            <CardTitle className="text-white">
               Relatórios ({filteredRelatorios.length})
             </CardTitle>
           </CardHeader>
@@ -432,10 +437,12 @@ export default function RelatoriosPage() {
                     <h4 className="font-semibold text-gray-900 mb-2">Fotos ANTES do Serviço</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                       {selectedRelatorio.fotos_antes.map((foto, index) => (
-                        <img
+                        <Image
                           key={index}
                           src={foto}
                           alt={`Antes ${index + 1}`}
+                          width={200}
+                          height={128}
                           className="w-full h-24 sm:h-32 object-cover rounded-lg cursor-pointer hover:opacity-80"
                           onClick={() => window.open(foto, '_blank')}
                         />
@@ -460,10 +467,12 @@ export default function RelatoriosPage() {
                     <h4 className="font-semibold text-gray-900 mb-2">Fotos DEPOIS do Serviço</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                       {selectedRelatorio.fotos_depois.map((foto, index) => (
-                        <img
+                        <Image
                           key={index}
                           src={foto}
                           alt={`Depois ${index + 1}`}
+                          width={200}
+                          height={128}
                           className="w-full h-24 sm:h-32 object-cover rounded-lg cursor-pointer hover:opacity-80"
                           onClick={() => window.open(foto, '_blank')}
                         />
@@ -477,9 +486,11 @@ export default function RelatoriosPage() {
                   <div>
                     <h4 className="font-semibold text-gray-900 mb-2">Assinatura do Cliente</h4>
                     <div className="border rounded-lg p-4 bg-white">
-                      <img
+                      <Image
                         src={selectedRelatorio.assinatura_cliente}
                         alt="Assinatura do Cliente"
+                        width={400}
+                        height={128}
                         className="max-w-md max-h-32 object-contain"
                       />
                     </div>

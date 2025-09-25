@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage } from 'pdf-lib';
+import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage, type Color } from 'pdf-lib';
 import { db } from '@/lib/db/supabase'; // Simulação do seu módulo de banco de dados
-import type { DadosEspecificosProduto } from '@/types'; // Simulação dos seus tipos
+// import type { DadosEspecificosProduto } from '@/types'; // Simulação dos seus tipos
 
 // --- TIPOS E INTERFACES (Melhora a organização e o type safety) ---
 
@@ -25,7 +25,7 @@ interface ReportData {
     observacoes_iniciais?: string;
     diagnostico?: string;
     acoes_realizadas?: string;
-    dados_especificos?: DadosEspecificosProduto;
+    dados_especificos?: Record<string, unknown>;
     tipo_produto?: string;
     localizacao_gps?: string;
     fotos_antes?: string[];
@@ -118,7 +118,7 @@ class LayoutManager {
  * @param text O conteúdo do texto.
  * @param options Opções de formatação como posição, fonte, tamanho e cor.
  */
-function drawText(layout: LayoutManager, text: string, options: { x: number; font: PDFFont; size: number; color?: any }) {
+function drawText(layout: LayoutManager, text: string, options: { x: number; font: PDFFont; size: number; color?: Color }) {
   layout.getPage().drawText(text, {
     x: options.x,
     y: layout.getY(),
@@ -225,7 +225,7 @@ async function embedImageFromUrl(pdfDoc: PDFDocument, imageUrl: string): Promise
     console.log(`Debug - Fazendo fetch da imagem: ${imageUrl}`);
     const response = await fetch(imageUrl, { 
       timeout: 10000 // 10 segundos de timeout
-    } as any);
+    } as RequestInit);
     
     if (!response.ok) {
         console.error(`Debug - Falha ao buscar imagem: ${response.status} ${response.statusText}`);
@@ -434,26 +434,26 @@ async function drawAttachmentsPage(layout: LayoutManager, data: ReportData, pdfD
 
     // Adicionar imagens dos dados específicos se existirem
     if (data.relatorio.dados_especificos) {
-      const dados = data.relatorio.dados_especificos as any;
+      const dados = data.relatorio.dados_especificos as unknown as Record<string, unknown>;
       
-      if (dados.fotos_paineis && dados.fotos_paineis.length > 0) {
-        await drawImageGroup('Fotos dos Painéis', dados.fotos_paineis);
+      if (dados.fotos_paineis && Array.isArray(dados.fotos_paineis) && dados.fotos_paineis.length > 0) {
+        await drawImageGroup('Fotos dos Painéis', dados.fotos_paineis as string[]);
       }
       
-      if (dados.fotos_inversores && dados.fotos_inversores.length > 0) {
-        await drawImageGroup('Fotos dos Inversores', dados.fotos_inversores);
+      if (dados.fotos_inversores && Array.isArray(dados.fotos_inversores) && dados.fotos_inversores.length > 0) {
+        await drawImageGroup('Fotos dos Inversores', dados.fotos_inversores as string[]);
       }
       
-      if (dados.fotos_baterias && dados.fotos_baterias.length > 0) {
-        await drawImageGroup('Fotos das Baterias', dados.fotos_baterias);
+      if (dados.fotos_baterias && Array.isArray(dados.fotos_baterias) && dados.fotos_baterias.length > 0) {
+        await drawImageGroup('Fotos das Baterias', dados.fotos_baterias as string[]);
       }
       
-      if (dados.fotos_cabos && dados.fotos_cabos.length > 0) {
-        await drawImageGroup('Fotos dos Cabos', dados.fotos_cabos);
+      if (dados.fotos_cabos && Array.isArray(dados.fotos_cabos) && dados.fotos_cabos.length > 0) {
+        await drawImageGroup('Fotos dos Cabos', dados.fotos_cabos as string[]);
       }
       
-      if (dados.fotos_trabalho_maquinas && dados.fotos_trabalho_maquinas.length > 0) {
-        await drawImageGroup('Fotos do Trabalho com Máquinas', dados.fotos_trabalho_maquinas);
+      if (dados.fotos_trabalho_maquinas && Array.isArray(dados.fotos_trabalho_maquinas) && dados.fotos_trabalho_maquinas.length > 0) {
+        await drawImageGroup('Fotos do Trabalho com Máquinas', dados.fotos_trabalho_maquinas as string[]);
       }
     }
 
@@ -585,7 +585,7 @@ export async function POST(request: NextRequest) {
       ...ticket, 
       relatorio: {
         ...relatorio,
-        dados_especificos: relatorio.dados_especificos as any
+        dados_especificos: relatorio.dados_especificos as unknown as Record<string, unknown>
       }
     };
 
@@ -598,7 +598,7 @@ export async function POST(request: NextRequest) {
     
     // Verificar se há dados específicos com imagens
     if (reportData.relatorio.dados_especificos) {
-      const dados = reportData.relatorio.dados_especificos as any;
+      const dados = reportData.relatorio.dados_especificos as Record<string, unknown>;
       console.log('Debug - Fotos painéis:', dados.fotos_paineis);
       console.log('Debug - Fotos inversores:', dados.fotos_inversores);
       console.log('Debug - Fotos baterias:', dados.fotos_baterias);
@@ -632,19 +632,19 @@ export async function POST(request: NextRequest) {
     // Seção de detalhes específicos (se houver)
     if (reportData.relatorio.dados_especificos) {
       console.log('Debug PDF - Processando dados específicos...');
-      const dados = reportData.relatorio.dados_especificos as any;
+      const dados = reportData.relatorio.dados_especificos as Record<string, unknown>;
       
       // Adicionar seções específicas baseadas no tipo de produto
       if (dados.localizacao_paineis) {
-        drawReportSection(layout, 'LOCALIZAÇÃO DOS PAINÉIS', dados.localizacao_paineis, fonts, reportData);
+        drawReportSection(layout, 'LOCALIZAÇÃO DOS PAINÉIS', dados.localizacao_paineis as string, fonts, reportData);
       }
       
       if (dados.localizacao_inversores) {
-        drawReportSection(layout, 'LOCALIZAÇÃO DOS INVERSORES', dados.localizacao_inversores, fonts, reportData);
+        drawReportSection(layout, 'LOCALIZAÇÃO DOS INVERSORES', dados.localizacao_inversores as string, fonts, reportData);
       }
       
       if (dados.localizacao_baterias) {
-        drawReportSection(layout, 'LOCALIZAÇÃO DAS BATERIAS', dados.localizacao_baterias, fonts, reportData);
+        drawReportSection(layout, 'LOCALIZAÇÃO DAS BATERIAS', dados.localizacao_baterias as string, fonts, reportData);
       }
       
       console.log('Debug PDF - Dados específicos processados');

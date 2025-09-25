@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/supabase';
 import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
-import { format, parseISO, isAfter, isBefore, subMonths } from 'date-fns';
+import { format, parseISO, isAfter, subMonths } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
 export async function GET(request: Request) {
@@ -71,8 +71,7 @@ export async function GET(request: Request) {
     }
     
     // Buscar relatórios técnicos associados a tickets de manutenção
-    const relatoriosIds = tickets.map(t => t.relatorio?.id).filter(Boolean);
-    let relatorios = [];
+    const relatorios = [];
 
     // Por enquanto, vamos usar apenas os dados dos tickets
     // TODO: Implementar busca de relatórios técnicos quando necessário

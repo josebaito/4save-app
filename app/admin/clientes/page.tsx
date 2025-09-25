@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Search, Edit, Eye } from 'lucide-react';
 import { db } from '@/lib/db/supabase';
 import type { Cliente } from '@/types';
@@ -122,65 +122,66 @@ export default function ClientesPage() {
         {/* Header */}
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">Clientes</h1>
-            <p className="text-gray-600">Gerencie os clientes do sistema</p>
+            <h1 className="text-3xl font-bold text-white">Clientes</h1>
+            <p className="text-slate-400">Gerencie os clientes do sistema</p>
           </div>
-          <Button onClick={handleNewClient} className="flex items-center gap-2">
+          <Button onClick={handleNewClient} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
             <Plus className="h-4 w-4" />
             Novo Cliente
           </Button>
         </div>
 
         {/* Search */}
-        <Card>
+        <Card className="bg-slate-800/50 border-slate-700/50">
           <CardContent className="pt-6">
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
               <Input
                 placeholder="Buscar por nome, email ou CNPJ..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
               />
             </div>
           </CardContent>
         </Card>
 
         {/* Clientes List */}
-        <Card>
+        <Card className="bg-slate-800/50 border-slate-700/50">
           <CardHeader>
-            <CardTitle>
+            <CardTitle className="text-white">
               Clientes ({filteredClientes.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
               </div>
             ) : filteredClientes.length > 0 ? (
               <div className="space-y-4">
                 {filteredClientes.map((cliente) => (
                   <div
                     key={cliente.id}
-                    className="flex items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors"
+                    className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl hover:bg-slate-700/50 transition-colors border border-slate-600/30"
                   >
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900">{cliente.nome}</h4>
-                      <p className="text-sm text-gray-600">{cliente.email}</p>
-                      <p className="text-sm text-gray-500">
+                      <h4 className="font-semibold text-white">{cliente.nome}</h4>
+                      <p className="text-sm text-slate-300">{cliente.email}</p>
+                      <p className="text-sm text-slate-400">
                         {cliente.telefone} • {cliente.cnpj || 'CPF'}
                       </p>
-                      <p className="text-xs text-gray-400 mt-1">{cliente.endereco}</p>
+                      <p className="text-xs text-slate-500 mt-1">{cliente.endereco}</p>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Badge variant="outline">
+                      <Badge className="bg-slate-600/50 text-slate-300 border-slate-500/50">
                         {new Date(cliente.created_at).toLocaleDateString('pt-BR')}
                       </Badge>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleView(cliente)}
+                        className="text-slate-400 hover:text-white hover:bg-slate-600"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -188,6 +189,7 @@ export default function ClientesPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(cliente)}
+                        className="text-slate-400 hover:text-white hover:bg-slate-600"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -196,8 +198,8 @@ export default function ClientesPage() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-gray-500">
-                <p>Nenhum cliente encontrado</p>
+              <div className="text-center py-8 text-slate-500">
+                <p className="text-slate-400">Nenhum cliente encontrado</p>
               </div>
             )}
           </CardContent>
@@ -205,26 +207,27 @@ export default function ClientesPage() {
 
         {/* Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[600px]">
+          <DialogContent className="sm:max-w-[600px] bg-slate-800 border-slate-700">
             <DialogHeader>
-              <DialogTitle>
+              <DialogTitle className="text-white">
                 {isEditing ? 'Editar Cliente' : selectedCliente ? 'Detalhes do Cliente' : 'Novo Cliente'}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="nome">Nome/Razão Social</Label>
+                  <Label htmlFor="nome" className="text-slate-200">Nome/Razão Social</Label>
                   <Input
                     id="nome"
                     value={formData.nome}
                     onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                     required
                     disabled={!isEditing && !!selectedCliente}
+                    className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
+                  <Label htmlFor="email" className="text-slate-200">Email</Label>
                   <Input
                     id="email"
                     type="email"
@@ -232,38 +235,42 @@ export default function ClientesPage() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
                     disabled={!isEditing && !!selectedCliente}
+                    className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
                   />
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="telefone">Telefone</Label>
+                  <Label htmlFor="telefone" className="text-slate-200">Telefone</Label>
                   <Input
                     id="telefone"
                     value={formData.telefone}
                     onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
                     required
                     disabled={!isEditing && !!selectedCliente}
+                    className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="cnpj">CNPJ</Label>
+                  <Label htmlFor="cnpj" className="text-slate-200">CNPJ</Label>
                   <Input
                     id="cnpj"
                     value={formData.cnpj}
                     onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
                     disabled={!isEditing && !!selectedCliente}
+                    className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="endereco">Endereço</Label>
+                <Label htmlFor="endereco" className="text-slate-200">Endereço</Label>
                 <Input
                   id="endereco"
                   value={formData.endereco}
                   onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
                   required
                   disabled={!isEditing && !!selectedCliente}
+                  className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
                 />
               </div>
               {(isEditing || !selectedCliente) && (
@@ -272,10 +279,11 @@ export default function ClientesPage() {
                     type="button"
                     variant="outline"
                     onClick={() => setIsDialogOpen(false)}
+                    className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
                   >
                     Cancelar
                   </Button>
-                  <Button type="submit">
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
                     {isEditing ? 'Atualizar' : 'Criar'}
                   </Button>
                 </div>

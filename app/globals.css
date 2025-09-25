@@ -119,4 +119,14 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Force dark theme for all components */
+  .dark {
+    color-scheme: dark;
+  }
+  
+  /* Override any light theme remnants */
+  [data-theme="light"] {
+    display: none !important;
+  }
 }
