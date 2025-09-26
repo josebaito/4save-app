@@ -10,17 +10,14 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Search, Plus, Edit, Eye, Calendar, Clock, DollarSign, RefreshCw } from 'lucide-react';
+import { Search, Plus, Edit, Eye, Calendar, DollarSign, RefreshCw } from 'lucide-react';
 import { db } from '@/lib/db/supabase';
 import { toast } from 'sonner';
-import type { Contrato, Cliente, TipoProduto, PlanoManutencao, CronogramaManutencao } from '@/types';
-import { format, parseISO, isAfter, isBefore, addDays } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import type { Contrato, Cliente, TipoProduto, PlanoManutencao } from '@/types';
 
 export default function ContratosPage() {
   const [contratos, setContratos] = useState<Contrato[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
-  const [cronogramas, setCronogramas] = useState<CronogramaManutencao[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCliente, setFilterCliente] = useState('all');
@@ -70,15 +67,13 @@ export default function ContratosPage() {
 
   const loadData = async () => {
     try {
-      const [contratosData, clientesData, cronogramasData] = await Promise.all([
+      const [contratosData, clientesData] = await Promise.all([
         db.getContratos(),
-        db.getClientes(),
-        db.getCronogramasManutencao()
+        db.getClientes()
       ]);
 
       setContratos(contratosData);
       setClientes(clientesData);
-      setCronogramas(cronogramasData);
     } catch (error) {
       console.error('Error loading data:', error);
       toast.error('Erro ao carregar dados');
@@ -287,21 +282,6 @@ export default function ContratosPage() {
     setShowPlanoManutencao(false); // ✅ NOVO: Não mostrar plano por padrão
   };
 
-  // ✅ NOVO: Funções para controlar plano de manutenção
-  const handleCriarPlanoManutencao = async () => {
-    if (!contratoCriado) return;
-    
-    try {
-      await db.criarCronogramaManutencao(contratoCriado.id, formData.plano_manutencao);
-      toast.success('Plano de manutenção criado com sucesso!');
-      setPerguntaPlanoDialog(false);
-      setContratoCriado(null);
-      await loadData();
-    } catch (error) {
-      console.error('Erro ao criar plano de manutenção:', error);
-      toast.error('Erro ao criar plano de manutenção');
-    }
-  };
 
   const handleNaoCriarPlano = () => {
     setPerguntaPlanoDialog(false);
@@ -354,33 +334,6 @@ export default function ContratosPage() {
     return new Date(dataFim) < new Date();
   };
 
-  const formatarData = (dataString: string) => {
-    try {
-      return format(parseISO(dataString), 'dd/MM/yyyy', { locale: ptBR });
-    } catch {
-      return 'Data inválida';
-    }
-  };
-
-  const isProxima = (dataString: string) => {
-    try {
-      const data = parseISO(dataString);
-      const hoje = new Date();
-      return isAfter(data, hoje) && isBefore(data, addDays(hoje, 7));
-    } catch {
-      return false;
-    }
-  };
-
-  const isVencida = (dataString: string) => {
-    try {
-      const data = parseISO(dataString);
-      const hoje = new Date();
-      return isBefore(data, hoje);
-    } catch {
-      return false;
-    }
-  };
 
   return (
     <AdminLayout>
@@ -714,7 +667,7 @@ export default function ContratosPage() {
                   {!showPlanoManutencao && (
                     <div className="text-center py-4 text-slate-400">
                       <p>Este contrato {selectedContrato?.plano_manutencao?.inicio_manutencao ? 'tem' : 'não tem'} um plano de manutenção configurado.</p>
-                      <p className="text-sm mt-1">Clique em "Mostrar Plano" para {selectedContrato?.plano_manutencao?.inicio_manutencao ? 'editar' : 'criar'} um plano de manutenção.</p>
+                      <p className="text-sm mt-1">Clique em &quot;Mostrar Plano&quot; para {selectedContrato?.plano_manutencao?.inicio_manutencao ? 'editar' : 'criar'} um plano de manutenção.</p>
                     </div>
                   )}
                 </div>
@@ -904,6 +857,34 @@ export default function ContratosPage() {
                   onClick={() => {
                     setPerguntaPlanoDialog(false);
                     setShowPlanoManutencao(true);
+                    
+                    // ✅ CORRIGIDO: Configurar como edição do contrato criado
+                    if (contratoCriado) {
+                      setSelectedContrato(contratoCriado);
+                      setIsEditing(true);
+                      
+                      // Carregar dados do contrato criado no formulário
+                      setFormData({
+                        cliente_id: contratoCriado.cliente_id,
+                        numero: contratoCriado.numero,
+                        descricao: contratoCriado.descricao,
+                        valor: contratoCriado.valor.toString(),
+                        data_inicio: contratoCriado.data_inicio,
+                        data_fim: contratoCriado.data_fim,
+                        tipo_produto: contratoCriado.tipo_produto || 'solar_baterias',
+                        segmento: contratoCriado.segmento || 'domestico',
+                        status: contratoCriado.status,
+                        plano_manutencao: contratoCriado.plano_manutencao || {
+                          tipo: 'preventiva',
+                          frequencia: 'mensal',
+                          inicio_manutencao: '',
+                          duracao_contrato: 12,
+                          valor_manutencao: 0,
+                          observacoes: ''
+                        }
+                      });
+                    }
+                    
                     setIsDialogOpen(true);
                   }}
                   className="flex-1 bg-blue-600 hover:bg-blue-700"

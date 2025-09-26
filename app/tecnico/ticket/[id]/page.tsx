@@ -593,6 +593,14 @@ export default function TicketDetailsPage() {
           motivo_cancelamento: motivoCancelamento,
         });
       }
+      
+      // ✅ NOVO: Invalidar cache para forçar atualização
+      try {
+        await fetch('/api/sync-disponibilidade', { method: 'POST' });
+        console.log('✅ Cache invalidado após cancelamento');
+      } catch (error) {
+        console.error('❌ Erro ao invalidar cache:', error);
+      }
     } catch (error) {
       console.error("Error canceling service:", error);
       toast.error("Erro ao cancelar serviço");
@@ -1379,7 +1387,7 @@ export default function TicketDetailsPage() {
                 <p className="text-gray-600 mb-4">
                   O relatório foi salvo e o ticket foi marcado como concluído.
                 </p>
-                <Button onClick={() => router.push("/tecnico")}>
+                <Button onClick={() => router.push("/tecnico/tickets")}>
                   Voltar aos Tickets
                 </Button>
               </div>
@@ -1413,7 +1421,10 @@ export default function TicketDetailsPage() {
                     </p>
                   </div>
                 )}
-                <Button onClick={() => router.push("/tecnico")}>
+                <Button onClick={() => {
+                  // ✅ CORRIGIDO: Ir para página de tickets, não dashboard
+                  router.push("/tecnico/tickets");
+                }}>
                   Voltar aos Tickets
                 </Button>
               </div>

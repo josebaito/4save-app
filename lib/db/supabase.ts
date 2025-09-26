@@ -1255,7 +1255,7 @@ export const db = {
       
       console.log('🔍 Verificando cronogramas vencidos...');
       
-      // Buscar cronogramas vencidos (data <= hoje)
+      // ✅ CORRIGIDO: Buscar cronogramas que vencem EXATAMENTE hoje
       const hoje = new Date().toISOString().split('T')[0];
       const { data: cronogramasVencidos, error: cronogramasError } = await supabase
         .from('cronograma_manutencao')
@@ -1263,7 +1263,7 @@ export const db = {
           *,
           contrato:contratos(*, cliente:clientes(*))
         `)
-        .lte('proxima_manutencao', hoje)
+        .eq('proxima_manutencao', hoje)  // ✅ APENAS data = hoje
         .eq('status', 'ativo');
       
       if (cronogramasError) {
@@ -1285,17 +1285,16 @@ export const db = {
       for (const cronograma of cronogramasVencidos) {
         const cronogramaAny = cronograma as any;
         
-        // Verificar se já existe ticket para este contrato na data atual
+        // ✅ CORRIGIDO: Verificar se já existe ticket para este cronograma específico
         const { data: ticketsExistentes } = await supabase
           .from('tickets')
-          .select('id')
+          .select('id, titulo')
           .eq('contrato_id', cronogramaAny.contrato_id)
           .eq('tipo', 'manutencao')
-          .gte('created_at', `${hoje}T00:00:00`)
-          .lt('created_at', `${hoje}T23:59:59`);
+          .eq('status', 'pendente'); // Apenas tickets pendentes
         
         if (ticketsExistentes && ticketsExistentes.length > 0) {
-          console.log(`⏭️ Ticket já existe para contrato ${cronogramaAny.contrato_id}`);
+          console.log(`⏭️ Ticket pendente já existe para contrato ${cronogramaAny.contrato_id}:`, ticketsExistentes[0].titulo);
           continue;
         }
         

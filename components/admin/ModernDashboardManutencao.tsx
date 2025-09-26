@@ -72,7 +72,7 @@ export function ModernDashboardManutencao() {
     try {
       setLoading(true);
       
-      // ✅ NOVO: Verificação completa do sistema (cronogramas + tickets sem técnico)
+      // ✅ CORRIGIDO: Verificação automática com proteção contra duplicação
       console.log('🔍 Verificando sistema completo...');
       const resultado = await db.verificarSistemaCompleto();
       if (resultado.ticketsCriados > 0 || resultado.ticketsAtribuidos > 0) {
@@ -206,6 +206,59 @@ export function ModernDashboardManutencao() {
     }
   };
 
+  // ✅ NOVO: Função para criar tickets manualmente (admin)
+  const handleCriarTicketsManuais = async () => {
+    try {
+      console.log('🔧 Criando tickets manualmente...');
+      
+      // Buscar todos os cronogramas ativos (não apenas de hoje)
+      const cronogramas = await db.getCronogramasManutencao();
+      
+      let ticketsCriados = 0;
+      
+      for (const cronograma of cronogramas) {
+        // Verificar se já existe ticket pendente para este contrato
+        const tickets = await db.getTickets();
+        const ticketExistente = tickets.find(t => 
+          t.contrato_id === cronograma.contrato_id && 
+          t.tipo === 'manutencao' && 
+          t.status === 'pendente'
+        );
+        
+        if (ticketExistente) {
+          console.log(`⏭️ Ticket já existe para contrato ${cronograma.contrato_id}`);
+          continue;
+        }
+        
+        // Criar ticket manualmente
+        const ticketData = {
+          cliente_id: cronograma.contrato?.cliente_id,
+          contrato_id: cronograma.contrato_id,
+          titulo: `Manutenção ${cronograma.tipo_manutencao} - ${cronograma.contrato?.numero || 'N/A'}`,
+          descricao: `Manutenção ${cronograma.tipo_manutencao} agendada para ${cronograma.proxima_manutencao}. Contrato: ${cronograma.contrato?.numero || 'N/A'}`,
+          tipo: 'manutencao' as const,
+          prioridade: (cronograma.tipo_manutencao === 'corretiva' ? 'alta' : 'media') as 'alta' | 'media' | 'baixa',
+          status: 'pendente' as const
+        };
+        
+        await db.createTicket(ticketData);
+        ticketsCriados++;
+        console.log(`✅ Ticket criado manualmente para contrato ${cronograma.contrato_id}`);
+      }
+      
+      if (ticketsCriados > 0) {
+        toast.success(`${ticketsCriados} tickets criados manualmente!`);
+        await loadData(); // Recarregar dados
+      } else {
+        toast.info('Nenhum ticket criado. Todos os cronogramas já possuem tickets pendentes.');
+      }
+    } catch (error) {
+      console.error('Erro ao criar tickets manualmente:', error);
+      toast.error('Erro ao criar tickets manualmente');
+    }
+  };
+
+
   const isProxima = (dataString: string) => {
     try {
       const data = parseISO(dataString);
@@ -271,6 +324,14 @@ return (
           <Button onClick={loadData} variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700">
             <RefreshCw className="h-4 w-4 mr-2" />
             Atualizar
+          </Button>
+          <Button 
+            onClick={handleCriarTicketsManuais} 
+            variant="outline" 
+            className="text-green-300 border-green-600 hover:bg-green-700/20"
+          >
+            <Settings className="h-4 w-4 mr-2" />
+            Criar Tickets
           </Button>
           <Button onClick={() => openCronogramaDialog()} className="bg-blue-600 hover:bg-blue-700">
             <Plus className="h-4 w-4 mr-2" />

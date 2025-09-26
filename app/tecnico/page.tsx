@@ -52,13 +52,16 @@ export default function TecnicoDashboard() {
         .then(data => {
           if (data.success) {
             console.log('✅ Disponibilidade sincronizada');
+            // ✅ NOVO: Forçar reload dos tickets após sincronização
+            invalidateCache();
+            loadTickets();
           }
         })
         .catch(error => {
           console.error('❌ Erro ao sincronizar disponibilidade:', error);
         });
     }
-  }, [status, session?.user?.type]);
+  }, [status, session?.user?.type, invalidateCache, loadTickets]);
 
   const handleStartTicket = async (ticketId: string) => {
     try {
@@ -135,6 +138,7 @@ export default function TecnicoDashboard() {
   const ticketsPendentes = tickets.filter(t => t.status === 'pendente');
   const ticketsEmCurso = tickets.filter(t => t.status === 'em_curso');
   const ticketsFinalizados = tickets.filter(t => t.status === 'finalizado');
+  const ticketsCancelados = tickets.filter(t => t.status === 'cancelado');
 
   return (
     <TecnicoLayout>
@@ -234,6 +238,50 @@ export default function TecnicoDashboard() {
                       >
                         Continuar
                       </Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Tickets Cancelados */}
+        {ticketsCancelados.length > 0 && (
+          <Card className="bg-white/10 border-white/20 shadow-xl">
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2 text-white">
+                <AlertCircle className="h-5 w-5 text-red-400" />
+                Tickets Cancelados
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {ticketsCancelados.map((ticket) => (
+                  <div
+                    key={ticket.id}
+                    className="flex items-center justify-between p-4 bg-red-500/20 rounded-xl border border-red-500/30"
+                  >
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-2">
+                        <h4 className="font-semibold text-white">{ticket.titulo}</h4>
+                        <Badge className="bg-red-100 text-red-800">
+                          Cancelado
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-slate-300 mb-1">
+                        Cliente: {ticket.cliente?.nome}
+                      </p>
+                      {ticket.motivo_cancelamento && (
+                        <p className="text-xs text-red-300">
+                          Motivo: {ticket.motivo_cancelamento}
+                        </p>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-yellow-100 text-yellow-800">
+                        Aguardando reativação pelo admin
+                      </Badge>
                     </div>
                   </div>
                 ))}
