@@ -44,9 +44,31 @@ export default function TecnicoDashboard() {
     }
   }, [tickets.length, lastTicketCount]);
 
+  // Sincronizar disponibilidade quando técnico faz login
+  useEffect(() => {
+    if (status === 'authenticated' && session?.user?.type === 'tecnico') {
+      fetch('/api/sync-disponibilidade', { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+          if (data.success) {
+            console.log('✅ Disponibilidade sincronizada');
+          }
+        })
+        .catch(error => {
+          console.error('❌ Erro ao sincronizar disponibilidade:', error);
+        });
+    }
+  }, [status, session?.user?.type]);
+
   const handleStartTicket = async (ticketId: string) => {
     try {
       await db.updateTicket(ticketId, { status: 'em_curso' });
+      
+      // Marcar técnico como indisponível quando inicia um ticket
+      if (session?.user?.id) {
+        await db.updateTecnico(session.user.id, { disponibilidade: false });
+      }
+      
       toast.success('Ticket iniciado com sucesso!');
       
       // Invalidar cache e recarregar

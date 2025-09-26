@@ -34,29 +34,19 @@ const optimizedQueries = {
     return data || [];
   },
   
-  // Cache de 1 minuto para status online
+  // Query direta para status online (sem cache para tempo real)
   async getTecnicosOnlineCached(): Promise<unknown[]> {
-    const cacheKey = 'tecnicos_online';
-    const cached = simpleCache.get(cacheKey);
-    
-    if (cached) {
-      return cached as unknown[];
-    }
-    
     const supabase = createSupabaseClient();
     const { data, error } = await supabase
       .from('users')
-      .select('id, name, email, last_seen, is_online')
+      .select('id, name, email, last_seen, is_online, especialidade, disponibilidade')
       .eq('type', 'tecnico')
       .eq('status', 'ativo')
       .eq('is_online', true)
-      .eq('disponibilidade', true)
       .order('name');
     
     if (error) throw error;
     
-    // Cache por 1 minuto
-    simpleCache.set(cacheKey, data || [], 60 * 1000);
     return data || [];
   },
   

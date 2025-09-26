@@ -327,16 +327,44 @@ export const db = {
 
   async updateTecnicoOnlineStatus(id: string, isOnline: boolean): Promise<void> {
     const supabase = createSupabaseClient();
-    const { error } = await supabase
-      .from('users')
-      .update({ 
-        is_online: isOnline,
-        last_seen: new Date().toISOString(),
-        updated_at: new Date().toISOString() 
-      })
-      .eq('id', id);
     
-    if (error) throw error;
+    // Se técnico está ficando online, verificar se tem tickets em processo
+    if (isOnline) {
+      const { data: ticketsEmProcesso } = await supabase
+        .from('tickets')
+        .select('id')
+        .eq('tecnico_id', id)
+        .eq('status', 'em_curso');
+      
+      // Se tem tickets em processo, marcar como indisponível
+      // Se não tem tickets, marcar como disponível
+      const disponibilidade = !ticketsEmProcesso || ticketsEmProcesso.length === 0;
+      
+      const { error } = await supabase
+        .from('users')
+        .update({ 
+          is_online: isOnline,
+          disponibilidade: disponibilidade,
+          last_seen: new Date().toISOString(),
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
+    } else {
+      // Se está ficando offline, marcar como indisponível
+      const { error } = await supabase
+        .from('users')
+        .update({ 
+          is_online: isOnline,
+          disponibilidade: false,
+          last_seen: new Date().toISOString(),
+          updated_at: new Date().toISOString() 
+        })
+        .eq('id', id);
+      
+      if (error) throw error;
+    }
   },
 
   async getTecnicoById(id: string): Promise<User | null> {
@@ -440,6 +468,57 @@ export const db = {
 
   async liberarTecnico(tecnicoId: string): Promise<void> {
     await this.updateTecnico(tecnicoId, { disponibilidade: true });
+  },
+
+  // ✅ NOVO: Sincronizar disponibilidade de todos os técnicos baseada nos tickets ativos
+  async sincronizarDisponibilidadeTecnicos(): Promise<void> {
+    const supabase = createSupabaseClient();
+    
+    try {
+      // Buscar todos os técnicos online
+      const { data: tecnicosOnline, error: tecnicosError } = await supabase
+        .from('users')
+        .select('id, disponibilidade')
+        .eq('type', 'tecnico')
+        .eq('status', 'ativo')
+        .eq('is_online', true);
+      
+      if (tecnicosError) throw tecnicosError;
+      
+      if (!tecnicosOnline || tecnicosOnline.length === 0) {
+        return;
+      }
+      
+      // Buscar tickets em processo para cada técnico
+      const { data: ticketsEmProcesso, error: ticketsError } = await supabase
+        .from('tickets')
+        .select('tecnico_id')
+        .eq('status', 'em_curso')
+        .in('tecnico_id', tecnicosOnline.map(t => t.id));
+      
+      if (ticketsError) throw ticketsError;
+      
+      const tecnicosComTicketsEmProcesso = new Set(
+        ticketsEmProcesso?.map(t => t.tecnico_id) || []
+      );
+      
+      // Atualizar disponibilidade de cada técnico
+      for (const tecnico of tecnicosOnline) {
+        const temTicketsEmProcesso = tecnicosComTicketsEmProcesso.has(tecnico.id);
+        const novaDisponibilidade = !temTicketsEmProcesso;
+        
+        // Só atualizar se a disponibilidade mudou
+        if (tecnico.disponibilidade !== novaDisponibilidade) {
+          await this.updateTecnico(tecnico.id, { disponibilidade: novaDisponibilidade });
+          console.log(`🔄 Técnico ${tecnico.id}: disponibilidade ${tecnico.disponibilidade} → ${novaDisponibilidade}`);
+        }
+      }
+      
+      console.log(`✅ Sincronização de disponibilidade concluída: ${tecnicosOnline.length} técnicos verificados`);
+    } catch (error) {
+      console.error('❌ Erro ao sincronizar disponibilidade:', error);
+      throw error;
+    }
   },
 
   // Controle de Qualidade

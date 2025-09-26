@@ -95,6 +95,12 @@ export default function TecnicoTicketsPage() {
   const handleStartTicket = async (ticketId: string) => {
     try {
       await db.updateTicket(ticketId, { status: 'em_curso' });
+      
+      // Marcar técnico como indisponível quando inicia um ticket
+      if (session?.user?.id) {
+        await db.updateTecnico(session.user.id, { disponibilidade: false });
+      }
+      
       toast.success('Ticket iniciado com sucesso!');
       loadTickets();
     } catch (error) {

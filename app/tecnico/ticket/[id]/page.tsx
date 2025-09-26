@@ -498,6 +498,12 @@ export default function TicketDetailsPage() {
     try {
       console.log("Iniciando serviço...");
       await db.updateTicket(ticketId, { status: "em_curso" });
+      
+      // Marcar técnico como indisponível quando inicia um ticket
+      if (session?.user?.id) {
+        await db.updateTecnico(session.user.id, { disponibilidade: false });
+      }
+      
       toast.success("Serviço iniciado!");
 
       // Atualizar o ticket localmente sem recarregar do servidor

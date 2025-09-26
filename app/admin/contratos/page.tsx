@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Search, Plus, Edit, Eye, Calendar, Clock, DollarSign } from 'lucide-react';
+import { Search, Plus, Edit, Eye, Calendar, Clock, DollarSign, RefreshCw } from 'lucide-react';
 import { db } from '@/lib/db/supabase';
 import { toast } from 'sonner';
 import type { Contrato, Cliente, TipoProduto, PlanoManutencao, CronogramaManutencao } from '@/types';
@@ -28,6 +28,11 @@ export default function ContratosPage() {
   const [selectedContrato, setSelectedContrato] = useState<Contrato | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+
+  // ✅ NOVO: Estados para controle do plano de manutenção
+  const [showPlanoManutencao, setShowPlanoManutencao] = useState(false);
+  const [contratoCriado, setContratoCriado] = useState<Contrato | null>(null);
+  const [perguntaPlanoDialog, setPerguntaPlanoDialog] = useState(false);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -110,7 +115,27 @@ export default function ContratosPage() {
       if (isEditing && selectedContrato) {
         try {
           resultado = await db.updateContrato(selectedContrato.id, contratoData);
+          
+          // ✅ NOVO: Criar cronograma de manutenção se plano foi adicionado
+          if (resultado && resultado.id && formData.plano_manutencao.inicio_manutencao) {
+            try {
+              // Verificar se já existe cronograma para este contrato
+              const cronogramasExistentes = await db.getCronogramasManutencao();
+              const cronogramaExistente = cronogramasExistentes.find(c => c.contrato_id === resultado.id);
+              
+              if (!cronogramaExistente) {
+                await db.criarCronogramaManutencao(resultado.id, formData.plano_manutencao);
+                toast.success('Contrato atualizado e cronograma de manutenção criado com sucesso!');
+              } else {
+                toast.success('Contrato atualizado com sucesso! (Cronograma já existia)');
+              }
+            } catch (cronogramaError) {
+              console.error('Erro ao criar cronograma:', cronogramaError);
+              toast.success('Contrato atualizado com sucesso! Erro ao criar cronograma de manutenção.');
+            }
+          } else {
           toast.success('Contrato atualizado com sucesso!');
+          }
         } catch (updateError: unknown) {
           const errorMessage = updateError instanceof Error ? updateError.message : 'Erro desconhecido';
           console.error('Erro ao atualizar contrato:', errorMessage);
@@ -120,19 +145,6 @@ export default function ContratosPage() {
         // Criar contrato
         try {
           resultado = await db.createContrato(contratoData);
-          
-          // ✅ NOVO: Criar cronograma de manutenção automaticamente
-          if (resultado && resultado.id && formData.plano_manutencao.inicio_manutencao) {
-            try {
-              await db.criarCronogramaManutencao(resultado.id, formData.plano_manutencao);
-              toast.success('Contrato e cronograma de manutenção criados com sucesso!');
-            } catch (cronogramaError) {
-              console.error('Erro ao criar cronograma:', cronogramaError);
-              toast.success('Contrato criado com sucesso! Erro ao criar cronograma de manutenção.');
-            }
-          } else {
-            toast.success('Contrato criado com sucesso!');
-          }
           
           // Criar automaticamente um ticket de instalação para este contrato
           if (resultado && resultado.id) {
@@ -149,6 +161,12 @@ export default function ContratosPage() {
             
             await db.createTicket(novoTicket);
           }
+          
+          // ✅ NOVO: Perguntar sobre plano de manutenção após criar contrato
+          setContratoCriado(resultado);
+          setPerguntaPlanoDialog(true);
+          toast.success('Contrato criado com sucesso!');
+          
         } catch (createError: unknown) {
           const errorMessage = createError instanceof Error ? createError.message : 'Erro desconhecido';
           console.error('Erro ao criar contrato:', errorMessage);
@@ -212,6 +230,10 @@ export default function ContratosPage() {
     setSelectedContrato(contrato);
     setIsEditing(true);
     setIsDialogOpen(true);
+    
+    // ✅ NOVO: Verificar se contrato tem plano de manutenção
+    const temPlano = contrato.plano_manutencao && contrato.plano_manutencao.inicio_manutencao;
+    setShowPlanoManutencao(!!temPlano);
   };
 
   const handleView = (contrato: Contrato) => {
@@ -262,6 +284,69 @@ export default function ContratosPage() {
     setSelectedContrato(null);
     setIsEditing(false);
     setIsDialogOpen(true);
+    setShowPlanoManutencao(false); // ✅ NOVO: Não mostrar plano por padrão
+  };
+
+  // ✅ NOVO: Funções para controlar plano de manutenção
+  const handleCriarPlanoManutencao = async () => {
+    if (!contratoCriado) return;
+    
+    try {
+      await db.criarCronogramaManutencao(contratoCriado.id, formData.plano_manutencao);
+      toast.success('Plano de manutenção criado com sucesso!');
+      setPerguntaPlanoDialog(false);
+      setContratoCriado(null);
+      await loadData();
+    } catch (error) {
+      console.error('Erro ao criar plano de manutenção:', error);
+      toast.error('Erro ao criar plano de manutenção');
+    }
+  };
+
+  const handleNaoCriarPlano = () => {
+    setPerguntaPlanoDialog(false);
+    setContratoCriado(null);
+  };
+
+  const togglePlanoManutencao = () => {
+    setShowPlanoManutencao(!showPlanoManutencao);
+  };
+
+  // ✅ NOVO: Função para sincronizar cronogramas para contratos existentes
+  const handleSincronizarCronogramas = async () => {
+    try {
+      console.log('🔄 Sincronizando cronogramas para contratos com plano...');
+      
+      let cronogramasCriados = 0;
+      
+      for (const contrato of contratos) {
+        if (contrato.plano_manutencao && contrato.plano_manutencao.inicio_manutencao) {
+          // Verificar se já existe cronograma para este contrato
+          const cronogramasExistentes = await db.getCronogramasManutencao();
+          const cronogramaExistente = cronogramasExistentes.find(c => c.contrato_id === contrato.id);
+          
+          if (!cronogramaExistente) {
+            try {
+              await db.criarCronogramaManutencao(contrato.id, contrato.plano_manutencao);
+              cronogramasCriados++;
+              console.log(`✅ Cronograma criado para contrato ${contrato.numero}`);
+            } catch (error) {
+              console.error(`❌ Erro ao criar cronograma para ${contrato.numero}:`, error);
+            }
+          }
+        }
+      }
+      
+      if (cronogramasCriados > 0) {
+        toast.success(`${cronogramasCriados} cronograma(s) criado(s) com sucesso!`);
+        await loadData(); // Recarregar dados
+      } else {
+        toast.info('Todos os contratos já possuem cronogramas ou não têm plano de manutenção');
+      }
+    } catch (error) {
+      console.error('Erro ao sincronizar cronogramas:', error);
+      toast.error('Erro ao sincronizar cronogramas');
+    }
   };
 
 
@@ -306,10 +391,20 @@ export default function ContratosPage() {
             <h1 className="text-3xl font-bold text-white">Contratos</h1>
             <p className="text-slate-400">Gerencie contratos de clientes</p>
           </div>
-          <Button onClick={handleNew} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
-            <Plus className="h-4 w-4" />
-            Novo Contrato
-          </Button>
+          <div className="flex gap-2">
+            <Button 
+              onClick={handleSincronizarCronogramas} 
+              variant="outline"
+              className="flex items-center gap-2 text-slate-300 border-slate-600 hover:bg-slate-700"
+            >
+              <RefreshCw className="h-4 w-4" />
+              Sincronizar Cronogramas
+            </Button>
+            <Button onClick={handleNew} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
+              <Plus className="h-4 w-4" />
+              Novo Contrato
+            </Button>
+          </div>
         </div>
 
         {/* Filters */}
@@ -600,185 +695,161 @@ export default function ContratosPage() {
                 </Select>
               </div>
 
-              {/* ✅ NOVO: Seção de Plano de Manutenção */}
+              {/* ✅ NOVO: Seção de Plano de Manutenção - Condicional */}
+              {isEditing && (
               <div className="space-y-4 border-t border-slate-700 pt-4">
+                  <div className="flex items-center justify-between">
                 <h3 className="text-lg font-medium text-white">Plano de Manutenção</h3>
-                
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="tipo_manutencao" className="text-slate-200">Tipo de Manutenção</Label>
-                    <Select
-                      value={formData.plano_manutencao.tipo}
-                      onValueChange={(value: 'preventiva' | 'corretiva' | 'preditiva') => 
-                        setFormData({
-                          ...formData,
-                          plano_manutencao: { ...formData.plano_manutencao, tipo: value }
-                        })
-                      }
-                      disabled={!isEditing && !!selectedContrato}
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={togglePlanoManutencao}
+                      className="text-slate-300 border-slate-600 hover:bg-slate-700"
                     >
-                      <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-slate-700">
-                        <SelectItem value="preventiva">Preventiva</SelectItem>
-                        <SelectItem value="corretiva">Corretiva</SelectItem>
-                        <SelectItem value="preditiva">Preditiva</SelectItem>
-                      </SelectContent>
-                    </Select>
+                      {showPlanoManutencao ? 'Ocultar' : 'Mostrar'} Plano
+                    </Button>
                   </div>
                   
-                  <div className="space-y-2">
-                    <Label htmlFor="frequencia" className="text-slate-200">Frequência</Label>
-                    <Select
-                      value={formData.plano_manutencao.frequencia}
-                      onValueChange={(value: 'mensal' | 'trimestral' | 'semestral' | 'anual') => 
-                        setFormData({
-                          ...formData,
-                          plano_manutencao: { ...formData.plano_manutencao, frequencia: value }
-                        })
-                      }
-                      disabled={!isEditing && !!selectedContrato}
-                    >
-                      <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-slate-700">
-                        <SelectItem value="mensal">Mensal</SelectItem>
-                        <SelectItem value="trimestral">Trimestral</SelectItem>
-                        <SelectItem value="semestral">Semestral</SelectItem>
-                        <SelectItem value="anual">Anual</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
+                  {!showPlanoManutencao && (
+                    <div className="text-center py-4 text-slate-400">
+                      <p>Este contrato {selectedContrato?.plano_manutencao?.inicio_manutencao ? 'tem' : 'não tem'} um plano de manutenção configurado.</p>
+                      <p className="text-sm mt-1">Clique em "Mostrar Plano" para {selectedContrato?.plano_manutencao?.inicio_manutencao ? 'editar' : 'criar'} um plano de manutenção.</p>
+                    </div>
+                  )}
                 </div>
+              )}
+              
+              {showPlanoManutencao && (
+                <div className="space-y-4 border-t border-slate-700 pt-4">
+                  <h3 className="text-lg font-medium text-white">Configuração do Plano de Manutenção</h3>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="tipo_manutencao" className="text-slate-200">Tipo de Manutenção</Label>
+                      <Select
+                        value={formData.plano_manutencao.tipo}
+                        onValueChange={(value: 'preventiva' | 'corretiva' | 'preditiva') => 
+                          setFormData({
+                            ...formData,
+                            plano_manutencao: { ...formData.plano_manutencao, tipo: value }
+                          })
+                        }
+                        disabled={!isEditing && !!selectedContrato}
+                      >
+                        <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-800 border-slate-700">
+                          <SelectItem value="preventiva">Preventiva</SelectItem>
+                          <SelectItem value="corretiva">Corretiva</SelectItem>
+                          <SelectItem value="preditiva">Preditiva</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="frequencia" className="text-slate-200">Frequência</Label>
+                      <Select
+                        value={formData.plano_manutencao.frequencia}
+                        onValueChange={(value: 'mensal' | 'trimestral' | 'semestral' | 'anual') => 
+                          setFormData({
+                            ...formData,
+                            plano_manutencao: { ...formData.plano_manutencao, frequencia: value }
+                          })
+                        }
+                        disabled={!isEditing && !!selectedContrato}
+                      >
+                        <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent className="bg-slate-800 border-slate-700">
+                          <SelectItem value="mensal">Mensal</SelectItem>
+                          <SelectItem value="trimestral">Trimestral</SelectItem>
+                          <SelectItem value="semestral">Semestral</SelectItem>
+                          <SelectItem value="anual">Anual</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
 
-                <div className="grid grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="inicio_manutencao" className="text-slate-200">Início da Manutenção</Label>
-                    <Input
-                      id="inicio_manutencao"
-                      type="date"
-                      value={formData.plano_manutencao.inicio_manutencao}
-                      onChange={(e) => 
-                        setFormData({
-                          ...formData,
-                          plano_manutencao: { ...formData.plano_manutencao, inicio_manutencao: e.target.value }
-                        })
-                      }
-                      disabled={!isEditing && !!selectedContrato}
-                      className="bg-slate-700/50 border-slate-600/50 text-white"
-                    />
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="inicio_manutencao" className="text-slate-200">Início da Manutenção</Label>
+                      <Input
+                        id="inicio_manutencao"
+                        type="date"
+                        value={formData.plano_manutencao.inicio_manutencao}
+                        onChange={(e) => 
+                          setFormData({
+                            ...formData,
+                            plano_manutencao: { ...formData.plano_manutencao, inicio_manutencao: e.target.value }
+                          })
+                        }
+                        disabled={!isEditing && !!selectedContrato}
+                        className="bg-slate-700/50 border-slate-600/50 text-white"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="duracao_contrato" className="text-slate-200">Duração (meses)</Label>
+                      <Input
+                        id="duracao_contrato"
+                        type="number"
+                        min="1"
+                        value={formData.plano_manutencao.duracao_contrato}
+                        onChange={(e) => 
+                          setFormData({
+                            ...formData,
+                            plano_manutencao: { ...formData.plano_manutencao, duracao_contrato: parseInt(e.target.value) || 12 }
+                          })
+                        }
+                        disabled={!isEditing && !!selectedContrato}
+                        className="bg-slate-700/50 border-slate-600/50 text-white"
+                      />
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="valor_manutencao" className="text-slate-200">Valor Manutenção (€)</Label>
+                      <Input
+                        id="valor_manutencao"
+                        type="number"
+                        step="0.01"
+                        placeholder="0.00"
+                        value={formData.plano_manutencao.valor_manutencao}
+                        onChange={(e) => 
+                          setFormData({
+                            ...formData,
+                            plano_manutencao: { ...formData.plano_manutencao, valor_manutencao: parseFloat(e.target.value) || 0 }
+                          })
+                        }
+                        disabled={!isEditing && !!selectedContrato}
+                        className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                      />
+                    </div>
                   </div>
-                  
+
                   <div className="space-y-2">
-                    <Label htmlFor="duracao_contrato" className="text-slate-200">Duração (meses)</Label>
-                    <Input
-                      id="duracao_contrato"
-                      type="number"
-                      min="1"
-                      value={formData.plano_manutencao.duracao_contrato}
+                    <Label htmlFor="observacoes_manutencao" className="text-slate-200">Observações do Plano</Label>
+                    <Textarea
+                      id="observacoes_manutencao"
+                      placeholder="Observações sobre o plano de manutenção..."
+                      value={formData.plano_manutencao.observacoes || ''}
                       onChange={(e) => 
                         setFormData({
                           ...formData,
-                          plano_manutencao: { ...formData.plano_manutencao, duracao_contrato: parseInt(e.target.value) || 12 }
+                          plano_manutencao: { ...formData.plano_manutencao, observacoes: e.target.value }
                         })
                       }
                       disabled={!isEditing && !!selectedContrato}
-                      className="bg-slate-700/50 border-slate-600/50 text-white"
-                    />
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <Label htmlFor="valor_manutencao" className="text-slate-200">Valor Manutenção (€)</Label>
-                    <Input
-                      id="valor_manutencao"
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      value={formData.plano_manutencao.valor_manutencao}
-                      onChange={(e) => 
-                        setFormData({
-                          ...formData,
-                          plano_manutencao: { ...formData.plano_manutencao, valor_manutencao: parseFloat(e.target.value) || 0 }
-                        })
-                      }
-                      disabled={!isEditing && !!selectedContrato}
+                      rows={3}
                       className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
                     />
                   </div>
                 </div>
+              )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="observacoes_manutencao" className="text-slate-200">Observações do Plano</Label>
-                  <Textarea
-                    id="observacoes_manutencao"
-                    placeholder="Observações sobre o plano de manutenção..."
-                    value={formData.plano_manutencao.observacoes || ''}
-                    onChange={(e) => 
-                      setFormData({
-                        ...formData,
-                        plano_manutencao: { ...formData.plano_manutencao, observacoes: e.target.value }
-                      })
-                    }
-                    disabled={!isEditing && !!selectedContrato}
-                    rows={3}
-                    className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
-                  />
-                </div>
-
-                {/* ✅ NOVO: Seção de Cronogramas Ativos */}
-                {selectedContrato && (
-                  <div className="space-y-4 border-t pt-4">
-                    <h4 className="text-md font-medium">Cronogramas Ativos</h4>
-                    {(() => {
-                      const cronogramasContrato = cronogramas.filter(c => c.contrato_id === selectedContrato.id);
-                      return cronogramasContrato.length > 0 ? (
-                        <div className="space-y-2">
-                          {cronogramasContrato.map((cronograma) => (
-                            <div 
-                              key={cronograma.id} 
-                              className={`p-3 rounded-lg border ${isVencida(cronograma.proxima_manutencao) ? 'border-red-200 bg-red-50' : isProxima(cronograma.proxima_manutencao) ? 'border-yellow-200 bg-yellow-50' : 'border-gray-200'}`}
-                            >
-                              <div className="flex justify-between items-start">
-                                <div>
-                                  <div className="flex gap-2 mb-1">
-                                    <Badge className={`${cronograma.tipo_manutencao === 'preventiva' ? 'bg-blue-100 text-blue-800' : cronograma.tipo_manutencao === 'corretiva' ? 'bg-red-100 text-red-800' : 'bg-purple-100 text-purple-800'}`}>
-                                      {cronograma.tipo_manutencao}
-                                    </Badge>
-                                    <Badge className="bg-gray-100 text-gray-800">
-                                      {cronograma.frequencia}
-                                    </Badge>
-                                  </div>
-                                  <div className="flex items-center gap-4 text-sm text-gray-600">
-                                    <div className="flex items-center gap-1">
-                                      <Calendar className="h-3 w-3" />
-                                      <span>Próxima: <span className={`font-medium ${isVencida(cronograma.proxima_manutencao) ? 'text-red-600' : isProxima(cronograma.proxima_manutencao) ? 'text-yellow-600' : ''}`}>{formatarData(cronograma.proxima_manutencao)}</span></span>
-                                    </div>
-                                    {cronograma.ultima_manutencao && (
-                                      <div className="flex items-center gap-1">
-                                        <Clock className="h-3 w-3" />
-                                        <span>Última: {formatarData(cronograma.ultima_manutencao)}</span>
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                                <Badge className={`${cronograma.status === 'ativo' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                  {cronograma.status}
-                                </Badge>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      ) : (
-                        <div className="text-center py-4 text-gray-500">
-                          Nenhum cronograma ativo para este contrato.
-                        </div>
-                      );
-                    })()}
-                  </div>
-                )}
-              </div>
+              {/* ✅ NOVO: Seção de Cronogramas Ativos - Temporariamente removida para corrigir erro de sintaxe */}
 
               {(isEditing || !selectedContrato) && (
                 <div className="flex justify-end gap-2">
@@ -796,6 +867,51 @@ export default function ContratosPage() {
                 </div>
               )}
             </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* ✅ NOVO: Dialog para perguntar sobre plano de manutenção após criar contrato */}
+        <Dialog open={perguntaPlanoDialog} onOpenChange={setPerguntaPlanoDialog}>
+          <DialogContent className="sm:max-w-[500px] bg-slate-800 border-slate-700">
+            <DialogHeader>
+              <DialogTitle className="text-white">Plano de Manutenção</DialogTitle>
+              <p className="text-slate-400 mt-2">
+                O contrato foi criado com sucesso! Deseja configurar um plano de manutenção para este contrato?
+              </p>
+            </DialogHeader>
+            
+            <div className="space-y-4">
+              <div className="text-sm text-slate-300">
+                <p>Um plano de manutenção permite:</p>
+                <ul className="list-disc list-inside mt-2 space-y-1">
+                  <li>Criação automática de tickets de manutenção</li>
+                  <li>Agendamento de manutenções preventivas</li>
+                  <li>Controle de cronogramas de manutenção</li>
+                </ul>
+              </div>
+              
+              <div className="flex gap-2">
+                <Button
+                  type="button"
+                  onClick={handleNaoCriarPlano}
+                  variant="outline"
+                  className="flex-1 text-slate-300 border-slate-600 hover:bg-slate-700"
+                >
+                  Não, obrigado
+                </Button>
+                <Button
+                  type="button"
+                  onClick={() => {
+                    setPerguntaPlanoDialog(false);
+                    setShowPlanoManutencao(true);
+                    setIsDialogOpen(true);
+                  }}
+                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                >
+                  Sim, configurar plano
+                </Button>
+              </div>
+            </div>
           </DialogContent>
         </Dialog>
       </div>

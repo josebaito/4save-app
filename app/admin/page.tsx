@@ -54,6 +54,23 @@ export default function AdminDashboard() {
     });
   }, [notifications]);
 
+  const handleSyncDisponibilidade = async () => {
+    try {
+      const response = await fetch('/api/sync-disponibilidade', { method: 'POST' });
+      const data = await response.json();
+      
+      if (data.success) {
+        toast.success('Disponibilidade sincronizada com sucesso!');
+        loadDashboardData(); // Recarregar dados
+      } else {
+        toast.error('Erro ao sincronizar disponibilidade');
+      }
+    } catch (error) {
+      console.error('Erro ao sincronizar disponibilidade:', error);
+      toast.error('Erro ao sincronizar disponibilidade');
+    }
+  };
+
 
   if (status === 'loading' || loading) {
     return (
@@ -85,6 +102,14 @@ export default function AdminDashboard() {
               className="text-slate-300 border-slate-600 hover:bg-slate-700"
             >
               🔄 Atualizar
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleSyncDisponibilidade}
+              className="text-slate-300 border-slate-600 hover:bg-slate-700"
+            >
+              🔄 Sincronizar Disponibilidade
             </Button>
           </div>
         </div>
