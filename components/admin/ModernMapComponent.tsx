@@ -1,15 +1,56 @@
-import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import { DivIcon } from 'leaflet';
 import { type TecnicoLocation } from './ModernTecnicosMapView';
 // import { User, Clock, Mail, Phone, Zap, Navigation } from 'lucide-react';
 // import { Badge } from '@/components/ui/badge';
-import { useEffect, useRef } from 'react';
+import { useEffect } from 'react';
 import 'leaflet/dist/leaflet.css';
 import { useClientTime } from '@/lib/hooks/useClientTime';
 
 // Propriedades do componente de mapa
 interface ModernMapComponentProps {
   locations: TecnicoLocation[];
+}
+
+// Componente interno para gerenciar o ajuste de bounds
+function MapBoundsController({ locations, currentTime }: { locations: TecnicoLocation[], currentTime: number | null }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (locations.length > 0) {
+      // Aguardar um pouco para o mapa carregar completamente
+      const timer = setTimeout(() => {
+        try {
+          const onlineLocations = locations.filter(loc => {
+            if (!currentTime) return false;
+            const locationTime = new Date(loc.timestamp);
+            const diffInMinutes = (currentTime - locationTime.getTime()) / (1000 * 60);
+            return diffInMinutes <= 5;
+          });
+          
+          if (onlineLocations.length > 0) {
+            // Se há técnicos online, focar neles
+            const bounds = onlineLocations.map(loc => [loc.latitude, loc.longitude] as [number, number]);
+            if (bounds.length > 0) {
+              map.fitBounds(bounds, { padding: [20, 20] });
+            }
+          } else if (locations.length > 0) {
+            // Se não há técnicos online, mas há localizações, focar em todas
+            const bounds = locations.map(loc => [loc.latitude, loc.longitude] as [number, number]);
+            if (bounds.length > 0) {
+              map.fitBounds(bounds, { padding: [20, 20] });
+            }
+          }
+        } catch (error) {
+          console.warn('Erro ao ajustar bounds do mapa:', error);
+        }
+      }, 1000);
+
+      return () => clearTimeout(timer);
+    }
+  }, [locations, currentTime, map]);
+
+  return null;
 }
 
 // Função para obter status da localização
@@ -44,7 +85,6 @@ const formatTimeAgo = (timestamp: string, currentTime: number | null) => {
 };
 
 export default function ModernMapComponent({ locations }: ModernMapComponentProps) {
-  const mapRef = useRef<L.Map | null>(null);
   const currentTime = useClientTime();
 
   // Criar ícone customizado para cada técnico
@@ -101,37 +141,10 @@ export default function ModernMapComponent({ locations }: ModernMapComponentProp
 
   const mapCenter = calculateMapCenter();
 
-  // Focar automaticamente nos técnicos online quando o mapa carregar ou quando houver mudanças
-  useEffect(() => {
-    if (mapRef.current && locations.length > 0) {
-      const map = mapRef.current;
-      
-      // Aguardar um pouco para o mapa carregar completamente
-      setTimeout(() => {
-        const onlineLocations = locations.filter(loc => {
-          if (!currentTime) return false; // Don't filter on server
-          const locationTime = new Date(loc.timestamp);
-          const diffInMinutes = (currentTime - locationTime.getTime()) / (1000 * 60);
-          return diffInMinutes <= 5;
-        });
-        
-        if (onlineLocations.length > 0) {
-          // Se há técnicos online, focar neles
-          const bounds = onlineLocations.map(loc => [loc.latitude, loc.longitude] as [number, number]);
-          map.fitBounds(bounds, { padding: [20, 20] });
-        } else if (locations.length > 0) {
-          // Se não há técnicos online, mas há localizações, focar em todas
-          const bounds = locations.map(loc => [loc.latitude, loc.longitude] as [number, number]);
-          map.fitBounds(bounds, { padding: [20, 20] });
-        }
-      }, 1000);
-    }
-  }, [locations, currentTime]);
 
   return (
     <div className="relative h-full w-full">
       <MapContainer 
-        ref={mapRef}
         center={mapCenter} 
         zoom={defaultZoom} 
         style={{ height: '100%', width: '100%', borderRadius: '0.5rem' }}
@@ -141,6 +154,8 @@ export default function ModernMapComponent({ locations }: ModernMapComponentProp
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         />
+        
+        <MapBoundsController locations={locations} currentTime={currentTime} />
         
         {locations.map((location) => {
           const status = getLocationStatus(location.timestamp, currentTime);

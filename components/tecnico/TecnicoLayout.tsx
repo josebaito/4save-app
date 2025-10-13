@@ -41,6 +41,7 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
   // const router = useRouter();
   const pathname = usePathname();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [syncing, setSyncing] = useState(false);
   const [syncStatus, setSyncStatus] = useState<{
@@ -130,6 +131,10 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
     signOut({ callbackUrl: '/' });
   };
 
+  const toggleSidebar = () => {
+    setSidebarCollapsed(!sidebarCollapsed);
+  };
+
   const handleSync = async () => {
     if (!isOnline) {
       toast.error('Sem conexão com a internet');
@@ -162,164 +167,201 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
 
   return (
     <AdminTheme>
-      <div className="min-h-screen bg-slate-900 lg:flex">
-      {/* Mobile sidebar overlay */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black bg-opacity-50 lg:hidden"
-          onClick={() => setSidebarOpen(false)}
-        />
-      )}
-
-      {/* Sidebar */}
-      <div
-        className={cn(
-          'fixed inset-y-0 left-0 z-50 w-64 sm:w-72 bg-slate-800 shadow-2xl transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0',
-          sidebarOpen ? 'translate-x-0' : '-translate-x-full'
-        )}
-      >
-        <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-6 border-b border-slate-700">
-            <h2 className="text-xl font-bold text-white">4Save Técnico</h2>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="lg:hidden text-slate-400 hover:text-white"
+      <div className="min-h-screen bg-slate-900 flex flex-col">
+        <div className="flex flex-1">
+          {/* Mobile sidebar overlay */}
+          {sidebarOpen && (
+            <div
+              className="fixed inset-0 z-40 bg-black bg-opacity-75 lg:hidden"
               onClick={() => setSidebarOpen(false)}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </div>
+            />
+          )}
 
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2">
-            {navigation.map((item) => {
-              const isActive = pathname === item.href;
-              return (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  className={cn(
-                    'flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-colors',
-                    isActive
-                      ? 'bg-blue-600 text-white shadow-lg'
-                      : 'text-slate-300 hover:text-white hover:bg-slate-700'
-                  )}
+          {/* Sidebar */}
+          <div
+            className={cn(
+              'fixed inset-y-0 left-0 z-50 bg-slate-800 shadow-2xl transform transition-all duration-300 ease-in-out lg:relative lg:translate-x-0',
+              sidebarOpen ? 'translate-x-0' : '-translate-x-full',
+              sidebarCollapsed ? 'w-16' : 'w-64 sm:w-72'
+            )}
+          >
+            <div className="flex flex-col h-full">
+              {/* Logo - Fixed Header */}
+              <div className={cn(
+                "flex items-center h-16 border-b border-slate-700",
+                sidebarCollapsed ? "justify-center px-2" : "justify-between px-6"
+              )}>
+                {!sidebarCollapsed && (
+                  <h2 className="text-xl font-bold text-white">4Save Técnico</h2>
+                )}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="hidden lg:flex text-slate-400 hover:text-white"
+                  onClick={toggleSidebar}
+                >
+                  <Menu className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="lg:hidden text-slate-400 hover:text-white"
                   onClick={() => setSidebarOpen(false)}
                 >
-                  <item.icon
-                    className={cn(
-                      'mr-3 h-5 w-5',
-                      isActive ? 'text-white' : 'text-slate-400'
-                    )}
-                  />
-                  {item.name}
-                </Link>
-              );
-            })}
-          </nav>
-
-          {/* Actions */}
-          <div className="px-4 py-4 border-t border-slate-700 space-y-2">
-            {/* Status de Sincronização */}
-            {syncStatus.hasPendingData && (
-              <div className="mb-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                <div className="flex items-center gap-2 text-amber-300">
-                  <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
-                  <span className="text-xs font-medium">
-                    {syncStatus.pendingCount} item(s) pendente(s)
-                  </span>
-                </div>
+                  <X className="h-4 w-4" />
+                </Button>
               </div>
-            )}
-            
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSync}
-              className="w-full justify-start text-slate-300 border-slate-600 hover:bg-slate-700"
-              disabled={syncing || !isOnline}
-            >
-              {syncing ? (
-                <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-              ) : isOnline ? (
-                <Wifi className="mr-2 h-4 w-4 text-green-400" />
-              ) : (
-                <WifiOff className="mr-2 h-4 w-4 text-red-400" />
-              )}
-              {syncing ? 'Sincronizando...' : isOnline ? 'Sincronizar' : 'Offline'}
-            </Button>
-            
-            {/* Última sincronização */}
-            {syncStatus.lastSync && (
-              <p className="text-xs text-slate-500 text-center">
-                Última sincronização: {new Date(syncStatus.lastSync).toLocaleTimeString('pt-BR')}
-              </p>
-            )}
-          </div>
 
-          {/* User info */}
-          <div className="px-4 py-4 border-t border-slate-700">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
-                  <span className="text-sm font-medium text-white">
-                    {session?.user?.name?.charAt(0).toUpperCase()}
-                  </span>
-                </div>
+              {/* Navigation - Scrollable */}
+              <nav className={cn(
+                "flex-1 py-6 space-y-2 overflow-y-auto",
+                sidebarCollapsed ? "px-2" : "px-4"
+              )}>
+                {navigation.map((item) => {
+                  const isActive = pathname === item.href;
+                  return (
+                    <Link
+                      key={item.name}
+                      href={item.href}
+                      className={cn(
+                        'flex items-center px-3 py-2.5 text-sm font-medium rounded-xl transition-colors',
+                        isActive
+                          ? 'bg-blue-600 text-white shadow-lg'
+                          : 'text-slate-300 hover:text-white hover:bg-slate-700',
+                        sidebarCollapsed ? 'justify-center' : ''
+                      )}
+                      onClick={() => setSidebarOpen(false)}
+                      title={sidebarCollapsed ? item.name : undefined}
+                    >
+                      <item.icon
+                        className={cn(
+                          'h-5 w-5',
+                          isActive ? 'text-white' : 'text-slate-400',
+                          sidebarCollapsed ? '' : 'mr-3'
+                        )}
+                      />
+                      {!sidebarCollapsed && item.name}
+                    </Link>
+                  );
+                })}
+              </nav>
+
+              {/* Actions */}
+              <div className={cn(
+                "px-4 py-4 border-t border-slate-700 space-y-2",
+                sidebarCollapsed ? "px-2" : ""
+              )}>
+                {/* Status de Sincronização */}
+                {!sidebarCollapsed && syncStatus.hasPendingData && (
+                  <div className="mb-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
+                    <div className="flex items-center gap-2 text-amber-300">
+                      <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
+                      <span className="text-xs font-medium">
+                        {syncStatus.pendingCount} item(s) pendente(s)
+                      </span>
+                    </div>
+                  </div>
+                )}
+                
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSync}
+                  className={cn(
+                    "w-full text-slate-300 border-slate-600 hover:bg-slate-700",
+                    sidebarCollapsed ? "justify-center px-2" : "justify-start"
+                  )}
+                  disabled={syncing || !isOnline}
+                  title={sidebarCollapsed ? (syncing ? 'Sincronizando...' : isOnline ? 'Sincronizar' : 'Offline') : undefined}
+                >
+                  {syncing ? (
+                    <RefreshCw className={cn("h-4 w-4 animate-spin", !sidebarCollapsed && "mr-2")} />
+                  ) : isOnline ? (
+                    <Wifi className={cn("h-4 w-4 text-green-400", !sidebarCollapsed && "mr-2")} />
+                  ) : (
+                    <WifiOff className={cn("h-4 w-4 text-red-400", !sidebarCollapsed && "mr-2")} />
+                  )}
+                  {!sidebarCollapsed && (syncing ? 'Sincronizando...' : isOnline ? 'Sincronizar' : 'Offline')}
+                </Button>
+                
+                {/* Última sincronização */}
+                {!sidebarCollapsed && syncStatus.lastSync && (
+                  <p className="text-xs text-slate-500 text-center">
+                    Última sincronização: {new Date(syncStatus.lastSync).toLocaleTimeString('pt-BR')}
+                  </p>
+                )}
               </div>
-              <div className="ml-3 flex-1">
-                <p className="text-sm font-medium text-white">
-                  {session?.user?.name}
-                </p>
-                <p className="text-xs text-slate-400">{session?.user?.email}</p>
+
+        </div>
+      </div>
+
+          {/* Main content */}
+          <div className="flex-1 flex flex-col">
+            {/* Top bar */}
+            <div className="sticky top-0 z-30 bg-slate-800 border-b border-slate-700 px-4 py-4 lg:px-8">
+              <div className="flex items-center justify-between">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="lg:hidden text-slate-400 hover:text-white"
+                  onClick={() => setSidebarOpen(true)}
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+                
+                <div className="hidden lg:block">
+                  <h1 className="text-2xl font-semibold text-white">
+                    {navigation.find(item => item.href === pathname)?.name || 'Dashboard'}
+                  </h1>
+                </div>
+
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                      <span className="text-sm font-medium text-white">
+                        {session?.user?.name?.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
+                    <div className="hidden sm:block">
+                      <p className="text-sm font-medium text-white">
+                        {session?.user?.name}
+                      </p>
+                      <p className="text-xs text-slate-400">{session?.user?.email}</p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleSignOut}
+                    className="text-slate-300 hover:text-red-400 hover:bg-slate-700"
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </Button>
+                </div>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSignOut}
-              className="w-full mt-3 justify-start text-slate-300 hover:text-red-400 hover:bg-slate-700"
-            >
-              <LogOut className="mr-2 h-4 w-4" />
-              Sair
-            </Button>
+
+            {/* Localização em tempo real */}
+            <div className="px-4 pb-4">
+              <LocationTracker />
+            </div>
+
+            {/* Page content */}
+            <main className="flex-1 p-4 lg:p-8 bg-slate-900">
+              {children}
+            </main>
           </div>
         </div>
-      </div>
-
-      {/* Main content */}
-      <div className="flex-1 lg:flex lg:flex-col">
-        {/* Top bar - apenas mobile menu */}
-        <div className="sticky top-0 z-30 bg-slate-800 border-b border-slate-700 px-4 py-4 lg:hidden">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              className="text-slate-400 hover:text-white"
-              onClick={() => setSidebarOpen(true)}
-            >
-              <Menu className="h-5 w-5" />
-            </Button>
-            <h1 className="text-xl font-semibold text-white">
-              {navigation.find(item => item.href === pathname)?.name || 'Dashboard'}
-            </h1>
-            <div></div>
+        
+        {/* Simple Footer */}
+        <footer className="bg-slate-800 border-t border-slate-700 px-4 py-3">
+          <div className="flex items-center justify-center">
+            <span className="text-xs text-slate-400">
+              © 2024 4Save - Sistema de Gestão
+            </span>
           </div>
-        </div>
-
-        {/* Localização em tempo real */}
-        <div className="px-4 pb-4">
-          <LocationTracker />
-        </div>
-          
-        {/* Page content */}
-        <main className="flex-1 p-4 lg:p-8 bg-slate-900">
-          {children}
-        </main>
+        </footer>
       </div>
-    </div>
     </AdminTheme>
   );
 }

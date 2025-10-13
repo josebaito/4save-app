@@ -77,17 +77,17 @@ export function RelatorioCard({
           {/* Indicadores de Qualidade */}
           {relatorio.aprovado_admin === true && (
             <Badge className="bg-green-100 text-green-800 text-xs">
-              ✓ Aprovado
+              ✓ Qualidade OK
             </Badge>
           )}
           {relatorio.aprovado_admin === false && (
             <Badge className="bg-red-100 text-red-800 text-xs">
-              ✗ Rejeitado
+              ✗ Revisar Qualidade
             </Badge>
           )}
           {relatorio.aprovado_admin === undefined && (
             <Badge className="bg-yellow-100 text-yellow-800 text-xs">
-              ⚠ Pendente
+              ⚠ Em Análise
             </Badge>
           )}
         </div>

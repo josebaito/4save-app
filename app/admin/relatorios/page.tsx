@@ -94,7 +94,7 @@ export default function RelatoriosPage() {
   const handleAprovarRelatorio = async (relatorio: RelatorioTecnico) => {
     try {
       await db.aprovarRelatorio(relatorio.id);
-      toast.success('Relatório aprovado!');
+      toast.success('Qualidade aprovada!');
       loadData();
       setIsDialogOpen(false);
     } catch (error) {
@@ -106,7 +106,7 @@ export default function RelatoriosPage() {
   const handleRejeitarRelatorio = async (relatorio: RelatorioTecnico, motivo: string) => {
     try {
       await db.rejeitarRelatorio(relatorio.id, 'admin', motivo); // TODO: usar ID real do admin
-      toast.success('Relatório rejeitado!');
+      toast.success('Marcado para revisão de qualidade!');
       loadData();
       setIsDialogOpen(false);
     } catch (error) {
@@ -326,27 +326,27 @@ export default function RelatoriosPage() {
 
         {/* Dialog de Visualização */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="w-[95vw] max-w-[900px] max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+          <DialogContent className="w-[95vw] max-w-[900px] max-h-[90vh] overflow-y-auto p-4 sm:p-6 bg-slate-800 border-slate-700">
             <DialogHeader>
-              <DialogTitle>
+              <DialogTitle className="text-white">
                 Relatório Técnico - {selectedRelatorio?.ticket?.titulo}
               </DialogTitle>
             </DialogHeader>
             {selectedRelatorio && selectedRelatorio.ticket && (
               <div className="space-y-6">
                 {/* Informações Gerais */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-gray-50 rounded-lg">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 p-3 sm:p-4 bg-slate-700/50 rounded-lg">
                   <div>
-                    <h4 className="font-semibold text-gray-900">Cliente</h4>
-                    <p className="text-sm text-gray-600 truncate">{selectedRelatorio.ticket.cliente?.nome}</p>
+                    <h4 className="font-semibold text-white">Cliente</h4>
+                    <p className="text-sm text-slate-300 truncate">{selectedRelatorio.ticket.cliente?.nome}</p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">Técnico</h4>
-                    <p className="text-sm text-gray-600 truncate">{selectedRelatorio.tecnico?.name || selectedRelatorio.tecnico?.email}</p>
+                    <h4 className="font-semibold text-white">Técnico</h4>
+                    <p className="text-sm text-slate-300 truncate">{selectedRelatorio.tecnico?.name || selectedRelatorio.tecnico?.email}</p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">Data Início</h4>
-                    <p className="text-sm text-gray-600">
+                    <h4 className="font-semibold text-white">Data Início</h4>
+                    <p className="text-sm text-slate-300">
                       {selectedRelatorio.data_inicio ? 
                         new Date(selectedRelatorio.data_inicio).toLocaleString('pt-BR') : 
                         'N/A'
@@ -354,8 +354,8 @@ export default function RelatoriosPage() {
                     </p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">Data Finalização</h4>
-                    <p className="text-sm text-gray-600">
+                    <h4 className="font-semibold text-white">Data Finalização</h4>
+                    <p className="text-sm text-slate-300">
                       {selectedRelatorio.data_finalizacao ? 
                         new Date(selectedRelatorio.data_finalizacao).toLocaleString('pt-BR') : 
                         'N/A'
@@ -363,24 +363,24 @@ export default function RelatoriosPage() {
                     </p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">Tempo de Execução</h4>
-                    <p className="text-sm text-gray-600">
+                    <h4 className="font-semibold text-white">Tempo de Execução</h4>
+                    <p className="text-sm text-slate-300">
                       {selectedRelatorio.tempo_execucao ? formatDuration(selectedRelatorio.tempo_execucao) : 'Não registrado'}
                     </p>
                   </div>
                   <div>
-                    <h4 className="font-semibold text-gray-900">Tipo</h4>
-                    <p className="text-sm text-gray-600">
+                    <h4 className="font-semibold text-white">Tipo</h4>
+                    <p className="text-sm text-slate-300">
                       {selectedRelatorio.ticket.tipo === 'instalacao' ? 'Instalação' : 'Manutenção'}
                     </p>
                   </div>
                   {selectedRelatorio.localizacao_gps && (
                     <div className="col-span-full">
-                      <h4 className="font-semibold text-gray-900 mb-2">Localização GPS</h4>
+                      <h4 className="font-semibold text-white mb-2">Localização GPS</h4>
                       <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 items-start">
                         <div className="flex-1 min-w-0">
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-2 gap-2">
-                            <p className="text-sm text-gray-600 font-mono truncate">
+                            <p className="text-sm text-slate-300 font-mono truncate">
                               {selectedRelatorio.localizacao_gps}
                             </p>
                             <a
@@ -414,8 +414,8 @@ export default function RelatoriosPage() {
                 {/* Observações Iniciais */}
                 {selectedRelatorio.observacoes_iniciais && (
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Observações Iniciais</h4>
-                    <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
+                    <h4 className="font-semibold text-white mb-2">Observações Iniciais</h4>
+                    <p className="text-sm text-slate-300 bg-slate-700/50 p-3 rounded-lg">
                       {selectedRelatorio.observacoes_iniciais}
                     </p>
                   </div>
@@ -424,8 +424,8 @@ export default function RelatoriosPage() {
                 {/* Diagnóstico */}
                 {selectedRelatorio.diagnostico && (
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Diagnóstico</h4>
-                    <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
+                    <h4 className="font-semibold text-white mb-2">Diagnóstico</h4>
+                    <p className="text-sm text-slate-300 bg-slate-700/50 p-3 rounded-lg">
                       {selectedRelatorio.diagnostico}
                     </p>
                   </div>
@@ -434,7 +434,7 @@ export default function RelatoriosPage() {
                 {/* Fotos ANTES */}
                 {selectedRelatorio.fotos_antes && selectedRelatorio.fotos_antes.length > 0 && (
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Fotos ANTES do Serviço</h4>
+                    <h4 className="font-semibold text-white mb-2">Fotos ANTES do Serviço</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                       {selectedRelatorio.fotos_antes.map((foto, index) => (
                         <Image
@@ -454,8 +454,8 @@ export default function RelatoriosPage() {
                 {/* Ações Realizadas */}
                 {selectedRelatorio.acoes_realizadas && (
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Ações Realizadas</h4>
-                    <p className="text-sm text-gray-700 bg-gray-50 p-3 rounded-lg">
+                    <h4 className="font-semibold text-white mb-2">Ações Realizadas</h4>
+                    <p className="text-sm text-slate-300 bg-slate-700/50 p-3 rounded-lg">
                       {selectedRelatorio.acoes_realizadas}
                     </p>
                   </div>
@@ -464,7 +464,7 @@ export default function RelatoriosPage() {
                 {/* Fotos DEPOIS */}
                 {selectedRelatorio.fotos_depois && selectedRelatorio.fotos_depois.length > 0 && (
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Fotos DEPOIS do Serviço</h4>
+                    <h4 className="font-semibold text-white mb-2">Fotos DEPOIS do Serviço</h4>
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
                       {selectedRelatorio.fotos_depois.map((foto, index) => (
                         <Image
@@ -484,7 +484,7 @@ export default function RelatoriosPage() {
                 {/* Assinatura do Cliente */}
                 {selectedRelatorio.assinatura_cliente && (
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Assinatura do Cliente</h4>
+                    <h4 className="font-semibold text-white mb-2">Assinatura do Cliente</h4>
                     <div className="border rounded-lg p-4 bg-white">
                       <Image
                         src={selectedRelatorio.assinatura_cliente}
@@ -522,63 +522,63 @@ export default function RelatoriosPage() {
                 {/* Controle de Qualidade */}
                 {qualidadeRelatorio && (
                   <div className="border-t pt-4 mt-4">
-                    <h4 className="font-semibold text-gray-900 mb-3">Controle de Qualidade</h4>
+                    <h4 className="font-semibold text-white mb-3">Controle de Qualidade</h4>
                     
                     {isVerificandoQualidade ? (
                       <div className="flex items-center justify-center py-4">
                         <LoadingSpinner size="sm" />
-                        <span className="ml-2 text-sm text-gray-600">Verificando qualidade...</span>
+                        <span className="ml-2 text-sm text-slate-300">Verificando qualidade...</span>
                       </div>
                     ) : (
                       <div className="space-y-3">
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
-                          <div className={`p-3 rounded-lg ${qualidadeRelatorio.checklist_completo ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                          <div className={`p-3 rounded-lg ${qualidadeRelatorio.checklist_completo ? 'bg-green-900/30 border-green-500/30' : 'bg-red-900/30 border-red-500/30'}`}>
                             <div className="flex items-center gap-2">
                               {qualidadeRelatorio.checklist_completo ? (
-                                <CheckCircle className="h-4 w-4 text-green-600" />
+                                <CheckCircle className="h-4 w-4 text-green-400" />
                               ) : (
-                                <XCircle className="h-4 w-4 text-red-600" />
+                                <XCircle className="h-4 w-4 text-red-400" />
                               )}
-                              <span className="text-sm font-medium">Checklist</span>
+                              <span className="text-sm font-medium text-white">Checklist</span>
                             </div>
-                            <p className="text-xs text-gray-600 mt-1">
+                            <p className="text-xs text-slate-300 mt-1">
                               {qualidadeRelatorio.checklist_completo ? 'Completo' : 'Incompleto'}
                             </p>
                           </div>
                           
-                          <div className={`p-3 rounded-lg ${qualidadeRelatorio.fotos_minimas_atingidas ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                          <div className={`p-3 rounded-lg ${qualidadeRelatorio.fotos_minimas_atingidas ? 'bg-green-900/30 border-green-500/30' : 'bg-red-900/30 border-red-500/30'}`}>
                             <div className="flex items-center gap-2">
                               {qualidadeRelatorio.fotos_minimas_atingidas ? (
-                                <CheckCircle className="h-4 w-4 text-green-600" />
+                                <CheckCircle className="h-4 w-4 text-green-400" />
                               ) : (
-                                <XCircle className="h-4 w-4 text-red-600" />
+                                <XCircle className="h-4 w-4 text-red-400" />
                               )}
-                              <span className="text-sm font-medium">Fotos</span>
+                              <span className="text-sm font-medium text-white">Fotos</span>
                             </div>
-                            <p className="text-xs text-gray-600 mt-1">
+                            <p className="text-xs text-slate-300 mt-1">
                               {qualidadeRelatorio.fotos_minimas_atingidas ? 'Mínimas atingidas' : 'Insuficientes'}
                             </p>
                           </div>
                           
-                          <div className={`p-3 rounded-lg ${qualidadeRelatorio.tempo_dentro_limite ? 'bg-green-50 border-green-200' : 'bg-red-50 border-red-200'}`}>
+                          <div className={`p-3 rounded-lg ${qualidadeRelatorio.tempo_dentro_limite ? 'bg-green-900/30 border-green-500/30' : 'bg-red-900/30 border-red-500/30'}`}>
                             <div className="flex items-center gap-2">
                               {qualidadeRelatorio.tempo_dentro_limite ? (
-                                <CheckCircle className="h-4 w-4 text-green-600" />
+                                <CheckCircle className="h-4 w-4 text-green-400" />
                               ) : (
-                                <XCircle className="h-4 w-4 text-red-600" />
+                                <XCircle className="h-4 w-4 text-red-400" />
                               )}
-                              <span className="text-sm font-medium">Tempo</span>
+                              <span className="text-sm font-medium text-white">Tempo</span>
                             </div>
-                            <p className="text-xs text-gray-600 mt-1">
+                            <p className="text-xs text-slate-300 mt-1">
                               {qualidadeRelatorio.tempo_dentro_limite ? 'Dentro do limite' : 'Excedido'}
                             </p>
                           </div>
                         </div>
                         
                         {qualidadeRelatorio.observacoes_qualidade.length > 0 && (
-                          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-                            <h5 className="text-sm font-medium text-yellow-800 mb-2">Observações:</h5>
-                            <ul className="text-xs text-yellow-700 space-y-1">
+                          <div className="bg-yellow-900/30 border border-yellow-500/30 rounded-lg p-3">
+                            <h5 className="text-sm font-medium text-yellow-300 mb-2">Observações:</h5>
+                            <ul className="text-xs text-yellow-200 space-y-1">
                               {qualidadeRelatorio.observacoes_qualidade.map((obs: string, index: number) => (
                                 <li key={index}>• {obs}</li>
                               ))}
@@ -593,11 +593,11 @@ export default function RelatoriosPage() {
                               className="flex items-center gap-2 bg-green-600 hover:bg-green-700 w-full sm:w-auto"
                             >
                               <CheckCircle className="h-4 w-4" />
-                              Aprovar
+                              Qualidade OK
                             </Button>
                             <Button
                               onClick={() => {
-                                const motivo = prompt('Motivo da rejeição:');
+                                const motivo = prompt('Motivo para revisar qualidade:');
                                 if (motivo) {
                                   handleRejeitarRelatorio(selectedRelatorio, motivo);
                                 }
@@ -606,7 +606,7 @@ export default function RelatoriosPage() {
                               className="flex items-center gap-2 w-full sm:w-auto"
                             >
                               <XCircle className="h-4 w-4" />
-                              Rejeitar
+                              Revisar Qualidade
                             </Button>
                           </div>
                         )}

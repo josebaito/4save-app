@@ -5,8 +5,9 @@ export async function GET() {
   try {
     console.log('🔔 Iniciando verificação de notificações de manutenção...');
     
-    // Gerar notificações para manutenções próximas
-    await db.gerarTicketsManutencao();
+    // ✅ CORRIGIDO: Apenas gerar notificações, NÃO tickets
+    // Os tickets são gerados pelo endpoint /api/cron/manutencao
+    await db.criarNotificacoesEmLote([]);
     
     console.log('✅ Notificações de manutenção geradas com sucesso');
     

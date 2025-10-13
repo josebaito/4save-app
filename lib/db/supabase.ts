@@ -818,7 +818,14 @@ export const db = {
 
   // Gerar tickets de manutenção automáticos
   async gerarTicketsManutencao(): Promise<void> {
+    // ✅ CORRIGIDO: Evitar execução simultânea usando variável global
+    if ((global as any).gerandoTickets) {
+      console.log('⚠️ Geração de tickets já em andamento, pulando...');
+      return;
+    }
+
     try {
+      (global as any).gerandoTickets = true;
       const supabase = createSupabaseClient();
       const hoje = new Date();
       const hojeStr = hoje.toISOString().split('T')[0];
@@ -865,17 +872,16 @@ export const db = {
         const atualizacoesCronograma = [];
         
         for (const cronograma of cronogramasVencidos) {
-          // Verificar se já existe um ticket de manutenção para este contrato na data atual
+          // ✅ CORRIGIDO: Verificar se já existe ticket PENDENTE para este contrato
           const { data: ticketsExistentes } = await supabase
             .from('tickets')
-            .select('id')
+            .select('id, titulo, status')
             .eq('contrato_id', cronograma.contrato_id)
             .eq('tipo', 'manutencao')
-            .gte('created_at', hojeStr + 'T00:00:00')
-            .lt('created_at', hojeStr + 'T23:59:59');
+            .eq('status', 'pendente'); // Apenas tickets pendentes
           
           if (ticketsExistentes && ticketsExistentes.length > 0) {
-            console.log(`⚠️ Ticket de manutenção já existe para contrato ${cronograma.contrato_id} na data ${hojeStr}`);
+            console.log(`⚠️ Ticket pendente já existe para contrato ${cronograma.contrato_id}: ${ticketsExistentes[0].titulo}`);
             continue;
           }
           
@@ -963,6 +969,9 @@ export const db = {
     } catch (error) {
       console.error('❌ Exceção ao gerar tickets de manutenção:', error);
       throw error;
+    } finally {
+      // ✅ CORRIGIDO: Sempre liberar o lock
+      (global as any).gerandoTickets = false;
     }
   },
 
