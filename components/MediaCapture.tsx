@@ -1,7 +1,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Camera, Video, AlertCircle } from 'lucide-react';
+import { Camera, Video, AlertCircle, RotateCcw } from 'lucide-react';
 import { toast } from 'sonner';
+import { isMobileOrTablet, hasRearCamera } from '@/lib/utils';
 
 interface MediaCaptureProps {
   onCapture: (dataUrl: string) => void;
@@ -17,6 +18,7 @@ export function MediaCapture({ onCapture, type, disabled = false }: MediaCapture
   // const [permissionStatus, setPermissionStatus] = useState<'granted' | 'denied' | 'prompt' | 'unknown' | 'not-supported'>('unknown');
   const [isLoading, setIsLoading] = useState(false);
   const [hasStream, setHasStream] = useState(false);
+  const [preferredCamera, setPreferredCamera] = useState<'user' | 'environment'>('user');
   
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -43,6 +45,26 @@ export function MediaCapture({ onCapture, type, disabled = false }: MediaCapture
           // setPermissionStatus('not-supported');
         });
     }
+  }, []);
+
+  // Determinar qual câmera usar baseado no tipo de dispositivo
+  useEffect(() => {
+    const determineCameraPreference = async () => {
+      const isMobile = isMobileOrTablet();
+      
+      if (isMobile) {
+        // Em dispositivos móveis/tablets, tentar usar câmera traseira
+        const hasRear = await hasRearCamera();
+        setPreferredCamera(hasRear ? 'environment' : 'user');
+        console.log('📱 Dispositivo móvel detectado. Câmera preferida:', hasRear ? 'traseira' : 'frontal');
+      } else {
+        // Em desktop, usar câmera frontal
+        setPreferredCamera('user');
+        console.log('💻 Desktop detectado. Usando câmera frontal');
+      }
+    };
+
+    determineCameraPreference();
   }, []);
 
   // Configurar vídeo quando stream estiver disponível
@@ -93,10 +115,18 @@ export function MediaCapture({ onCapture, type, disabled = false }: MediaCapture
       setIsRecording(false);
       setIsLoading(true);
       
-      console.log('🧪 Iniciando teste de câmera...');
+      console.log('🧪 Iniciando captura de câmera...');
+      console.log('📷 Câmera preferida:', preferredCamera);
+      
+      // Configuração da câmera baseada no tipo de dispositivo
+      const videoConstraints = {
+        facingMode: preferredCamera,
+        width: { ideal: 1280 },
+        height: { ideal: 720 }
+      };
       
       const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: true, 
+        video: videoConstraints, 
         audio: type === 'video' 
       });
       
@@ -110,7 +140,27 @@ export function MediaCapture({ onCapture, type, disabled = false }: MediaCapture
       // setPermissionStatus('granted');
 
     } catch (error) {
-      console.error('❌ Erro no teste:', error);
+      console.error('❌ Erro na captura:', error);
+      
+      // Se a câmera preferida falhou, tentar com a câmera alternativa
+      if (error instanceof Error && error.name === 'OverconstrainedError' && preferredCamera !== 'user') {
+        console.log('🔄 Tentando com câmera frontal como fallback...');
+        try {
+          const fallbackStream = await navigator.mediaDevices.getUserMedia({ 
+            video: { facingMode: 'user' }, 
+            audio: type === 'video' 
+          });
+          
+          streamRef.current = fallbackStream;
+          setHasStream(true);
+          setIsLoading(false);
+          console.log('✅ Fallback para câmera frontal funcionou');
+          return;
+        } catch (fallbackError) {
+          console.error('❌ Fallback também falhou:', fallbackError);
+        }
+      }
+      
       setIsLoading(false);
       
       let errorMessage = 'Erro desconhecido';
@@ -140,7 +190,27 @@ export function MediaCapture({ onCapture, type, disabled = false }: MediaCapture
     }
   };
 
-
+  // Função para alternar entre câmeras
+  const switchCamera = async () => {
+    if (!streamRef.current) return;
+    
+    try {
+      // Parar stream atual
+      streamRef.current.getTracks().forEach(track => track.stop());
+      
+      // Alternar câmera
+      const newCamera = preferredCamera === 'user' ? 'environment' : 'user';
+      setPreferredCamera(newCamera);
+      
+      console.log('🔄 Alternando para câmera:', newCamera);
+      
+      // Reiniciar com nova câmera
+      await startCapture();
+    } catch (error) {
+      console.error('❌ Erro ao alternar câmera:', error);
+      toast.error('Erro ao alternar câmera');
+    }
+  };
 
   const capturePhoto = () => {
     if (!videoRef.current) {
@@ -295,14 +365,23 @@ export function MediaCapture({ onCapture, type, disabled = false }: MediaCapture
                   ✅ Ativo
                 </div>
               )}
-              <Button 
-                onClick={stopCapture}
-                variant="destructive"
-                size="sm"
-                className="absolute top-2 right-2"
-              >
-                Parar Teste
-              </Button>
+              <div className="absolute top-2 right-2 flex gap-1">
+                <Button 
+                  onClick={switchCamera}
+                  variant="secondary"
+                  size="sm"
+                  title={`Alternar para câmera ${preferredCamera === 'user' ? 'traseira' : 'frontal'}`}
+                >
+                  <RotateCcw className="h-3 w-3" />
+                </Button>
+                <Button 
+                  onClick={stopCapture}
+                  variant="destructive"
+                  size="sm"
+                >
+                  Parar
+                </Button>
+              </div>
             </div>
 
            {/* Botões de ação */}
