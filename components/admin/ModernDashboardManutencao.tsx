@@ -1,28 +1,27 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { 
-  Calendar, 
-  Clock, 
-  FileText, 
-  AlertTriangle, 
-  CheckCircle, 
-  RefreshCw, 
-  Calendar as CalendarIcon, 
-  Plus, 
-  Edit, 
+import {
+  Calendar,
+  Clock,
+  FileText,
+  AlertTriangle,
+  CheckCircle,
+  RefreshCw,
+  Calendar as CalendarIcon,
+  Plus,
+  Edit,
   Trash2,
   Settings,
   Activity,
   TrendingUp,
   Wrench,
   User,
-  // MapPin,
-  // Filter,
   Search
 } from 'lucide-react';
 import { RelatorioManutencao } from './RelatorioManutencao';
@@ -38,6 +37,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export function ModernDashboardManutencao() {
+  const { data: session, status } = useSession();
   const [cronogramas, setCronogramas] = useState<CronogramaManutencao[]>([]);
   const [historico, setHistorico] = useState<HistoricoManutencao[]>([]);
   const [ticketsManutencao, setTicketsManutencao] = useState<Ticket[]>([]);
@@ -65,13 +65,18 @@ export function ModernDashboardManutencao() {
   });
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (status === 'authenticated' && (session as any)?.accessToken) {
+      loadData();
+    }
+  }, [status, session]);
 
   const loadData = async () => {
+    if (!(session as any)?.accessToken) return;
+
     try {
       setLoading(true);
-      
+      const token = (session as any).accessToken;
+
       // ✅ CORRIGIDO: Verificação automática com proteção contra duplicação
       console.log('🔍 Verificando sistema completo...');
       const resultado = await db.verificarSistemaCompleto();
@@ -83,21 +88,21 @@ export function ModernDashboardManutencao() {
         const mensagem = `${resultado.ticketsCriados} tickets criados, ${resultado.ticketsAtribuidos} tickets atribuídos!`;
         toast.success(mensagem);
       }
-      
+
       const [cronogramasData, historicoData, ticketsData, contratosData] = await Promise.all([
         db.getCronogramasManutencao(),
         db.getHistoricoManutencao(),
-        db.getTickets(),
-        db.getContratos()
+        db.getTickets(token),
+        db.getContratos(token)
       ]);
-      
+
       const ticketsManutenção = ticketsData.filter(ticket => ticket.tipo === 'manutencao');
-      
+
       setCronogramas(cronogramasData);
       setHistorico(historicoData);
       setTicketsManutencao(ticketsManutenção);
       setContratos(contratosData);
-      
+
       try {
         const response = await fetch('/api/estatisticas/manutencao');
         if (response.ok) {
@@ -208,28 +213,31 @@ export function ModernDashboardManutencao() {
 
   // ✅ NOVO: Função para criar tickets manualmente (admin)
   const handleCriarTicketsManuais = async () => {
+    if (!(session as any)?.accessToken) return;
+
     try {
       console.log('🔧 Criando tickets manualmente...');
-      
+      const token = (session as any).accessToken;
+
       // Buscar todos os cronogramas ativos (não apenas de hoje)
       const cronogramas = await db.getCronogramasManutencao();
-      
+
       let ticketsCriados = 0;
-      
+
       for (const cronograma of cronogramas) {
         // Verificar se já existe ticket pendente para este contrato
-        const tickets = await db.getTickets();
-        const ticketExistente = tickets.find(t => 
-          t.contrato_id === cronograma.contrato_id && 
-          t.tipo === 'manutencao' && 
+        const tickets = await db.getTickets(token);
+        const ticketExistente = tickets.find(t =>
+          t.contrato_id === cronograma.contrato_id &&
+          t.tipo === 'manutencao' &&
           t.status === 'pendente'
         );
-        
+
         if (ticketExistente) {
           console.log(`⏭️ Ticket já existe para contrato ${cronograma.contrato_id}`);
           continue;
         }
-        
+
         // Criar ticket manualmente
         const ticketData = {
           cliente_id: cronograma.contrato?.cliente_id,
@@ -240,12 +248,12 @@ export function ModernDashboardManutencao() {
           prioridade: (cronograma.tipo_manutencao === 'corretiva' ? 'alta' : 'media') as 'alta' | 'media' | 'baixa',
           status: 'pendente' as const
         };
-        
-        await db.createTicket(ticketData);
+
+        await db.createTicket(ticketData, token);
         ticketsCriados++;
         console.log(`✅ Ticket criado manualmente para contrato ${cronograma.contrato_id}`);
       }
-      
+
       if (ticketsCriados > 0) {
         toast.success(`${ticketsCriados} tickets criados manualmente!`);
         await loadData(); // Recarregar dados
@@ -281,8 +289,8 @@ export function ModernDashboardManutencao() {
 
   const filteredCronogramas = cronogramas.filter(cronograma => {
     const matchesSearch = cronograma.contrato?.descricao?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         cronograma.contrato?.cliente?.nome?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      cronograma.contrato?.cliente?.nome?.toLowerCase().includes(searchTerm.toLowerCase());
+
     let matchesStatus = true;
     if (filterStatus === 'vencida') {
       matchesStatus = isVencida(cronograma.proxima_manutencao);
@@ -291,7 +299,7 @@ export function ModernDashboardManutencao() {
     } else if (filterStatus === 'agendada') {
       matchesStatus = !isVencida(cronograma.proxima_manutencao) && !isProxima(cronograma.proxima_manutencao);
     }
-    
+
     return matchesSearch && matchesStatus;
   });
 
@@ -309,8 +317,8 @@ export function ModernDashboardManutencao() {
         </div>
       </div>
     );
-  }  
-return (
+  }
+  return (
     <div className="space-y-6">
       {/* Header */}
       <div className="flex items-center justify-between">
@@ -325,9 +333,9 @@ return (
             <RefreshCw className="h-4 w-4 mr-2" />
             Atualizar
           </Button>
-          <Button 
-            onClick={handleCriarTicketsManuais} 
-            variant="outline" 
+          <Button
+            onClick={handleCriarTicketsManuais}
+            variant="outline"
             className="text-green-300 border-green-600 hover:bg-green-700/20"
           >
             <Settings className="h-4 w-4 mr-2" />
@@ -450,8 +458,8 @@ return (
             <TrendingUp className="h-4 w-4 mr-2" />
             Relatórios
           </TabsTrigger>
-        </TabsList> 
-       {/* Tab de Cronogramas */}
+        </TabsList>
+        {/* Tab de Cronogramas */}
         <TabsContent value="cronogramas" className="space-y-4">
           <Card className="bg-slate-800/50 border-slate-700/50">
             <CardHeader>
@@ -476,15 +484,14 @@ return (
               ) : (
                 <div className="space-y-4">
                   {filteredCronogramas.map((cronograma) => (
-                    <div 
-                      key={cronograma.id} 
-                      className={`p-6 rounded-xl border transition-all hover:bg-slate-700/30 ${
-                        isVencida(cronograma.proxima_manutencao) 
-                          ? 'border-red-500/30 bg-red-500/10' 
-                          : isProxima(cronograma.proxima_manutencao) 
-                          ? 'border-yellow-500/30 bg-yellow-500/10' 
+                    <div
+                      key={cronograma.id}
+                      className={`p-6 rounded-xl border transition-all hover:bg-slate-700/30 ${isVencida(cronograma.proxima_manutencao)
+                        ? 'border-red-500/30 bg-red-500/10'
+                        : isProxima(cronograma.proxima_manutencao)
+                          ? 'border-yellow-500/30 bg-yellow-500/10'
                           : 'border-slate-600/30 bg-slate-700/20'
-                      }`}
+                        }`}
                     >
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex-1">
@@ -499,11 +506,10 @@ return (
                           </div>
                         </div>
                         <div className="flex gap-2">
-                          <Badge className={`${
-                            cronograma.tipo_manutencao === 'preventiva' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 
-                            cronograma.tipo_manutencao === 'corretiva' ? 'bg-red-500/20 text-red-300 border-red-500/30' : 
-                            'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                          }`}>
+                          <Badge className={`${cronograma.tipo_manutencao === 'preventiva' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
+                            cronograma.tipo_manutencao === 'corretiva' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
+                              'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                            }`}>
                             {cronograma.tipo_manutencao}
                           </Badge>
                           <Badge className="bg-slate-600/50 text-slate-300 border-slate-500/50">
@@ -511,17 +517,16 @@ return (
                           </Badge>
                         </div>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div className="flex items-center gap-2">
                           <CalendarIcon className="h-4 w-4 text-slate-400" />
                           <span className="text-sm text-slate-300">
-                            Próxima: 
-                            <span className={`font-medium ml-1 ${
-                              isVencida(cronograma.proxima_manutencao) ? 'text-red-400' : 
-                              isProxima(cronograma.proxima_manutencao) ? 'text-yellow-400' : 
-                              'text-slate-300'
-                            }`}>
+                            Próxima:
+                            <span className={`font-medium ml-1 ${isVencida(cronograma.proxima_manutencao) ? 'text-red-400' :
+                              isProxima(cronograma.proxima_manutencao) ? 'text-yellow-400' :
+                                'text-slate-300'
+                              }`}>
                               {formatarData(cronograma.proxima_manutencao)}
                             </span>
                           </span>
@@ -535,7 +540,7 @@ return (
                           </div>
                         )}
                       </div>
-                      
+
                       <div className="flex justify-between items-center">
                         <div className="flex items-center gap-2">
                           {isVencida(cronograma.proxima_manutencao) && (
@@ -550,8 +555,8 @@ return (
                           )}
                         </div>
                         <div className="flex gap-2">
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => openCronogramaDialog(cronograma)}
                             className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
@@ -559,8 +564,8 @@ return (
                             <Edit className="h-3 w-3 mr-1" />
                             Editar
                           </Button>
-                          <Button 
-                            variant="outline" 
+                          <Button
+                            variant="outline"
                             size="sm"
                             onClick={() => handleDeleteCronograma(cronograma.id)}
                             className="border-red-500/30 text-red-400 hover:bg-red-500/20 hover:text-red-300"
@@ -576,8 +581,8 @@ return (
               )}
             </CardContent>
           </Card>
-        </TabsContent>        
-{/* Tab de Tickets */}
+        </TabsContent>
+        {/* Tab de Tickets */}
         <TabsContent value="tickets" className="space-y-4">
           <Card className="bg-slate-800/50 border-slate-700/50">
             <CardHeader>
@@ -598,8 +603,8 @@ return (
               ) : (
                 <div className="space-y-4">
                   {ticketsManutencao.map((ticket) => (
-                    <div 
-                      key={ticket.id} 
+                    <div
+                      key={ticket.id}
                       className="p-6 rounded-xl border border-slate-600/30 bg-slate-700/20 hover:bg-slate-700/30 transition-all"
                     >
                       <div className="flex justify-between items-start mb-4">
@@ -615,25 +620,25 @@ return (
                         <div className="flex gap-2">
                           <Badge className={
                             ticket.prioridade === 'urgente' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
-                            ticket.prioridade === 'alta' ? 'bg-orange-500/20 text-orange-300 border-orange-500/30' :
-                            ticket.prioridade === 'media' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' :
-                            'bg-green-500/20 text-green-300 border-green-500/30'
+                              ticket.prioridade === 'alta' ? 'bg-orange-500/20 text-orange-300 border-orange-500/30' :
+                                ticket.prioridade === 'media' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' :
+                                  'bg-green-500/20 text-green-300 border-green-500/30'
                           }>
                             {ticket.prioridade}
                           </Badge>
                           <Badge className={
                             ticket.status === 'finalizado' ? 'bg-green-500/20 text-green-300 border-green-500/30' :
-                            ticket.status === 'em_curso' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
-                            ticket.status === 'cancelado' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
-                            'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
+                              ticket.status === 'em_curso' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
+                                ticket.status === 'cancelado' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
+                                  'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
                           }>
                             {ticket.status.replace('_', ' ')}
                           </Badge>
                         </div>
                       </div>
-                      
+
                       <p className="text-slate-400 text-sm mb-4 line-clamp-2">{ticket.descricao}</p>
-                      
+
                       <div className="flex items-center gap-4 text-sm">
                         <div className="flex items-center gap-1">
                           <CalendarIcon className="h-4 w-4 text-slate-500" />
@@ -679,8 +684,8 @@ return (
               ) : (
                 <div className="space-y-4">
                   {historico.map((registro) => (
-                    <div 
-                      key={registro.id} 
+                    <div
+                      key={registro.id}
                       className="p-6 rounded-xl border border-slate-600/30 bg-slate-700/20"
                     >
                       <div className="flex justify-between items-start mb-4">
@@ -695,15 +700,14 @@ return (
                             </span>
                           </div>
                         </div>
-                        <Badge className={`${
-                          registro.tipo_manutencao === 'preventiva' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 
-                          registro.tipo_manutencao === 'corretiva' ? 'bg-red-500/20 text-red-300 border-red-500/30' : 
-                          'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                        }`}>
+                        <Badge className={`${registro.tipo_manutencao === 'preventiva' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
+                          registro.tipo_manutencao === 'corretiva' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
+                            'bg-purple-500/20 text-purple-300 border-purple-500/30'
+                          }`}>
                           {registro.tipo_manutencao}
                         </Badge>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         {registro.data_realizada && (
                           <div className="flex items-center gap-2">
@@ -722,7 +726,7 @@ return (
                           </div>
                         )}
                       </div>
-                      
+
                       {registro.observacoes && (
                         <div className="mt-4 p-3 bg-slate-800/50 rounded-lg border border-slate-600/30">
                           <p className="text-sm text-slate-400">{registro.observacoes}</p>
@@ -742,8 +746,8 @@ return (
             <RelatorioManutencao />
           </div>
         </TabsContent>
-      </Tabs>     
- {/* Modal de Cronograma */}
+      </Tabs>
+      {/* Modal de Cronograma */}
       <Dialog open={isCronogramaDialogOpen} onOpenChange={setIsCronogramaDialogOpen}>
         <DialogContent className="sm:max-w-[600px] bg-slate-800 border-slate-700">
           <DialogHeader>
@@ -777,7 +781,7 @@ return (
                 <Label htmlFor="tipo_manutencao" className="text-slate-200">Tipo de Manutenção</Label>
                 <Select
                   value={cronogramaFormData.tipo_manutencao}
-                  onValueChange={(value: 'preventiva' | 'corretiva' | 'preditiva') => 
+                  onValueChange={(value: 'preventiva' | 'corretiva' | 'preditiva') =>
                     setCronogramaFormData({ ...cronogramaFormData, tipo_manutencao: value })
                   }
                 >
@@ -791,12 +795,12 @@ return (
                   </SelectContent>
                 </Select>
               </div>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="frequencia" className="text-slate-200">Frequência</Label>
                 <Select
                   value={cronogramaFormData.frequencia}
-                  onValueChange={(value: 'mensal' | 'trimestral' | 'semestral' | 'anual') => 
+                  onValueChange={(value: 'mensal' | 'trimestral' | 'semestral' | 'anual') =>
                     setCronogramaFormData({ ...cronogramaFormData, frequencia: value })
                   }
                 >

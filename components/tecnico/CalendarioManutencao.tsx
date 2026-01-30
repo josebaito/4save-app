@@ -21,7 +21,7 @@ export function CalendarioManutencao() {
   const [cronogramas, setCronogramas] = useState<CronogramaManutencao[]>([]);
   const [loading, setLoading] = useState(true);
   const [eventDates, setEventDates] = useState<Date[]>([]);
-  const [selectedDateEvents, setSelectedDateEvents] = useState<{tickets: Ticket[], cronogramas: CronogramaManutencao[]}>({tickets: [], cronogramas: []});
+  const [selectedDateEvents, setSelectedDateEvents] = useState<{ tickets: Ticket[], cronogramas: CronogramaManutencao[] }>({ tickets: [], cronogramas: [] });
 
   const updateSelectedDateEvents = useCallback((selectedDate: Date, currentTickets: Ticket[], currentCronogramas: CronogramaManutencao[]) => {
     // Filtrar tickets para a data selecionada
@@ -33,7 +33,7 @@ export function CalendarioManutencao() {
         return false;
       }
     });
-    
+
     // Filtrar cronogramas para a data selecionada
     const cronogramasForDate = currentCronogramas.filter(cronograma => {
       if (!cronograma.proxima_manutencao) return false;
@@ -44,7 +44,7 @@ export function CalendarioManutencao() {
         return false;
       }
     });
-    
+
     setSelectedDateEvents({
       tickets: ticketsForDate,
       cronogramas: cronogramasForDate
@@ -54,7 +54,7 @@ export function CalendarioManutencao() {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      
+
       // ✅ NOVO: Verificação completa do sistema (cronogramas + tickets sem técnico)
       console.log('🔍 Verificando sistema completo...');
       const resultado = await db.verificarSistemaCompleto();
@@ -64,29 +64,31 @@ export function CalendarioManutencao() {
           console.log(`👤 ${resultado.tecnicosAtribuidos} técnicos atribuídos automaticamente`);
         }
       }
-      
+
+      const token = (session as any)?.accessToken;
+
       // Carregar tickets do técnico
-      const ticketsData = await db.getTicketsByTecnico(session!.user!.id);
+      const ticketsData = await db.getTicketsByTecnico(session!.user!.id, token);
       const ticketsManutencao = ticketsData.filter(t => t.tipo === 'manutencao');
       setTickets(ticketsManutencao);
-      
+
       // Carregar cronogramas de manutenção
       // Filtrar apenas os cronogramas dos contratos que têm tickets atribuídos ao técnico
-      const cronogramasData = await db.getCronogramasManutencao();
-      
+      const cronogramasData = await db.getCronogramasManutencao(token);
+
       // Obter IDs dos contratos dos tickets do técnico
       const contratosIds = ticketsManutencao.map(ticket => ticket.contrato_id).filter(Boolean);
-      
+
       // Filtrar cronogramas apenas dos contratos do técnico
-      const cronogramasFiltrados = cronogramasData.filter(cronograma => 
+      const cronogramasFiltrados = cronogramasData.filter(cronograma =>
         contratosIds.includes(cronograma.contrato_id)
       );
-      
+
       setCronogramas(cronogramasFiltrados);
-      
+
       // Calcular datas com eventos
       const dates: Date[] = [];
-      
+
       // Adicionar datas de tickets
       ticketsManutencao.forEach(ticket => {
         try {
@@ -96,7 +98,7 @@ export function CalendarioManutencao() {
           console.error('Erro ao processar data de ticket');
         }
       });
-      
+
       // Adicionar datas de cronogramas
       cronogramasData.forEach(cronograma => {
         if (cronograma.proxima_manutencao) {
@@ -108,9 +110,9 @@ export function CalendarioManutencao() {
           }
         }
       });
-      
+
       setEventDates(dates);
-      
+
       // Atualizar eventos para a data selecionada
       if (date) {
         updateSelectedDateEvents(date, ticketsManutencao, cronogramasData);
@@ -241,13 +243,13 @@ export function CalendarioManutencao() {
               }}
             />
           </div>
-          
+
           {/* Eventos do dia */}
           <div className="space-y-4">
             <h3 className="font-medium text-lg">
               {date ? format(date, "EEEE, d 'de' MMMM 'de' yyyy", { locale: ptBR }) : 'Selecione uma data'}
             </h3>
-            
+
             {selectedDateEvents.tickets.length === 0 && selectedDateEvents.cronogramas.length === 0 ? (
               <div className="text-center py-4 text-slate-300">
                 Nenhum evento para esta data.
@@ -262,7 +264,7 @@ export function CalendarioManutencao() {
                     Cronogramas ({selectedDateEvents.cronogramas.length})
                   </TabsTrigger>
                 </TabsList>
-                
+
                 {/* Tab de Tickets */}
                 <TabsContent value="tickets" className="space-y-4 mt-4">
                   {selectedDateEvents.tickets.length === 0 ? (
@@ -272,8 +274,8 @@ export function CalendarioManutencao() {
                   ) : (
                     <div className="space-y-3">
                       {selectedDateEvents.tickets.map((ticket) => (
-                        <div 
-                          key={ticket.id} 
+                        <div
+                          key={ticket.id}
                           className="p-3 rounded-lg border border-slate-600/30 bg-slate-700/20"
                         >
                           <div className="flex justify-between items-start">
@@ -296,8 +298,8 @@ export function CalendarioManutencao() {
                             <p className="text-sm text-slate-300 line-clamp-2">{ticket.descricao}</p>
                           </div>
                           <div className="mt-2">
-                            <Button 
-                              variant="outline" 
+                            <Button
+                              variant="outline"
                               size="sm"
                               className="w-full border-slate-600 text-slate-300 hover:bg-slate-600 hover:text-white"
                               onClick={() => window.location.href = `/tecnico/ticket/${ticket.id}`}
@@ -310,7 +312,7 @@ export function CalendarioManutencao() {
                     </div>
                   )}
                 </TabsContent>
-                
+
                 {/* Tab de Cronogramas */}
                 <TabsContent value="cronogramas" className="space-y-4 mt-4">
                   {selectedDateEvents.cronogramas.length === 0 ? (
@@ -320,8 +322,8 @@ export function CalendarioManutencao() {
                   ) : (
                     <div className="space-y-3">
                       {selectedDateEvents.cronogramas.map((cronograma) => (
-                        <div 
-                          key={cronograma.id} 
+                        <div
+                          key={cronograma.id}
                           className={`p-3 rounded-lg border ${isVencida(cronograma.proxima_manutencao) ? 'border-red-500/30 bg-red-500/10' : isProxima(cronograma.proxima_manutencao) ? 'border-yellow-500/30 bg-yellow-500/10' : 'border-slate-600/30 bg-slate-700/20'}`}
                         >
                           <div className="flex justify-between items-start">

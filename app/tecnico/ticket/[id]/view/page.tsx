@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Image from 'next/image';
-import { 
+import {
   ArrowLeft,
   FileText,
   Clock,
@@ -30,7 +30,7 @@ export default function TicketViewPage() {
   const router = useRouter();
   const params = useParams();
   const ticketId = params.id as string;
-  
+
   const [ticket, setTicket] = useState<Ticket | null>(null);
   const [relatorio, setRelatorio] = useState<RelatorioTecnico | null>(null);
   const [loading, setLoading] = useState(true);
@@ -38,9 +38,10 @@ export default function TicketViewPage() {
   const loadTicketData = useCallback(async () => {
     try {
       // Carregar ticket
-      const tickets = await db.getTicketsByTecnico(session?.user?.id || '');
+      const token = (session as any)?.accessToken;
+      const tickets = await db.getTicketsByTecnico(session?.user?.id || '', token);
       const foundTicket = tickets.find(t => t.id === ticketId);
-      
+
       if (!foundTicket) {
         toast.error('Ticket não encontrado');
         router.push('/tecnico');
@@ -57,7 +58,7 @@ export default function TicketViewPage() {
       setTicket(foundTicket);
 
       // Carregar relatório
-      const relatorioData = await db.getRelatorioByTicket(ticketId);
+      const relatorioData = await db.getRelatorioByTicket(ticketId, token);
       if (relatorioData) {
         setRelatorio(relatorioData);
       }
@@ -72,7 +73,7 @@ export default function TicketViewPage() {
 
   useEffect(() => {
     if (status === 'loading') return;
-    
+
     if (!session || session.user?.type !== 'tecnico') {
       router.push('/');
       return;
@@ -84,18 +85,19 @@ export default function TicketViewPage() {
   // Heartbeat para manter status online
   useEffect(() => {
     if (!session?.user?.id || session.user.type !== 'tecnico') return;
-    
+
     const heartbeat = async () => {
       try {
-        await db.updateTecnicoOnlineStatus(session.user.id, true);
+        const token = (session as any)?.accessToken;
+        await db.updateTecnicoOnlineStatus(session.user.id, true, token);
       } catch (error) {
         console.error('Erro no heartbeat:', error);
       }
     };
-    
+
     // Heartbeat a cada 30 segundos
     const interval = setInterval(heartbeat, 30000);
-    
+
     return () => {
       clearInterval(interval);
     };
@@ -154,7 +156,7 @@ export default function TicketViewPage() {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}min ${secs}s`;
     } else if (minutes > 0) {
@@ -344,20 +346,20 @@ export default function TicketViewPage() {
                   <h4 className="font-semibold text-gray-900 mb-2">Detalhes Específicos</h4>
                   <div className="space-y-4">
                     {/* Distâncias entre Equipamentos */}
-                    {relatorio.dados_especificos.distancias_equipamentos && 
-                     Object.keys(relatorio.dados_especificos.distancias_equipamentos).length > 0 && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h5 className="font-medium text-gray-900 mb-2">Distâncias entre Equipamentos</h5>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                          {Object.entries(relatorio.dados_especificos.distancias_equipamentos).map(([key, value]) => (
-                            <div key={key} className="flex justify-between">
-                              <span className="text-gray-600">{key}:</span>
-                              <span className="font-medium">{String(value)}m</span>
-                            </div>
-                          ))}
+                    {relatorio.dados_especificos.distancias_equipamentos &&
+                      Object.keys(relatorio.dados_especificos.distancias_equipamentos).length > 0 && (
+                        <div className="bg-gray-50 p-4 rounded-lg">
+                          <h5 className="font-medium text-gray-900 mb-2">Distâncias entre Equipamentos</h5>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                            {Object.entries(relatorio.dados_especificos.distancias_equipamentos).map(([key, value]) => (
+                              <div key={key} className="flex justify-between">
+                                <span className="text-gray-600">{key}:</span>
+                                <span className="font-medium">{String(value)}m</span>
+                              </div>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
 
                     {/* Localização GPS */}
                     {relatorio.dados_especificos.localizacao_gps && (

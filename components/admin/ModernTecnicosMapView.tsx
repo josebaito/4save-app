@@ -7,12 +7,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { 
-  RefreshCw, 
-  MapPin, 
-  Clock, 
-  User, 
-  AlertCircle, 
+import {
+  RefreshCw,
+  MapPin,
+  Clock,
+  User,
+  AlertCircle,
   Search,
   // Filter,
   Navigation,
@@ -57,7 +57,12 @@ export interface TecnicoLocation {
   disponibilidade: boolean;
 }
 
+import { useSession } from 'next-auth/react';
+
+// ... (keep default exports and other imports)
+
 export function ModernTecnicosMapView() {
+  const { data: session, status } = useSession();
   const [locations, setLocations] = useState<TecnicoLocation[]>([]);
   const [filteredLocations, setFilteredLocations] = useState<TecnicoLocation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -73,30 +78,36 @@ export function ModernTecnicosMapView() {
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const fetchLocations = useCallback(async () => {
+    // Only fetch if authenticated and token exists
+    if (status !== 'authenticated' || !(session as any)?.accessToken) return;
+
     try {
       setIsLoading(true);
       console.log('🗺️ Buscando localizações dos técnicos...');
-      
-      const data = await db.getTecnicoLocationsWithUsers() as TecnicoLocation[];
-      
+
+      const token = (session as any).accessToken;
+      const data = await db.getTecnicoLocationsWithUsers(token) as TecnicoLocation[];
+
       console.log(`📍 Encontradas ${data.length} localizações:`, data);
-      
+
       setLocations(data);
       setError(null);
       setLastUpdate(new Date());
-      
+
       if (data.length === 0) {
         toast.info('Nenhum técnico com localização ativa encontrado');
       }
     } catch (err) {
       console.error('❌ Erro ao buscar localizações:', err);
+      // Suppress specific 404 or other known harmless errors if needed, or refine error handling
       const errorMessage = 'Não foi possível carregar as localizações dos técnicos';
       setError(errorMessage);
-      toast.error(errorMessage);
+      // Avoid toasting on every interval refresh failure to not annoy user, maybe only on manual refresh?
+      // For now keeping behavior but checking if it was an auto-refresh call would be better.
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [status, session]);
 
   // Filtrar localizações baseado na busca e filtros
   useEffect(() => {
@@ -104,7 +115,7 @@ export function ModernTecnicosMapView() {
 
     // Filtro de busca
     if (searchTerm) {
-      filtered = filtered.filter(loc => 
+      filtered = filtered.filter(loc =>
         loc.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         loc.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
         loc.especialidade?.toLowerCase().includes(searchTerm.toLowerCase())
@@ -117,7 +128,7 @@ export function ModernTecnicosMapView() {
       filtered = filtered.filter(loc => {
         const locationTime = new Date(loc.timestamp);
         const diffInMinutes = (now.getTime() - locationTime.getTime()) / (1000 * 60);
-        
+
         switch (statusFilter) {
           case 'recent':
             return diffInMinutes <= 5;
@@ -136,13 +147,13 @@ export function ModernTecnicosMapView() {
 
   useEffect(() => {
     fetchLocations();
-    
+
     // Atualiza a cada 30 segundos se autoRefresh estiver ativo
     let interval: NodeJS.Timeout;
     if (autoRefresh) {
       interval = setInterval(fetchLocations, 30000);
     }
-    
+
     return () => {
       if (interval) clearInterval(interval);
     };
@@ -153,7 +164,7 @@ export function ModernTecnicosMapView() {
     const locationTime = new Date(timestamp);
     const now = new Date();
     const diffInMinutes = (now.getTime() - locationTime.getTime()) / (1000 * 60);
-    
+
     if (diffInMinutes <= 5) return { status: 'online', color: 'bg-green-500', text: 'Online' };
     if (diffInMinutes <= 30) return { status: 'active', color: 'bg-yellow-500', text: 'Ativo' };
     return { status: 'stale', color: 'bg-red-500', text: 'Inativo' };
@@ -164,15 +175,15 @@ export function ModernTecnicosMapView() {
     const locationTime = new Date(timestamp);
     const now = new Date();
     const diffInMinutes = Math.floor((now.getTime() - locationTime.getTime()) / (1000 * 60));
-    
+
     if (diffInMinutes < 1) return 'Agora mesmo';
     if (diffInMinutes === 1) return '1 min';
     if (diffInMinutes < 60) return `${diffInMinutes} min`;
-    
+
     const diffInHours = Math.floor(diffInMinutes / 60);
     if (diffInHours === 1) return '1h';
     if (diffInHours < 24) return `${diffInHours}h`;
-    
+
     const diffInDays = Math.floor(diffInHours / 24);
     return `${diffInDays}d`;
   };
@@ -208,7 +219,7 @@ export function ModernTecnicosMapView() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-slate-800/50 border-slate-700/50">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -220,7 +231,7 @@ export function ModernTecnicosMapView() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-slate-800/50 border-slate-700/50">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -232,7 +243,7 @@ export function ModernTecnicosMapView() {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card className="bg-slate-800/50 border-slate-700/50">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -292,9 +303,9 @@ export function ModernTecnicosMapView() {
                 <div className="text-center">
                   <AlertCircle className="h-12 w-12 mx-auto mb-4 text-red-400" />
                   <p className="text-red-400 font-medium">{error}</p>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
+                  <Button
+                    variant="outline"
+                    size="sm"
                     onClick={fetchLocations}
                     className="mt-4"
                   >
@@ -307,7 +318,7 @@ export function ModernTecnicosMapView() {
                 {/* Mapa Real Interativo Moderno */}
                 <div className="relative h-full w-full">
                   <ModernMapWithNoSSR locations={filteredLocations} />
-                  
+
                   {/* Overlay com informações */}
                   <div className="absolute top-4 left-4 bg-slate-800/90 backdrop-blur-sm rounded-lg p-3 border border-slate-600/50">
                     <div className="flex items-center gap-3 text-sm">
@@ -327,7 +338,7 @@ export function ModernTecnicosMapView() {
                         <span className="text-slate-400">Inativo</span>
                       </div>
                     </div>
-                    
+
                     {/* Modo de visualização */}
                     <div className="mt-2 pt-2 border-t border-slate-600/50">
                       <div className="flex items-center gap-2 text-xs text-slate-400">
@@ -336,7 +347,7 @@ export function ModernTecnicosMapView() {
                       </div>
                     </div>
                   </div>
-                  
+
                   {/* Controles de atualização */}
                   <div className="absolute top-4 right-4 flex gap-2">
                     <Button
@@ -358,7 +369,7 @@ export function ModernTecnicosMapView() {
                       <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                     </Button>
                   </div>
-                  
+
                   {/* Painel de detalhes do técnico selecionado */}
                   {selectedTecnico && (
                     <div className="absolute bottom-4 right-4 bg-slate-800/95 backdrop-blur-sm rounded-lg p-4 border border-slate-600/50 max-w-xs">
@@ -376,30 +387,30 @@ export function ModernTecnicosMapView() {
                           ×
                         </Button>
                       </div>
-                      
+
                       <div className="space-y-2 text-sm">
                         <div className="flex items-center gap-2 text-slate-300">
                           <Mail className="h-3 w-3 text-slate-400" />
                           <span className="truncate">{selectedTecnico.email}</span>
                         </div>
-                        
+
                         {selectedTecnico.especialidade && (
                           <div className="flex items-center gap-2 text-slate-300">
                             <Zap className="h-3 w-3 text-slate-400" />
                             <span>{selectedTecnico.especialidade}</span>
                           </div>
                         )}
-                        
+
                         <div className="flex items-center gap-2 text-slate-300">
                           <Clock className="h-3 w-3 text-slate-400" />
                           <span>{formatTimeAgo(selectedTecnico.timestamp)}</span>
                         </div>
-                        
+
                         <div className="flex items-center gap-2 text-slate-300">
                           <Navigation className="h-3 w-3 text-slate-400" />
                           <span>{selectedTecnico.latitude.toFixed(6)}, {selectedTecnico.longitude.toFixed(6)}</span>
                         </div>
-                        
+
                         {selectedTecnico.accuracy && (
                           <div className="flex items-center gap-2 text-slate-400">
                             <Settings className="h-3 w-3" />
@@ -407,13 +418,12 @@ export function ModernTecnicosMapView() {
                           </div>
                         )}
                       </div>
-                      
+
                       <div className="mt-3 pt-3 border-t border-slate-600/50">
-                        <Badge className={`${
-                          getLocationStatus(selectedTecnico.timestamp).status === 'online' ? 'bg-green-500/20 text-green-300' :
+                        <Badge className={`${getLocationStatus(selectedTecnico.timestamp).status === 'online' ? 'bg-green-500/20 text-green-300' :
                           getLocationStatus(selectedTecnico.timestamp).status === 'active' ? 'bg-yellow-500/20 text-yellow-300' :
-                          'bg-red-500/20 text-red-300'
-                        } text-xs`}>
+                            'bg-red-500/20 text-red-300'
+                          } text-xs`}>
                           {getLocationStatus(selectedTecnico.timestamp).text}
                         </Badge>
                       </div>
@@ -433,7 +443,7 @@ export function ModernTecnicosMapView() {
                 <User className="h-5 w-5 text-green-400" />
                 Técnicos em Campo
               </CardTitle>
-              
+
               {/* Filtros */}
               <div className="space-y-3">
                 <div className="relative">
@@ -445,7 +455,7 @@ export function ModernTecnicosMapView() {
                     className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
                   />
                 </div>
-                
+
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
                   <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
                     <SelectValue placeholder="Filtrar por status" />
@@ -459,7 +469,7 @@ export function ModernTecnicosMapView() {
                 </Select>
               </div>
             </CardHeader>
-            
+
             <CardContent>
               <div className="space-y-3 max-h-[400px] overflow-y-auto">
                 {filteredLocations.length > 0 ? (
@@ -468,11 +478,10 @@ export function ModernTecnicosMapView() {
                     return (
                       <div
                         key={location.tecnico_id}
-                        className={`p-4 rounded-lg border transition-all cursor-pointer hover:bg-slate-700/50 ${
-                          selectedTecnico?.tecnico_id === location.tecnico_id
-                            ? 'bg-blue-500/20 border-blue-500/50'
-                            : 'bg-slate-700/30 border-slate-600/30'
-                        }`}
+                        className={`p-4 rounded-lg border transition-all cursor-pointer hover:bg-slate-700/50 ${selectedTecnico?.tecnico_id === location.tecnico_id
+                          ? 'bg-blue-500/20 border-blue-500/50'
+                          : 'bg-slate-700/30 border-slate-600/30'
+                          }`}
                         onClick={() => centerOnTecnico(location)}
                       >
                         <div className="flex items-start justify-between">
@@ -480,15 +489,14 @@ export function ModernTecnicosMapView() {
                             <div className="flex items-center gap-2 mb-2">
                               <div className={`w-3 h-3 rounded-full ${status.color} ${status.status === 'online' ? 'animate-pulse' : ''}`}></div>
                               <h4 className="font-semibold text-white">{location.name}</h4>
-                              <Badge className={`text-xs ${
-                                status.status === 'online' ? 'bg-green-500/20 text-green-300' :
+                              <Badge className={`text-xs ${status.status === 'online' ? 'bg-green-500/20 text-green-300' :
                                 status.status === 'active' ? 'bg-yellow-500/20 text-yellow-300' :
-                                'bg-red-500/20 text-red-300'
-                              }`}>
+                                  'bg-red-500/20 text-red-300'
+                                }`}>
                                 {status.text}
                               </Badge>
                             </div>
-                            
+
                             <div className="space-y-1 text-sm">
                               {location.especialidade && (
                                 <div className="flex items-center gap-1 text-slate-400">
@@ -496,17 +504,17 @@ export function ModernTecnicosMapView() {
                                   <span>{location.especialidade}</span>
                                 </div>
                               )}
-                              
+
                               <div className="flex items-center gap-1 text-slate-400">
                                 <Mail className="h-3 w-3" />
                                 <span className="truncate">{location.email}</span>
                               </div>
-                              
+
                               <div className="flex items-center gap-1 text-slate-400">
                                 <Calendar className="h-3 w-3" />
                                 <span>{formatTimeAgo(location.timestamp)}</span>
                               </div>
-                              
+
                               {location.accuracy && (
                                 <div className="flex items-center gap-1 text-slate-500">
                                   <Navigation className="h-3 w-3" />
@@ -515,7 +523,7 @@ export function ModernTecnicosMapView() {
                               )}
                             </div>
                           </div>
-                          
+
                           <Button
                             variant="ghost"
                             size="sm"
@@ -541,7 +549,7 @@ export function ModernTecnicosMapView() {
                   </div>
                 )}
               </div>
-              
+
               {lastUpdate && (
                 <div className="mt-4 pt-4 border-t border-slate-700/50">
                   <p className="text-xs text-slate-500 text-center">

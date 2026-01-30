@@ -1,0 +1,156 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "linux-musl-openssl-3.0.x"]
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserType {
+  admin
+  tecnico
+}
+
+enum UserStatus {
+  ativo
+  inativo
+}
+
+// Mapeamenento da tabela 'users'
+model User {
+  id              String    @id @default(uuid())
+  email           String    @unique
+  name            String
+  password        String
+  type            UserType
+  especialidade   String?
+  telefone        String?
+  status          UserStatus @default(ativo)
+  disponibilidade Boolean?   @default(true)
+  avaliacao       Decimal?   @db.Decimal(3, 2)
+  localizacao_gps String?
+  last_seen       DateTime?  @default(now())
+  is_online       Boolean?   @default(false)
+  created_at      DateTime   @default(now())
+  updated_at      DateTime   @default(now())
+  
+  tickets         Ticket[]
+  relatorios      RelatorioTecnico[]
+
+  @@map("users")
+}
+
+model Cliente {
+  id          String   @id @default(uuid())
+  nome        String
+  email       String
+  telefone    String
+  endereco    String
+  cnpj        String?
+  created_at  DateTime @default(now())
+  updated_at  DateTime @default(now())
+  
+  contratos   Contrato[]
+  tickets     Ticket[]
+
+  @@map("clientes")
+}
+
+enum ContratoStatus {
+  ativo
+  inativo
+  vencido
+}
+
+model Contrato {
+  id            String         @id @default(uuid())
+  cliente_id    String
+  cliente       Cliente        @relation(fields: [cliente_id], references: [id], onDelete: Cascade)
+  numero        String         @unique
+  descricao     String
+  valor         Decimal        @db.Decimal(10, 2)
+  data_inicio   DateTime       @db.Date
+  data_fim      DateTime       @db.Date
+  equipamentos  String[]       @default([])
+  tipo_produto  String?        @default("solar_baterias")
+  segmento      String?        @default("domestico")
+  status        ContratoStatus @default(ativo)
+  created_at    DateTime       @default(now())
+  updated_at    DateTime       @default(now())
+  
+  tickets       Ticket[]
+
+  @@map("contratos")
+}
+
+enum TicketStatus {
+  pendente
+  em_curso
+  finalizado
+  cancelado
+}
+
+enum TicketPrioridade {
+  baixa
+  media
+  alta
+  urgente
+}
+
+model Ticket {
+  id                  String           @id @default(uuid())
+  cliente_id          String
+  cliente             Cliente          @relation(fields: [cliente_id], references: [id], onDelete: Cascade)
+  contrato_id         String
+  contrato            Contrato         @relation(fields: [contrato_id], references: [id], onDelete: Cascade)
+  tecnico_id          String?
+  tecnico             User?            @relation(fields: [tecnico_id], references: [id])
+  titulo              String
+  descricao           String
+  tipo                String           @default("manutencao")
+  prioridade          TicketPrioridade @default(media)
+  status              TicketStatus     @default(pendente)
+  motivo_cancelamento String?
+  created_at          DateTime         @default(now())
+  updated_at          DateTime         @default(now())
+  
+  relatorios          RelatorioTecnico[]
+
+  @@map("tickets")
+}
+
+model RelatorioTecnico {
+  id                      String   @id @default(uuid())
+  ticket_id               String
+  ticket                  Ticket   @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+  tecnico_id              String
+  tecnico                 User     @relation(fields: [tecnico_id], references: [id], onDelete: Cascade)
+  observacoes_iniciais    String?
+  diagnostico             String?
+  acoes_realizadas        String?
+  fotos_antes             String[] @default([])
+  fotos_depois            String[] @default([])
+  assinatura_cliente      String?
+  assinatura_tecnico      String?
+  data_inicio             DateTime?
+  data_finalizacao        DateTime?
+  tempo_execucao          Int?
+  tipo_produto            String?
+  localizacao_gps         String?
+  dados_especificos       Json?
+  checklist_completo      Boolean? @default(false)
+  fotos_minimas_atingidas Boolean? @default(false)
+  tempo_dentro_limite     Boolean? @default(false)
+  aprovado_admin          Boolean? @default(false)
+  feedback_cliente        Int?
+  observacoes_qualidade   String?
+  created_at              DateTime @default(now())
+  updated_at              DateTime @default(now())
+
+  @@map("relatorios_tecnicos")
+}

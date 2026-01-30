@@ -10,9 +10,9 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
-import { 
-  FileText, 
-  Clock, 
+import {
+  FileText,
+  Clock,
   CheckCircle,
   PlayCircle,
   AlertCircle,
@@ -43,7 +43,8 @@ export default function TecnicoTicketsPage() {
   const loadTickets = useCallback(async () => {
     try {
       if (session?.user?.id) {
-        const data = await db.getTicketsByTecnico(session.user.id);
+        const token = (session as any)?.accessToken;
+        const data = await db.getTicketsByTecnico(session.user.id, token);
         setTickets(data);
       }
     } catch (error) {
@@ -56,7 +57,7 @@ export default function TecnicoTicketsPage() {
 
   useEffect(() => {
     if (status === 'loading') return;
-    
+
     if (!session || session.user?.type !== 'tecnico') {
       router.push('/');
       return;
@@ -68,13 +69,13 @@ export default function TecnicoTicketsPage() {
   // Heartbeat otimizado para manter status online
   useEffect(() => {
     if (!session?.user?.id || session.user.type !== 'tecnico') return;
-    
+
     let heartbeatCount = 0;
     const heartbeat = async () => {
       try {
         await db.updateTecnicoOnlineStatus(session.user.id, true);
         heartbeatCount++;
-        
+
         // Log apenas ocasionalmente para reduzir spam
         if (heartbeatCount % 5 === 0) {
           console.log(`Tickets page heartbeat #${heartbeatCount}`);
@@ -83,10 +84,10 @@ export default function TecnicoTicketsPage() {
         console.error('Erro no heartbeat:', error);
       }
     };
-    
+
     // Heartbeat a cada 2 minutos (reduzido de 30s)
     const interval = setInterval(heartbeat, 120000);
-    
+
     return () => {
       clearInterval(interval);
     };
@@ -95,12 +96,12 @@ export default function TecnicoTicketsPage() {
   const handleStartTicket = async (ticketId: string) => {
     try {
       await db.updateTicket(ticketId, { status: 'em_curso' });
-      
+
       // Marcar técnico como indisponível quando inicia um ticket
       if (session?.user?.id) {
         await db.updateTecnico(session.user.id, { disponibilidade: false });
       }
-      
+
       toast.success('Ticket iniciado com sucesso!');
       loadTickets();
     } catch (error) {
@@ -116,7 +117,7 @@ export default function TecnicoTicketsPage() {
     }
 
     try {
-      await db.updateTicket(selectedTicket.id, { 
+      await db.updateTicket(selectedTicket.id, {
         status: 'cancelado',
         motivo_cancelamento: cancelReason.trim()
       });
@@ -189,11 +190,11 @@ export default function TecnicoTicketsPage() {
 
   // Filtrar tickets
   const filteredTickets = tickets.filter(ticket => {
-    const matchesSearch = ticket.titulo.toLowerCase().includes(searchTerm.toLowerCase()) || 
-                         ticket.cliente?.nome.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch = ticket.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ticket.cliente?.nome.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesStatus = statusFilter === 'all' || ticket.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || ticket.prioridade === priorityFilter;
-    
+
     return matchesSearch && matchesStatus && matchesPriority;
   });
 
@@ -234,8 +235,8 @@ export default function TecnicoTicketsPage() {
             </div>
           </div>
           <div>
-            <Select 
-              value={statusFilter} 
+            <Select
+              value={statusFilter}
               onValueChange={setStatusFilter}
             >
               <SelectTrigger>
@@ -251,8 +252,8 @@ export default function TecnicoTicketsPage() {
             </Select>
           </div>
           <div>
-            <Select 
-              value={priorityFilter} 
+            <Select
+              value={priorityFilter}
               onValueChange={setPriorityFilter}
             >
               <SelectTrigger>
@@ -293,9 +294,9 @@ export default function TecnicoTicketsPage() {
                           <Badge className={getStatusColor(ticket.status)}>
                             <span className="flex items-center gap-1">
                               {getStatusIcon(ticket.status)}
-                              {ticket.status === 'pendente' ? 'Pendente' : 
-                               ticket.status === 'em_curso' ? 'Em Curso' : 
-                               ticket.status === 'finalizado' ? 'Finalizado' : 'Cancelado'}
+                              {ticket.status === 'pendente' ? 'Pendente' :
+                                ticket.status === 'em_curso' ? 'Em Curso' :
+                                  ticket.status === 'finalizado' ? 'Finalizado' : 'Cancelado'}
                             </span>
                           </Badge>
                           <Badge className={getPriorityColor(ticket.prioridade)}>
@@ -306,11 +307,11 @@ export default function TecnicoTicketsPage() {
                           </Badge>
                         </div>
                       </div>
-                      
+
                       <div className="text-sm text-slate-300">
                         Cliente: <span className="font-medium text-slate-200">{ticket.cliente?.nome}</span>
                       </div>
-                      
+
                       <div className="text-sm text-slate-300 flex items-center gap-1">
                         <CalendarClock className="h-3.5 w-3.5" />
                         Criado em: {formatDate(ticket.created_at)}
@@ -327,10 +328,10 @@ export default function TecnicoTicketsPage() {
                         </div>
                       )}
                     </div>
-                    
+
                     <div className="flex gap-2 justify-end">
                       {ticket.status === 'pendente' && (
-                        <Button 
+                        <Button
                           variant="outline"
                           size="sm"
                           onClick={() => handleStartTicket(ticket.id)}
@@ -339,9 +340,9 @@ export default function TecnicoTicketsPage() {
                           Iniciar
                         </Button>
                       )}
-                      
+
                       {ticket.status === 'em_curso' && (
-                        <Button 
+                        <Button
                           variant="destructive"
                           size="sm"
                           onClick={() => {
@@ -353,27 +354,27 @@ export default function TecnicoTicketsPage() {
                           Cancelar
                         </Button>
                       )}
-                      
+
                       {ticket.status === 'cancelado' && (
                         <div className="flex items-center gap-2 text-sm text-slate-300">
                           <Info className="h-4 w-4" />
                           <span>Aguardando reativação pelo admin</span>
                         </div>
                       )}
-                      
+
                       {ticket.status === 'finalizado' ? (
-                        <Button 
+                        <Button
                           variant="default"
-                          size="sm" 
+                          size="sm"
                           onClick={() => router.push(`/tecnico/ticket/${ticket.id}/view`)}
                         >
                           <FileText className="mr-1.5 h-4 w-4" />
                           Ver Relatório
                         </Button>
                       ) : ticket.status !== 'cancelado' && (
-                        <Button 
+                        <Button
                           variant="default"
-                          size="sm" 
+                          size="sm"
                           onClick={() => router.push(`/tecnico/ticket/${ticket.id}`)}
                         >
                           <FileText className="mr-1.5 h-4 w-4" />
@@ -404,13 +405,13 @@ export default function TecnicoTicketsPage() {
                   <div className="text-sm">
                     <p className="font-medium text-yellow-300">Atenção!</p>
                     <p className="text-yellow-200 mt-1">
-                      Ao cancelar este ticket, ele será enviado para revisão do administrador. 
+                      Ao cancelar este ticket, ele será enviado para revisão do administrador.
                       O ticket só poderá ser reativado após aprovação.
                     </p>
                   </div>
                 </div>
               </div>
-              
+
               <div>
                 <label className="text-sm font-medium mb-2 block">
                   Motivo do cancelamento *

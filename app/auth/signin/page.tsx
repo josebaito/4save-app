@@ -1,32 +1,21 @@
 'use client';
 
 import { useState } from 'react';
-import { signIn, getSession } from 'next-auth/react';
+import { signIn } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
-import { 
-  Loader2, 
-  LogIn, 
-  Shield,
-  CheckCircle,
-  Users,
-  BarChart3,
-  Smartphone
-} from 'lucide-react';
+import { Lock, Mail, ArrowRight, Loader2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function SignInPage() {
+  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
-  const router = useRouter();
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setLoading(true);
 
     try {
       const result = await signIn('credentials', {
@@ -36,120 +25,95 @@ export default function SignInPage() {
       });
 
       if (result?.error) {
-        toast.error('Credenciais inválidas', {
-          description: 'Verifique seu email e senha e tente novamente.',
-        });
+        toast.error('Credenciais inválidas');
+        setLoading(false);
       } else {
         toast.success('Login realizado com sucesso!');
-        
-        // Obter session para redirecionar corretamente
-        const session = await getSession();
-        if (session?.user?.type === 'admin') {
-          router.push('/admin');
-        } else if (session?.user?.type === 'tecnico') {
-          router.push('/tecnico');
-        }
+        router.push('/admin'); // Or check role to redirect correctly
+        router.refresh();
       }
-    } catch {
-      toast.error('Erro no login', {
-        description: 'Ocorreu um erro inesperado. Tente novamente.',
-      });
-    } finally {
-      setIsLoading(false);
+    } catch (error) {
+      toast.error('Erro ao realizar login');
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4">
-      <div className="w-full max-w-md">
-        <Card className="bg-slate-800/50 backdrop-blur-xl border-slate-700/50 shadow-2xl">
-          <CardHeader className="text-center space-y-4 pb-6">
-            <div className="flex justify-center">
-              <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-2xl flex items-center justify-center shadow-lg">
-                <Shield className="w-8 h-8 text-white" />
-              </div>
-            </div>
+    <div className="dark min-h-screen flex items-center justify-center bg-slate-950 text-slate-50 relative overflow-hidden selection:bg-blue-500/30">
+      {/* Background Grid Pattern */}
+      <div className="absolute inset-0 bg-grid-pattern opacity-[0.05] pointer-events-none" />
+
+      {/* Decorative Elements */}
+      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary to-transparent opacity-50" />
+
+      <div className="w-full max-w-md p-8 relative z-10">
+        <div className="mb-8 text-center">
+          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-secondary mb-6 border border-border shadow-sm">
+            <Lock className="w-8 h-8 text-primary" />
+          </div>
+          <h1 className="text-3xl font-heading font-bold text-foreground tracking-tight mb-2">
+            Acesso Técnico
+          </h1>
+          <p className="text-muted-foreground font-body">
+            Entre com suas credenciais para acessar o painel.
+          </p>
+        </div>
+
+        <div className="bg-card border border-border rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 p-8">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div className="space-y-2">
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
-                4Save
-              </h1>
-              <p className="text-slate-400 text-sm">
-                Plataforma Inteligente de Gestão Técnica
-              </p>
-            </div>
-          </CardHeader>
-          
-          <CardContent className="space-y-5">
-            {/* Benefícios Compactos */}
-            <div className="grid grid-cols-3 gap-2 mb-4">
-              <div className="flex flex-col items-center p-2 rounded-lg bg-slate-700/20 border border-slate-600/20">
-                <Users className="w-4 h-4 text-blue-400 mb-1" />
-                <span className="text-xs text-slate-300 text-center">Gestão</span>
-              </div>
-              <div className="flex flex-col items-center p-2 rounded-lg bg-slate-700/20 border border-slate-600/20">
-                <BarChart3 className="w-4 h-4 text-green-400 mb-1" />
-                <span className="text-xs text-slate-300 text-center">Relatórios</span>
-              </div>
-              <div className="flex flex-col items-center p-2 rounded-lg bg-slate-700/20 border border-slate-600/20">
-                <Smartphone className="w-4 h-4 text-purple-400 mb-1" />
-                <span className="text-xs text-slate-300 text-center">Mobile</span>
+              <label className="text-xs font-mono font-medium text-muted-foreground uppercase tracking-wider">Email</label>
+              <div className="relative">
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-secondary/50 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-input outline-none transition-all font-mono text-sm"
+                  placeholder="seu@email.com"
+                  required
+                />
               </div>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-3">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-200 font-medium">
-                  Email
-                </Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="h-11 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400 focus:border-blue-400 focus:ring-blue-400/20"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-200 font-medium">
-                  Senha
-                </Label>
-                <Input
-                  id="password"
+            <div className="space-y-2">
+              <label className="text-xs font-mono font-medium text-muted-foreground uppercase tracking-wider">Senha</label>
+              <div className="relative">
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <input
                   type="password"
-                  placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
+                  className="w-full pl-10 pr-4 py-2.5 bg-secondary/50 border border-input rounded-lg focus:ring-2 focus:ring-ring focus:border-input outline-none transition-all font-mono text-sm"
+                  placeholder="••••••••"
                   required
-                  className="h-11 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400 focus:border-blue-400 focus:ring-blue-400/20"
                 />
               </div>
-              
-              <Button
-                type="submit"
-                className="w-full h-10 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-700 hover:to-cyan-700 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 mt-4"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                ) : (
-                  <LogIn className="mr-2 h-4 w-4" />
-                )}
-                Entrar
-              </Button>
-            </form>
-            
-            <div className="text-center pt-2 border-t border-slate-700/30">
-              <div className="flex items-center justify-center space-x-1 text-xs text-slate-500">
-                <CheckCircle className="w-3 h-3 text-green-400" />
-                <span>Plataforma escalável e segura</span>
-              </div>
             </div>
-          </CardContent>
-        </Card>
+
+            <Button
+              type="submit"
+              className="w-full bg-primary text-primary-foreground hover:bg-primary/90 rounded-lg h-11 font-medium transition-all group mt-6"
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              ) : (
+                <>
+                  Entrar no Sistema
+                  <ArrowRight className="w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
+                </>
+              )}
+            </Button>
+          </form>
+        </div>
+
+        <div className="mt-8 text-center">
+          <p className="text-xs text-muted-foreground font-mono">
+            Sistema 4Save PRO v2.0
+          </p>
+        </div>
       </div>
     </div>
   );
-} 
+}

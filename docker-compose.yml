@@ -1,0 +1,46 @@
+version: '3.8'
+
+services:
+  # Banco de Dados PostgreSQL
+  db:
+    image: postgres:16-alpine
+    container_name: 4save-db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-4save}
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - 4save-network
+    restart: always
+
+  # Backend NestJS (Dev Mode)
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: 4save-backend
+    volumes:
+      - ./backend:/app
+      - /app/node_modules
+    ports:
+      - "4000:4000"
+    environment:
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-4save}?schema=public
+      - JWT_SECRET=${JWT_SECRET:-super-secret-key}
+      - PORT=4000
+    depends_on:
+      - db
+    networks:
+      - 4save-network
+    command: npm run start:dev
+
+volumes:
+  postgres_data:
+
+networks:
+  4save-network:
+    driver: bridge

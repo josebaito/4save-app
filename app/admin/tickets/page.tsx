@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -16,11 +17,13 @@ import type { Ticket, Cliente, Contrato, User as UserType } from '@/types';
 import { toast } from 'sonner';
 
 export default function TicketsPage() {
+  const { data: session, status } = useSession();
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [contratos, setContratos] = useState<Contrato[]>([]);
   const [tecnicos, setTecnicos] = useState<UserType[]>([]);
   const [loading, setLoading] = useState(true);
+  /* eslint-disable @typescript-eslint/no-unused-vars */
   const [searchTerm, setSearchTerm] = useState('');
   const [filterTipo, setFilterTipo] = useState('all');
   const [filterStatus, setFilterStatus] = useState('all');
@@ -42,25 +45,33 @@ export default function TicketsPage() {
   });
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (status === 'authenticated' && (session as any)?.accessToken) {
+      loadData();
+    }
+  }, [status, session]);
 
   // Forçar reload dos dados
   useEffect(() => {
+    if (status !== 'authenticated' || !(session as any)?.accessToken) return;
+
     const interval = setInterval(() => {
       loadData();
     }, 5000); // Recarregar a cada 5 segundos
 
     return () => clearInterval(interval);
-  }, []);
+  }, [status, session]);
 
   const loadData = async () => {
+    if (!(session as any)?.accessToken) return;
+
     try {
+      const token = (session as any).accessToken;
+
       const [ticketsData, clientesData, contratosData, tecnicosData] = await Promise.all([
-        db.getTickets(),
-        db.getClientes(),
-        db.getContratos(),
-        db.getTecnicos()
+        db.getTickets(token),
+        db.getClientes(token),
+        db.getContratos(token),
+        db.getTecnicos(token)
       ]);
 
       setTickets(ticketsData);
@@ -69,7 +80,8 @@ export default function TicketsPage() {
       setTecnicos(tecnicosData);
     } catch (error) {
       console.error('Error loading data:', error);
-      toast.error('Erro ao carregar dados');
+      // Removed generic toast error to avoid spamming if just one request fails during polling
+      // toast.error('Erro ao carregar dados');
     } finally {
       setLoading(false);
     }
@@ -77,29 +89,36 @@ export default function TicketsPage() {
 
   const filteredTickets = tickets.filter(ticket => {
     const matchesSearch = ticket.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          ticket.cliente?.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          ticket.descricao.toLowerCase().includes(searchTerm.toLowerCase());
+      ticket.cliente?.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      ticket.descricao.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesTipo = filterTipo === 'all' || ticket.tipo === filterTipo;
     const matchesStatus = filterStatus === 'all' || ticket.status === filterStatus;
-    const matchesTecnico = filterTecnico === 'all' || 
-                          (filterTecnico === 'sem_tecnico' && (!ticket.tecnico_id || ticket.tecnico_id === 'none')) ||
-                          ticket.tecnico_id === filterTecnico;
-    
+    const matchesTecnico = filterTecnico === 'all' ||
+      (filterTecnico === 'sem_tecnico' && (!ticket.tecnico_id || ticket.tecnico_id === 'none')) ||
+      ticket.tecnico_id === filterTecnico;
+
     return matchesSearch && matchesTipo && matchesStatus && matchesTecnico;
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    if (!(session as any)?.accessToken) {
+      toast.error('Erro de autenticação');
+      return;
+    }
+
     try {
+      const token = (session as any).accessToken;
+
       if (isEditing && selectedTicket) {
-        await db.updateTicket(selectedTicket.id, formData);
+        await db.updateTicket(selectedTicket.id, formData, token);
         toast.success('Ticket atualizado com sucesso!');
       } else {
-        await db.createTicket(formData);
+        await db.createTicket(formData, token);
         toast.success('Ticket criado com sucesso!');
       }
-      
+
       await loadData();
       setIsDialogOpen(false);
       resetForm();
@@ -157,11 +176,15 @@ export default function TicketsPage() {
   };
 
   const handleReactivateTicket = async (ticket: Ticket) => {
+    if (!(session as any)?.accessToken) return;
+
     try {
-      await db.updateTicket(ticket.id, { 
+      const token = (session as any).accessToken;
+
+      await db.updateTicket(ticket.id, {
         status: 'pendente',
         motivo_cancelamento: undefined // Limpar o motivo do cancelamento
-      });
+      }, token);
       toast.success('Ticket reativado com sucesso!');
       loadData();
     } catch (error) {
@@ -171,18 +194,22 @@ export default function TicketsPage() {
   };
 
   const handleAtribuicaoInteligente = async (ticket: Ticket) => {
+    if (!(session as any)?.accessToken) return;
+
     try {
       toast.info('Atribuindo técnico automaticamente...');
-      
+
+      const token = (session as any).accessToken;
+
       const tipoProduto = ticket.contrato?.tipo_produto;
-      const tecnicoAtribuido = await db.atribuirTecnicoInteligente(ticket.id, tipoProduto);
-      
+      const tecnicoAtribuido = await db.atribuirTecnicoInteligente(ticket.id, tipoProduto, token);
+
       if (tecnicoAtribuido) {
         toast.success(`Técnico ${tecnicoAtribuido.name} atribuído automaticamente!`);
       } else {
         toast.error('Nenhum técnico disponível encontrado');
       }
-      
+
       loadData();
     } catch (error) {
       console.error('Error assigning technician:', error);
@@ -299,8 +326,8 @@ export default function TicketsPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setSearchTerm('');
                   setFilterTipo('all');
@@ -368,7 +395,7 @@ export default function TicketsPage() {
                       <Badge className={ticket.tipo === 'instalacao' ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' : 'bg-slate-600/50 text-slate-300 border-slate-500/50'}>
                         {ticket.tipo === 'instalacao' ? 'Instalação' : 'Manutenção'}
                       </Badge>
-                      
+
                       {/* Motivo do cancelamento */}
                       {ticket.status === 'cancelado' && ticket.motivo_cancelamento && (
                         <div className="flex items-center gap-2 text-sm text-red-300 bg-red-500/10 px-2 py-1 rounded border border-red-500/20">
@@ -378,7 +405,7 @@ export default function TicketsPage() {
                           </span>
                         </div>
                       )}
-                      
+
                       <Button
                         variant="ghost"
                         size="sm"
@@ -387,7 +414,7 @@ export default function TicketsPage() {
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
-                      
+
                       {!ticket.tecnico_id && ticket.status !== 'cancelado' && (
                         <Button
                           variant="outline"
@@ -400,7 +427,7 @@ export default function TicketsPage() {
                           Auto
                         </Button>
                       )}
-                      
+
                       {ticket.status === 'cancelado' ? (
                         <Button
                           variant="outline"

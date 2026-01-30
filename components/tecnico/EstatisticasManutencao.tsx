@@ -28,26 +28,30 @@ export function EstatisticasManutencao() {
       setLoading(true);
       console.log('📊 Carregando estatísticas de manutenção...');
       console.log('📊 Sessão:', session?.user?.id, session?.user?.type);
-      
+
       if (!session?.user?.id) {
         console.log('📊 Usuário não autenticado, aguardando...');
         return;
       }
-      
+
+      const token = (session as any)?.accessToken;
+
       const response = await fetch('/api/estatisticas/manutencao', {
-        credentials: 'include'
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
       });
-      
+
       console.log('📊 Response status:', response.status);
-      
+
       if (!response.ok) {
         const errorText = await response.text();
         console.error('📊 Erro na resposta:', errorText);
         throw new Error(`Falha ao carregar estatísticas: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
+
       setStats({
         proximasManutencoes: data.proximasManutencoes || 0,
         manutencoesPendentes: data.manutencoesPendentes || 0,

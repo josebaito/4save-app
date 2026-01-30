@@ -41,9 +41,12 @@ export default function TecnicosPage() {
   async function carregarTecnicos() {
     setLoading(true);
     try {
-      // Usar a função getTecnicos do cliente db
-      const tecnicos = await db.getTecnicos();
-      
+      const session: any = await import('next-auth/react').then(mod => mod.getSession());
+      const token = session?.accessToken;
+
+      // Usar a função getTecnicos do cliente db com token
+      const tecnicos = await db.getTecnicos(token);
+
       // Usar diretamente os usuários do tipo técnico
       setTecnicos(tecnicos);
     } catch (error) {
@@ -87,18 +90,22 @@ export default function TecnicosPage() {
         toast.error('Nome é obrigatório');
         return;
       }
-      
+
       if (!email.trim()) {
         toast.error('Email é obrigatório');
         return;
       }
-      
+
       // Validar formato do email
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(email)) {
         toast.error('Email inválido');
         return;
       }
+
+      const session: any = await import('next-auth/react').then(mod => mod.getSession());
+      const token = session?.accessToken;
+
       if (selectedTecnico) {
         // Atualizar técnico existente
         await db.updateTecnico(selectedTecnico.id, {
@@ -109,34 +116,27 @@ export default function TecnicosPage() {
           status: status || 'ativo',
           disponibilidade: disponibilidade !== undefined ? disponibilidade : true,
           avaliacao: 0 // Avaliação é resetada para 0 ao editar
-        });
-        
+        }, token);
+
         toast.success('Técnico atualizado com sucesso');
       } else {
         // Criar novo técnico
-        const supabase = createSupabaseClient();
-        const { error } = await supabase
-          .from('users')
-          .insert([{
-            id: crypto.randomUUID(),
-            name: nome,
-            email: email,
-            password: 'tecnico123', // Senha padrão
-            type: 'tecnico',
-            telefone: telefone || null,
-            especialidade: especialidade || null,
-            status: status || 'ativo',
-            disponibilidade: disponibilidade !== undefined ? disponibilidade : true,
-            avaliacao: 0,
-            localizacao_gps: null,
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString()
-          }]);
-        
-        if (error) {
-          console.error('Erro detalhado:', error);
-          throw error;
-        }
+        const novoTecnico = {
+          name: nome,
+          email: email,
+          password: 'tecnico123', // Senha padrão
+          type: 'tecnico',
+          telefone: telefone || null,
+          especialidade: especialidade || null,
+          status: status || 'ativo',
+          disponibilidade: disponibilidade !== undefined ? disponibilidade : true,
+          avaliacao: 0,
+          localizacao_gps: null,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        await db.createTecnico(novoTecnico, token);
         toast.success('Técnico cadastrado com sucesso');
       }
 
@@ -150,15 +150,13 @@ export default function TecnicosPage() {
 
   async function excluirTecnico(id: string) {
     if (!confirm('Tem certeza que deseja excluir este técnico?')) return;
-    
+
     try {
-      const supabase = createSupabaseClient();
-      const { error } = await supabase
-        .from('users')
-        .delete()
-        .eq('id', id);
-      
-      if (error) throw error;
+      const session: any = await import('next-auth/react').then(mod => mod.getSession());
+      const token = session?.accessToken;
+
+      await db.deleteTecnico(id, token);
+
       toast.success('Técnico excluído com sucesso');
       carregarTecnicos();
     } catch (error) {
@@ -171,7 +169,7 @@ export default function TecnicosPage() {
   const tecnicosFiltrados = tecnicos.filter(tecnico => {
     const matchesEspecialidade = filtroEspecialidade === 'all' || tecnico.especialidade === filtroEspecialidade;
     const matchesStatus = filtroStatus === 'all' || tecnico.status === filtroStatus;
-    
+
     let matchesDisponibilidade = true;
     if (filtroDisponibilidade === 'true') {
       matchesDisponibilidade = tecnico.disponibilidade === true;
@@ -180,11 +178,11 @@ export default function TecnicosPage() {
     } else if (filtroDisponibilidade === 'online') {
       matchesDisponibilidade = tecnico.is_online === true;
     }
-    
-    const matchesPesquisa = searchTerm === '' || 
+
+    const matchesPesquisa = searchTerm === '' ||
       tecnico.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       tecnico.email.toLowerCase().includes(searchTerm.toLowerCase());
-    
+
     return matchesEspecialidade && matchesStatus && matchesDisponibilidade && matchesPesquisa;
   });
 
@@ -221,13 +219,13 @@ export default function TecnicosPage() {
                   />
                 </div>
               </div>
-              
+
               {/* Filtros em grid responsivo */}
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 <div>
                   <Label htmlFor="especialidade" className="text-slate-200">Especialidade</Label>
-                  <Select 
-                    value={filtroEspecialidade} 
+                  <Select
+                    value={filtroEspecialidade}
                     onValueChange={setFiltroEspecialidade}
                   >
                     <SelectTrigger id="especialidade" className="bg-slate-700/50 border-slate-600/50 text-white">
@@ -241,11 +239,11 @@ export default function TecnicosPage() {
                     </SelectContent>
                   </Select>
                 </div>
-                
+
                 <div>
                   <Label htmlFor="status" className="text-slate-200">Status</Label>
-                  <Select 
-                    value={filtroStatus} 
+                  <Select
+                    value={filtroStatus}
                     onValueChange={setFiltroStatus}
                   >
                     <SelectTrigger id="status" className="bg-slate-700/50 border-slate-600/50 text-white">
@@ -261,8 +259,8 @@ export default function TecnicosPage() {
 
                 <div className="sm:col-span-2 lg:col-span-1">
                   <Label htmlFor="disponibilidade" className="text-slate-200">Disponibilidade</Label>
-                  <Select 
-                    value={filtroDisponibilidade} 
+                  <Select
+                    value={filtroDisponibilidade}
                     onValueChange={setFiltroDisponibilidade}
                   >
                     <SelectTrigger id="disponibilidade" className="bg-slate-700/50 border-slate-600/50 text-white">
@@ -320,14 +318,14 @@ export default function TecnicosPage() {
                             <td className="py-3 px-2 text-slate-300 truncate max-w-[100px]">{tecnico.telefone || '-'}</td>
                             <td className="py-3 px-2 text-slate-300 truncate max-w-[120px]" title={tecnico.especialidade || 'Geral'}>{tecnico.especialidade || 'Geral'}</td>
                             <td className="py-3 px-2">
-                              <Badge 
+                              <Badge
                                 className={`${tecnico.status === 'ativo' ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-slate-600/50 text-slate-300 border-slate-500/50'} text-xs`}
                               >
                                 {tecnico.status === 'ativo' ? 'Ativo' : 'Inativo'}
                               </Badge>
                             </td>
                             <td className="py-3 px-2">
-                              <Badge 
+                              <Badge
                                 className={`${tecnico.disponibilidade ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-slate-600/50 text-slate-300 border-slate-500/50'} text-xs`}
                               >
                                 {tecnico.disponibilidade ? 'Disponível' : 'Indisponível'}
@@ -335,18 +333,17 @@ export default function TecnicosPage() {
                             </td>
                             <td className="py-3 px-2">
                               <div className="flex items-center gap-1">
-                                <div className={`w-2 h-2 rounded-full ${
-                                  tecnico.is_online ? 'bg-green-400 animate-pulse' : 'bg-slate-600'
-                                }`}></div>
+                                <div className={`w-2 h-2 rounded-full ${tecnico.is_online ? 'bg-green-400 animate-pulse' : 'bg-slate-600'
+                                  }`}></div>
                                 <span className="text-xs text-slate-400">
                                   {tecnico.is_online ? 'Online' : 'Offline'}
                                 </span>
                               </div>
                             </td>
                             <td className="py-3 px-2">
-                              {tecnico.avaliacao ? (
+                              {tecnico.avaliacao != null ? (
                                 <div className="flex items-center gap-1">
-                                  <span className="text-sm font-medium text-white">{tecnico.avaliacao.toFixed(1)}</span>
+                                  <span className="text-sm font-medium text-white">{Number(tecnico.avaliacao).toFixed(1)}</span>
                                   <span className="text-xs text-slate-500">/5</span>
                                 </div>
                               ) : (
@@ -355,27 +352,27 @@ export default function TecnicosPage() {
                             </td>
                             <td className="py-3 px-2">
                               <div className="flex gap-1">
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
                                   onClick={() => abrirFormulario(tecnico, true)}
                                   title="Visualizar"
                                   className="text-slate-400 hover:text-white hover:bg-slate-600 h-8 w-8 p-0"
                                 >
                                   <Eye className="h-3 w-3" />
                                 </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
                                   onClick={() => abrirFormulario(tecnico)}
                                   title="Editar"
                                   className="text-slate-400 hover:text-white hover:bg-slate-600 h-8 w-8 p-0"
                                 >
                                   <Edit className="h-3 w-3" />
                                 </Button>
-                                <Button 
-                                  variant="ghost" 
-                                  size="sm" 
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
                                   onClick={() => excluirTecnico(tecnico.id)}
                                   title="Excluir"
                                   className="text-slate-400 hover:text-red-400 hover:bg-slate-600 h-8 w-8 p-0"
@@ -407,9 +404,8 @@ export default function TecnicosPage() {
                               )}
                             </div>
                             <div className="flex items-center gap-2 ml-2">
-                              <div className={`w-3 h-3 rounded-full ${
-                                tecnico.is_online ? 'bg-green-400 animate-pulse' : 'bg-slate-600'
-                              }`}></div>
+                              <div className={`w-3 h-3 rounded-full ${tecnico.is_online ? 'bg-green-400 animate-pulse' : 'bg-slate-600'
+                                }`}></div>
                               <span className="text-xs text-slate-400 whitespace-nowrap">
                                 {tecnico.is_online ? 'Online' : 'Offline'}
                               </span>
@@ -418,12 +414,12 @@ export default function TecnicosPage() {
 
                           {/* Badges e informações */}
                           <div className="flex flex-wrap gap-2">
-                            <Badge 
+                            <Badge
                               className={`${tecnico.status === 'ativo' ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-slate-600/50 text-slate-300 border-slate-500/50'} text-xs`}
                             >
                               {tecnico.status === 'ativo' ? 'Ativo' : 'Inativo'}
                             </Badge>
-                            <Badge 
+                            <Badge
                               className={`${tecnico.disponibilidade ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-slate-600/50 text-slate-300 border-slate-500/50'} text-xs`}
                             >
                               {tecnico.disponibilidade ? 'Disponível' : 'Indisponível'}
@@ -440,13 +436,13 @@ export default function TecnicosPage() {
                             {tecnico.avaliacao ? (
                               <div className="flex items-center gap-1">
                                 <span className="text-slate-400">Avaliação:</span>
-                                <span className="font-medium text-white">{tecnico.avaliacao.toFixed(1)}</span>
+                                <span className="font-medium text-white">{Number(tecnico.avaliacao).toFixed(1)}</span>
                                 <span className="text-slate-500">/5</span>
                               </div>
                             ) : (
                               <span className="text-slate-500">Sem avaliação</span>
                             )}
-                            
+
                             {tecnico.last_seen && (
                               <div className="text-slate-500 text-xs">
                                 Última atividade: {new Date(tecnico.last_seen).toLocaleTimeString('pt-BR')}
@@ -456,9 +452,9 @@ export default function TecnicosPage() {
 
                           {/* Ações */}
                           <div className="flex gap-2 pt-2 border-t border-slate-600/30">
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => abrirFormulario(tecnico, true)}
                               title="Visualizar"
                               className="text-slate-400 hover:text-white hover:bg-slate-600 flex-1"
@@ -466,9 +462,9 @@ export default function TecnicosPage() {
                               <Eye className="h-4 w-4 mr-2" />
                               Ver
                             </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => abrirFormulario(tecnico)}
                               title="Editar"
                               className="text-slate-400 hover:text-white hover:bg-slate-600 flex-1"
@@ -476,9 +472,9 @@ export default function TecnicosPage() {
                               <Edit className="h-4 w-4 mr-2" />
                               Editar
                             </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="sm" 
+                            <Button
+                              variant="ghost"
+                              size="sm"
                               onClick={() => excluirTecnico(tecnico.id)}
                               title="Excluir"
                               className="text-slate-400 hover:text-red-400 hover:bg-slate-600 flex-1"
@@ -503,52 +499,52 @@ export default function TecnicosPage() {
         <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto bg-slate-800 border-slate-700 mx-4">
           <DialogHeader>
             <DialogTitle className="text-white text-lg sm:text-xl">
-              {selectedTecnico 
-                ? isEditing 
-                  ? `Visualizar: ${selectedTecnico.name}` 
+              {selectedTecnico
+                ? isEditing
+                  ? `Visualizar: ${selectedTecnico.name}`
                   : `Editar: ${selectedTecnico.name}`
                 : 'Novo Técnico'}
             </DialogTitle>
           </DialogHeader>
-          
+
           <div className="space-y-4 py-4">
             <div>
               <Label htmlFor="nome" className="text-slate-200">Nome</Label>
-              <Input 
-                id="nome" 
-                value={nome} 
-                onChange={(e) => setNome(e.target.value)} 
+              <Input
+                id="nome"
+                value={nome}
+                onChange={(e) => setNome(e.target.value)}
                 disabled={isEditing}
                 placeholder="Nome completo do técnico"
                 className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="email" className="text-slate-200">Email</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                value={email} 
-                onChange={(e) => setEmail(e.target.value)} 
+              <Input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
                 disabled={isEditing}
                 placeholder="email@exemplo.com"
                 className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="telefone" className="text-slate-200">Telefone</Label>
-              <Input 
-                id="telefone" 
-                value={telefone} 
-                onChange={(e) => setTelefone(e.target.value)} 
+              <Input
+                id="telefone"
+                value={telefone}
+                onChange={(e) => setTelefone(e.target.value)}
                 disabled={isEditing}
                 placeholder="(00) 00000-0000"
                 className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="especialidade" className="text-slate-200">Especialidade</Label>
               <Input
@@ -560,12 +556,12 @@ export default function TecnicosPage() {
                 className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
               />
             </div>
-            
+
             <div>
               <Label htmlFor="status-select" className="text-slate-200">Status</Label>
-              <Select 
-                value={status} 
-                onValueChange={(value: 'ativo' | 'inativo') => setStatus(value)} 
+              <Select
+                value={status}
+                onValueChange={(value: 'ativo' | 'inativo') => setStatus(value)}
                 disabled={isEditing}
               >
                 <SelectTrigger id="status-select" className="bg-slate-700/50 border-slate-600/50 text-white">
@@ -580,9 +576,9 @@ export default function TecnicosPage() {
 
             <div>
               <Label htmlFor="disponibilidade" className="text-slate-200">Disponibilidade</Label>
-              <Select 
-                value={disponibilidade ? 'true' : 'false'} 
-                onValueChange={(value: 'true' | 'false') => setDisponibilidade(value === 'true')} 
+              <Select
+                value={disponibilidade ? 'true' : 'false'}
+                onValueChange={(value: 'true' | 'false') => setDisponibilidade(value === 'true')}
                 disabled={isEditing}
               >
                 <SelectTrigger id="disponibilidade" className="bg-slate-700/50 border-slate-600/50 text-white">
@@ -595,16 +591,16 @@ export default function TecnicosPage() {
               </Select>
             </div>
           </div>
-          
+
           <DialogFooter className="flex flex-col sm:flex-row gap-2 sm:gap-0">
-            <Button 
-              variant="outline" 
+            <Button
+              variant="outline"
               onClick={() => setIsDialogOpen(false)}
               className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white w-full sm:w-auto"
             >
               {isEditing ? 'Fechar' : 'Cancelar'}
             </Button>
-            
+
             {!isEditing && (
               <Button onClick={salvarTecnico} className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
                 {selectedTecnico ? 'Atualizar' : 'Cadastrar'}

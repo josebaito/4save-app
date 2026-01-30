@@ -21,31 +21,33 @@ export function HistoricoManutencao() {
   const loadData = useCallback(async () => {
     try {
       setLoading(true);
-      
+
+      const token = (session as any)?.accessToken;
+
       // Carregar tickets finalizados do técnico
-      const ticketsData = await db.getTicketsByTecnico(session!.user!.id);
-      const ticketsManutencaoFinalizados = ticketsData.filter(t => 
+      const ticketsData = await db.getTicketsByTecnico(session!.user!.id, token);
+      const ticketsManutencaoFinalizados = ticketsData.filter(t =>
         t.tipo === 'manutencao' && t.status === 'finalizado'
       );
       setTicketsFinalizados(ticketsManutencaoFinalizados);
-      
+
       // Carregar histórico de manutenção
       // Idealmente, filtrar apenas o histórico relevante para este técnico
       // Como não temos um campo técnico_id na tabela de histórico, vamos usar os tickets finalizados
       // para buscar o histórico correspondente
       const historicoData: HistoricoManutencao[] = [];
-      
+
       for (const ticket of ticketsManutencaoFinalizados) {
         try {
           // Buscar histórico pelo ticket_id
-          const historicoTicket = await db.getHistoricoManutencao();
+          const historicoTicket = await db.getHistoricoManutencao(token);
           const filtrado = historicoTicket.filter(h => h.ticket_id === ticket.id);
           historicoData.push(...filtrado);
         } catch {
           console.error('Erro ao buscar histórico para ticket');
         }
       }
-      
+
       setHistorico(historicoData);
     } catch (error) {
       console.error('Erro ao carregar histórico de manutenção:', error);
@@ -105,8 +107,8 @@ export function HistoricoManutencao() {
           <div className="space-y-4">
             {/* Exibir histórico de manutenção */}
             {historico.map((registro) => (
-              <div 
-                key={registro.id} 
+              <div
+                key={registro.id}
                 className="p-4 rounded-lg border border-gray-200"
               >
                 <div className="flex justify-between items-start">
@@ -147,8 +149,8 @@ export function HistoricoManutencao() {
                 )}
                 {registro.ticket_id && (
                   <div className="mt-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       className="w-full flex items-center gap-2"
                       onClick={() => window.location.href = `/tecnico/ticket/${registro.ticket_id}`}
@@ -160,13 +162,13 @@ export function HistoricoManutencao() {
                 )}
               </div>
             ))}
-            
+
             {/* Exibir tickets finalizados que não têm histórico */}
             {ticketsFinalizados
               .filter(ticket => !historico.some(h => h.ticket_id === ticket.id))
               .map(ticket => (
-                <div 
-                  key={ticket.id} 
+                <div
+                  key={ticket.id}
                   className="p-4 rounded-lg border border-gray-200"
                 >
                   <div className="flex justify-between items-start">
@@ -192,8 +194,8 @@ export function HistoricoManutencao() {
                     </div>
                   )}
                   <div className="mt-2">
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       size="sm"
                       className="w-full flex items-center gap-2"
                       onClick={() => window.location.href = `/tecnico/ticket/${ticket.id}`}

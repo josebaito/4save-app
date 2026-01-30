@@ -48,15 +48,17 @@ export function NotificacoesManutencao() {
     const carregarNotificacoes = async () => {
       try {
         setLoading(true);
-        
+
         // Carregar apenas tickets de notificação (tabela notificacoes não existe)
-        const tickets = await db.getTickets();
+        const session: any = await import('next-auth/react').then(mod => mod.getSession());
+        const token = session?.accessToken;
+        const tickets = await db.getTickets(token);
         const notificacaoTickets = tickets.filter(t => t.tipo === 'manutencao' && t.status === 'pendente');
         setTicketsNotificacao(notificacaoTickets);
-        
+
         // Limpar notificações da tabela inexistente
         setNotificacoes([]);
-        
+
       } catch (error) {
         console.error('Erro ao carregar notificações:', error);
       } finally {
@@ -161,8 +163,8 @@ export function NotificacoesManutencao() {
       <CardContent className="space-y-4">
         {/* Notificações da tabela de notificações */}
         {notificacoes.map((notificacao) => (
-          <div 
-            key={notificacao.id} 
+          <div
+            key={notificacao.id}
             className={`p-3 border rounded-lg ${isProxima(notificacao.data_programada) ? 'bg-amber-500/20 border-amber-500/30' : 'bg-white/5 border-white/10'}`}
           >
             <div className="flex justify-between items-start mb-2">
@@ -177,7 +179,7 @@ export function NotificacoesManutencao() {
                 <Calendar className="h-3 w-3" />
                 {formatarData(notificacao.data_programada)}
               </div>
-              <button 
+              <button
                 onClick={() => marcarComoLida()}
                 className="flex items-center gap-1 text-green-400 hover:text-green-300"
               >
@@ -190,8 +192,8 @@ export function NotificacoesManutencao() {
 
         {/* Tickets de notificação (alternativa) */}
         {ticketsNotificacao.map((ticket) => (
-          <div 
-            key={ticket.id} 
+          <div
+            key={ticket.id}
             className="p-3 border rounded-lg bg-blue-500/20 border-blue-500/30"
           >
             <div className="flex justify-between items-start mb-2">
@@ -206,7 +208,7 @@ export function NotificacoesManutencao() {
                 <Clock className="h-3 w-3" />
                 {ticket.cliente?.nome || 'Cliente'} - {ticket.contrato?.numero || 'Contrato'}
               </div>
-              <button 
+              <button
                 onClick={() => marcarTicketComoLido(ticket.id)}
                 className="flex items-center gap-1 text-green-400 hover:text-green-300"
               >

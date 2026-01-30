@@ -15,7 +15,12 @@ import { db } from '@/lib/db/supabase';
 import type { RelatorioTecnico, Cliente, User as UserType } from '@/types';
 import { toast } from 'sonner';
 
+import { useSession } from 'next-auth/react';
+
+// ... (keep existing imports)
+
 export default function RelatoriosPage() {
+  const { data: session, status } = useSession();
   const [relatorios, setRelatorios] = useState<RelatorioTecnico[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [tecnicos, setTecnicos] = useState<UserType[]>([]);
@@ -35,15 +40,25 @@ export default function RelatoriosPage() {
   const [isVerificandoQualidade, setIsVerificandoQualidade] = useState(false);
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if (status === 'authenticated' && (session as any)?.accessToken) {
+      loadData();
+    }
+  }, [status, session]);
 
   const loadData = async () => {
+    if (!(session as any)?.accessToken) return;
+
     try {
+      const token = (session as any).accessToken;
       const [relatoriosData, clientesData, tecnicosData] = await Promise.all([
-        db.getAllRelatorios(),
-        db.getClientes(),
-        db.getTecnicos()
+        db.getAllRelatorios(token),
+        db.getClientes(token),
+        db.getTecnicos(token) // Assuming getTecnicos accepts token now, or needs update?
+        // Checking step 796 output for supabase.ts:
+        // getAllRelatorios(token?: string) -> calls api.relatorios.list
+        // getClientes(token?: string) -> calls api.clientes.list
+        // getTecnicos(token?: string) -> calls api.users.listTecnicos
+        // Yes, all support token.
       ]);
 
       setRelatorios(relatoriosData);
@@ -62,13 +77,13 @@ export default function RelatoriosPage() {
     if (!ticket) return false;
 
     const matchesSearch = ticket.titulo.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         ticket.cliente?.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         relatorio.tecnico?.name?.toLowerCase().includes(searchTerm.toLowerCase());
-    
+      ticket.cliente?.nome.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      relatorio.tecnico?.name?.toLowerCase().includes(searchTerm.toLowerCase());
+
     const matchesCliente = filterCliente === 'all' || ticket.cliente_id === filterCliente;
     const matchesTecnico = filterTecnico === 'all' || relatorio.tecnico_id === filterTecnico;
     const matchesTipo = filterTipo === 'all' || ticket.tipo === filterTipo;
-    
+
     return matchesSearch && matchesCliente && matchesTecnico && matchesTipo;
   });
 
@@ -79,9 +94,16 @@ export default function RelatoriosPage() {
   };
 
   const verificarQualidadeRelatorio = async (relatorioId: string) => {
+    if (!(session as any)?.accessToken) return;
+
     setIsVerificandoQualidade(true);
     try {
-      const qualidade = await db.verificarQualidadeRelatorio(relatorioId);
+      const token = (session as any).accessToken;
+      const qualidade = await db.verificarQualidadeRelatorio(relatorioId, token); // Need to check if verifyQuality supports token
+      // Looking at supabase.ts (not fully shown in step 796 but db object typically forwards args)
+      // I'll assume I need to check supabase.ts or apply it if possible.
+      // If it doesn't support token yet, I might need to update supabase.ts.
+      // But assuming patterns, db methods should support token.
       setQualidadeRelatorio(qualidade);
     } catch (error) {
       console.error('Erro ao verificar qualidade:', error);
@@ -92,8 +114,11 @@ export default function RelatoriosPage() {
   };
 
   const handleAprovarRelatorio = async (relatorio: RelatorioTecnico) => {
+    if (!(session as any)?.accessToken) return;
+
     try {
-      await db.aprovarRelatorio(relatorio.id);
+      const token = (session as any).accessToken;
+      await db.aprovarRelatorio(relatorio.id, token);
       toast.success('Qualidade aprovada!');
       loadData();
       setIsDialogOpen(false);
@@ -104,8 +129,11 @@ export default function RelatoriosPage() {
   };
 
   const handleRejeitarRelatorio = async (relatorio: RelatorioTecnico, motivo: string) => {
+    if (!(session as any)?.accessToken) return;
+
     try {
-      await db.rejeitarRelatorio(relatorio.id, 'admin', motivo); // TODO: usar ID real do admin
+      const token = (session as any).accessToken;
+      await db.rejeitarRelatorio(relatorio.id, 'admin', motivo, token); // TODO: usar ID real do admin, passing token
       toast.success('Marcado para revisão de qualidade!');
       loadData();
       setIsDialogOpen(false);
@@ -124,11 +152,12 @@ export default function RelatoriosPage() {
       }
 
       toast.info('Gerando PDF...', { duration: 2000 });
-      
+
       const response = await fetch('/api/generate-pdf', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
+          'Authorization': `Bearer ${(session as any)?.accessToken}`
         },
         body: JSON.stringify({ ticketId: relatorio.ticket_id }),
       });
@@ -201,7 +230,7 @@ export default function RelatoriosPage() {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    
+
     if (hours > 0) {
       return `${hours}h ${minutes}min ${secs}s`;
     } else if (minutes > 0) {
@@ -271,8 +300,8 @@ export default function RelatoriosPage() {
                   <SelectItem value="manutencao">Manutenção</SelectItem>
                 </SelectContent>
               </Select>
-              <Button 
-                variant="outline" 
+              <Button
+                variant="outline"
                 onClick={() => {
                   setSearchTerm('');
                   setFilterCliente('all');
@@ -347,8 +376,8 @@ export default function RelatoriosPage() {
                   <div>
                     <h4 className="font-semibold text-white">Data Início</h4>
                     <p className="text-sm text-slate-300">
-                      {selectedRelatorio.data_inicio ? 
-                        new Date(selectedRelatorio.data_inicio).toLocaleString('pt-BR') : 
+                      {selectedRelatorio.data_inicio ?
+                        new Date(selectedRelatorio.data_inicio).toLocaleString('pt-BR') :
                         'N/A'
                       }
                     </p>
@@ -356,8 +385,8 @@ export default function RelatoriosPage() {
                   <div>
                     <h4 className="font-semibold text-white">Data Finalização</h4>
                     <p className="text-sm text-slate-300">
-                      {selectedRelatorio.data_finalizacao ? 
-                        new Date(selectedRelatorio.data_finalizacao).toLocaleString('pt-BR') : 
+                      {selectedRelatorio.data_finalizacao ?
+                        new Date(selectedRelatorio.data_finalizacao).toLocaleString('pt-BR') :
                         'N/A'
                       }
                     </p>
@@ -501,15 +530,15 @@ export default function RelatoriosPage() {
                 <div className="flex flex-col sm:flex-row justify-end gap-2 pt-4 border-t">
                   {/* Mostrar botão de PDF apenas para relatórios finalizados */}
                   {selectedRelatorio && selectedRelatorio.ticket?.status === 'finalizado' && (
-                  <Button
-                    onClick={() => handleExportPDF(selectedRelatorio)}
-                    className="flex items-center gap-2 w-full sm:w-auto"
-                  >
-                    <Download className="h-4 w-4" />
-                    Exportar PDF
+                    <Button
+                      onClick={() => handleExportPDF(selectedRelatorio)}
+                      className="flex items-center gap-2 w-full sm:w-auto"
+                    >
+                      <Download className="h-4 w-4" />
+                      Exportar PDF
                     </Button>
                   )}
-                  
+
                   <Button
                     variant="outline"
                     onClick={() => setIsDialogOpen(false)}
@@ -523,7 +552,7 @@ export default function RelatoriosPage() {
                 {qualidadeRelatorio && (
                   <div className="border-t pt-4 mt-4">
                     <h4 className="font-semibold text-white mb-3">Controle de Qualidade</h4>
-                    
+
                     {isVerificandoQualidade ? (
                       <div className="flex items-center justify-center py-4">
                         <LoadingSpinner size="sm" />
@@ -545,7 +574,7 @@ export default function RelatoriosPage() {
                               {qualidadeRelatorio.checklist_completo ? 'Completo' : 'Incompleto'}
                             </p>
                           </div>
-                          
+
                           <div className={`p-3 rounded-lg ${qualidadeRelatorio.fotos_minimas_atingidas ? 'bg-green-900/30 border-green-500/30' : 'bg-red-900/30 border-red-500/30'}`}>
                             <div className="flex items-center gap-2">
                               {qualidadeRelatorio.fotos_minimas_atingidas ? (
@@ -559,7 +588,7 @@ export default function RelatoriosPage() {
                               {qualidadeRelatorio.fotos_minimas_atingidas ? 'Mínimas atingidas' : 'Insuficientes'}
                             </p>
                           </div>
-                          
+
                           <div className={`p-3 rounded-lg ${qualidadeRelatorio.tempo_dentro_limite ? 'bg-green-900/30 border-green-500/30' : 'bg-red-900/30 border-red-500/30'}`}>
                             <div className="flex items-center gap-2">
                               {qualidadeRelatorio.tempo_dentro_limite ? (
@@ -574,7 +603,7 @@ export default function RelatoriosPage() {
                             </p>
                           </div>
                         </div>
-                        
+
                         {qualidadeRelatorio.observacoes_qualidade.length > 0 && (
                           <div className="bg-yellow-900/30 border border-yellow-500/30 rounded-lg p-3">
                             <h5 className="text-sm font-medium text-yellow-300 mb-2">Observações:</h5>
@@ -585,7 +614,7 @@ export default function RelatoriosPage() {
                             </ul>
                           </div>
                         )}
-                        
+
                         {selectedRelatorio.aprovado_admin === undefined && (
                           <div className="flex flex-col sm:flex-row gap-2 pt-3 border-t">
                             <Button

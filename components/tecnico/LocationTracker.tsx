@@ -13,7 +13,7 @@ export function LocationTracker({ enabled = true, interval = 120000, debug = fal
   const { data: session } = useSession();
   const [isTracking, setIsTracking] = useState<boolean>(enabled);
   const [error, setError] = useState<string | null>(null);
-  const [lastLocation, setLastLocation] = useState<{lat: number, lng: number} | null>(null);
+  const [lastLocation, setLastLocation] = useState<{ lat: number, lng: number } | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const isUpdatingRef = useRef(false);
 
@@ -23,59 +23,58 @@ export function LocationTracker({ enabled = true, interval = 120000, debug = fal
       console.log('📍 LocationTracker: Pulando atualização - isUpdating:', isUpdatingRef.current, 'session:', !!session?.user?.id, 'isTracking:', isTracking);
       return;
     }
-    
+
     console.log('📍 LocationTracker: Iniciando atualização de localização...');
     isUpdatingRef.current = true;
-    
+
     try {
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           async (position) => {
             const { latitude, longitude, accuracy } = position.coords;
-            
+
             console.log('📍 LocationTracker: Coordenadas obtidas:', { latitude, longitude, accuracy });
-            
+
             // Verifica se temos um ID de usuário válido
             if (!session?.user?.id) {
               console.log('📍 LocationTracker: ID do usuário não disponível');
               setError("ID do usuário não disponível");
               return;
             }
-            
+
             // Envia a localização para o servidor
-            try {
-              const coords = {
-                tecnico_id: session.user.id,
-                latitude,
-                longitude,
-                accuracy: accuracy || 10,
-                timestamp: new Date().toISOString(),
-              };
-              
-              await db.updateTecnicoLocation(coords);
-              
-              console.log('📍 LocationTracker: Localização enviada com sucesso:', coords);
-              setError(null);
-              setLastLocation({ lat: latitude, lng: longitude });
-              setLastUpdate(new Date());
-              
-              // Toast apenas em debug ou erro
-              if (debug) {
-                toast.success("Localização atualizada", { duration: 1000 });
+            if (typeof latitude === 'number' && typeof longitude === 'number') {
+              try {
+                // Ensure we pass arguments separately as expected by db.updateTecnicoLocation(userId, lat, lng, token)
+                const token = (session as any)?.accessToken;
+                await db.updateTecnicoLocation(session.user.id, latitude, longitude, token);
+
+                console.log('📍 LocationTracker: Localização enviada com sucesso:', { latitude, longitude });
+                setError(null);
+                setLastLocation({ lat: latitude, lng: longitude });
+                setLastUpdate(new Date());
+
+                // Toast apenas em debug ou erro
+                if (debug) {
+                  toast.success("Localização atualizada", { duration: 1000 });
+                }
+              } catch (err) {
+                const errorMessage = (err as Error)?.message || "Erro ao atualizar localização";
+                setError(errorMessage);
+                if (debug) {
+                  toast.error("Erro ao atualizar localização");
+                }
+              } finally {
+                isUpdatingRef.current = false;
               }
-            } catch (err) {
-              const errorMessage = (err as Error)?.message || "Erro ao atualizar localização";
-              setError(errorMessage);
-              if (debug) {
-                toast.error("Erro ao atualizar localização");
-              }
-            } finally {
+            } else {
+              console.warn('📍 LocationTracker: Coordenadas inválidas:', { latitude, longitude });
               isUpdatingRef.current = false;
             }
           },
           (err) => {
             let errorMessage = "Não foi possível obter sua localização.";
-            
+
             switch (err.code) {
               case err.PERMISSION_DENIED:
                 errorMessage = "Permissão de localização negada.";
@@ -87,15 +86,15 @@ export function LocationTracker({ enabled = true, interval = 120000, debug = fal
                 errorMessage = "Tempo limite excedido.";
                 break;
             }
-            
+
             setError(errorMessage);
             isUpdatingRef.current = false;
-            
+
             if (debug) {
               toast.error("Erro ao obter localização");
             }
           },
-          { 
+          {
             enableHighAccuracy: false, // Reduzir precisão para melhor performance
             timeout: 10000, // Reduzir timeout
             maximumAge: 60000 // Aceita posições com até 1 minuto
@@ -114,10 +113,10 @@ export function LocationTracker({ enabled = true, interval = 120000, debug = fal
 
   useEffect(() => {
     if (!session?.user?.id || !isTracking) return;
-    
+
     // Inicia o rastreamento imediatamente
     updateLocation();
-    
+
     // Configura o intervalo (2 minutos)
     const intervalId = setInterval(updateLocation, interval);
 
@@ -132,7 +131,7 @@ export function LocationTracker({ enabled = true, interval = 120000, debug = fal
       toast.error("Usuário não autenticado");
       return;
     }
-    
+
     setIsTracking(false);
     setTimeout(() => setIsTracking(true), 100);
   };
@@ -141,7 +140,7 @@ export function LocationTracker({ enabled = true, interval = 120000, debug = fal
     <div className="flex items-center gap-2 mt-2 p-3 bg-slate-800/50 rounded-md border border-slate-700/50">
       <div className="flex flex-col flex-1">
         <div className="flex items-center gap-2">
-          <div 
+          <div
             className={`w-3 h-3 rounded-full ${isTracking ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}
             title={isTracking ? 'Rastreamento ativo' : 'Rastreamento inativo'}
           />
@@ -154,35 +153,35 @@ export function LocationTracker({ enabled = true, interval = 120000, debug = fal
             </span>
           )}
         </div>
-        
+
         {error && (
           <p className="text-xs text-red-400 mt-1">
             <strong>Erro:</strong> {error}
           </p>
         )}
-        
+
         {debug && lastLocation && (
           <p className="text-xs text-slate-400 mt-1">
             📍 Lat: {lastLocation.lat.toFixed(6)}, Lng: {lastLocation.lng.toFixed(6)}
           </p>
         )}
-        
+
         {debug && (
           <p className="text-xs text-slate-500 mt-1">
             Intervalo: {interval / 1000}s | ID: {session?.user?.id}
           </p>
         )}
       </div>
-      
+
       <div className="flex gap-1">
-        <button 
+        <button
           onClick={forceUpdate}
           className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded"
           title="Forçar atualização"
         >
           🔄
         </button>
-        <button 
+        <button
           onClick={() => setIsTracking(!isTracking)}
           className="text-xs bg-slate-600 hover:bg-slate-700 text-white px-2 py-1 rounded"
           title={isTracking ? 'Desativar rastreamento' : 'Ativar rastreamento'}

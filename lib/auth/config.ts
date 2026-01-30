@@ -23,41 +23,33 @@ export const authOptions: NextAuthOptions = {
         }
 
         try {
-          console.log("Tentando autenticar:", credentials.email);
-          
-          // Verificar credenciais no Supabase
-          const { data: user, error } = await supabase
-            .from('users')
-            .select('*')
-            .eq('email', credentials.email)
-            .single();
+          console.log("Tentando autenticar via API:", credentials.email);
 
-          if (error) {
-            console.error("Erro Supabase:", error);
+          const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+          const res = await fetch(`${apiUrl}/auth/login`, {
+            method: 'POST',
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
+            headers: { "Content-Type": "application/json" }
+          });
+
+          const user = await res.json();
+
+          if (!res.ok || !user) {
+            console.error("Erro API Auth:", user);
             return null;
           }
 
-          if (!user) {
-            console.log("Usuário não encontrado");
-            return null;
-          }
-
-          console.log("Usuário encontrado:", user.email, "Tipo:", user.type);
-
-          // Em um cenário real, você faria hash da senha
-          // Para este exemplo, vamos usar uma verificação simples
-          if (user.password !== credentials.password) {
-            console.log("Senha incorreta");
-            return null;
-          }
-
-          console.log("Autenticação bem-sucedida para:", user.email);
+          console.log("Usuário autenticado:", user.email);
 
           return {
             id: user.id,
             email: user.email,
             name: user.name,
             type: user.type,
+            accessToken: user.access_token,
           };
         } catch (error) {
           console.error("Auth error:", error);
@@ -67,22 +59,22 @@ export const authOptions: NextAuthOptions = {
     })
   ],
   callbacks: {
-    async jwt({ token, user }) {
+    async jwt({ token, user, account }) {
       if (user) {
-        console.log("JWT callback - user:", user);
         token.id = user.id;
         token.type = user.type as 'admin' | 'tecnico';
+        token.accessToken = (user as any).accessToken;
       }
       return token;
     },
     async session({ session, token }) {
       if (token) {
-        console.log("Session callback - token:", token);
         session.user = {
           ...session.user,
           id: token.id as string,
           type: token.type as 'admin' | 'tecnico',
         };
+        (session as any).accessToken = token.accessToken;
       }
       return session;
     },

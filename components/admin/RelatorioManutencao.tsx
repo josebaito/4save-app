@@ -48,20 +48,33 @@ type RelatorioData = {
   }>;
 };
 
+import { useSession } from 'next-auth/react';
+
+// ... (keep existing imports)
+
 export function RelatorioManutencao() {
+  const { data: session, status } = useSession();
   const [relatorio, setRelatorio] = useState<RelatorioData | null>(null);
   const [loading, setLoading] = useState(true);
   const [periodo, setPeriodo] = useState('3'); // 3 meses por padrão
 
   const carregarRelatorio = useCallback(async () => {
+    if (status !== 'authenticated' || !(session as any)?.accessToken) return;
+
     try {
       setLoading(true);
-      const response = await fetch(`/api/relatorios/manutencao?periodo=${periodo}`);
-      
+      const token = (session as any).accessToken;
+
+      const response = await fetch(`/api/relatorios/manutencao?periodo=${periodo}`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
       if (!response.ok) {
         throw new Error('Falha ao carregar relatório');
       }
-      
+
       const data = await response.json();
       setRelatorio(data);
     } catch (error) {
@@ -70,7 +83,7 @@ export function RelatorioManutencao() {
     } finally {
       setLoading(false);
     }
-  }, [periodo]);
+  }, [periodo, status, session]);
 
   useEffect(() => {
     carregarRelatorio();
@@ -84,10 +97,10 @@ export function RelatorioManutencao() {
 
   const exportarCSV = () => {
     if (!relatorio) return;
-    
+
     // Preparar dados para CSV
     const headers = ['ID', 'Contrato', 'Cliente', 'Tipo', 'Data Realizada', 'Observações'];
-    
+
     const rows = relatorio.historicoRecente.map(item => [
       item.id,
       item.contrato_descricao,
@@ -96,13 +109,13 @@ export function RelatorioManutencao() {
       item.data_realizada,
       item.observacoes.replace(/,/g, ';') // Substituir vírgulas por ponto e vírgula para não quebrar o CSV
     ]);
-    
+
     // Criar conteúdo CSV
     const csvContent = [
       headers.join(','),
       ...rows.map(row => row.join(','))
     ].join('\n');
-    
+
     // Criar blob e link para download
     const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
@@ -113,14 +126,14 @@ export function RelatorioManutencao() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     toast.success('Relatório exportado com sucesso');
   };
 
   // Preparar dados para gráficos
   const prepararDadosTipoManutencao = () => {
     if (!relatorio) return [];
-    
+
     return [
       { name: 'Preventiva', value: relatorio.porTipoManutencao.preventiva },
       { name: 'Corretiva', value: relatorio.porTipoManutencao.corretiva },
@@ -130,7 +143,7 @@ export function RelatorioManutencao() {
 
   const prepararDadosStatus = () => {
     if (!relatorio) return [];
-    
+
     return [
       { name: 'Finalizados', value: relatorio.porStatus.finalizados },
       { name: 'Em Andamento', value: relatorio.porStatus.emAndamento },
@@ -239,14 +252,14 @@ export function RelatorioManutencao() {
             </CardContent>
           </Card>
         </div>
-        
+
         <Tabs defaultValue="graficos" className="w-full">
           <TabsList className="mb-4">
             <TabsTrigger value="graficos">Gráficos</TabsTrigger>
             <TabsTrigger value="historico">Histórico</TabsTrigger>
             <TabsTrigger value="tickets">Tickets</TabsTrigger>
           </TabsList>
-          
+
           <TabsContent value="graficos" className="space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               <Card>
@@ -275,7 +288,7 @@ export function RelatorioManutencao() {
                   </ResponsiveContainer>
                 </CardContent>
               </Card>
-              
+
               <Card>
                 <CardHeader>
                   <CardTitle className="text-lg">Por Status</CardTitle>
@@ -298,7 +311,7 @@ export function RelatorioManutencao() {
               </Card>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="historico">
             <div className="rounded-md border">
               <div className="overflow-x-auto">
@@ -338,7 +351,7 @@ export function RelatorioManutencao() {
               </div>
             </div>
           </TabsContent>
-          
+
           <TabsContent value="tickets">
             <div className="rounded-md border">
               <div className="overflow-x-auto">
