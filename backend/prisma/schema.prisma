@@ -83,7 +83,9 @@ model Contrato {
   created_at    DateTime       @default(now())
   updated_at    DateTime       @default(now())
   
-  tickets       Ticket[]
+  tickets              Ticket[]
+  cronogramas          CronogramaManutencao[]
+  historico_manutencao HistoricoManutencao[]
 
   @@map("contratos")
 }
@@ -120,6 +122,7 @@ model Ticket {
   updated_at          DateTime         @default(now())
   
   relatorios          RelatorioTecnico[]
+  historico_manutencao HistoricoManutencao[]
 
   @@map("tickets")
 }
@@ -153,4 +156,51 @@ model RelatorioTecnico {
   updated_at              DateTime @default(now())
 
   @@map("relatorios_tecnicos")
+}
+
+enum TipoManutencao {
+  preventiva
+  corretiva
+  preditiva
+}
+
+enum FrequenciaManutencao {
+  mensal
+  trimestral
+  semestral
+  anual
+}
+
+model CronogramaManutencao {
+  id                 String               @id @default(uuid())
+  contrato_id        String
+  contrato           Contrato             @relation(fields: [contrato_id], references: [id], onDelete: Cascade)
+  tipo_manutencao    TipoManutencao       @default(preventiva)
+  frequencia         FrequenciaManutencao @default(mensal)
+  proxima_manutencao DateTime             @db.Date
+  ultima_manutencao  DateTime?            @db.Date
+  inicio_manutencao  DateTime             @db.Date
+  duracao_contrato   Int                  @default(12)
+  valor_manutencao   Decimal              @db.Decimal(10, 2) @default(0)
+  observacoes        String?
+  status             String               @default("ativo") // ativo, inativo
+  created_at         DateTime             @default(now())
+  updated_at         DateTime             @default(now())
+
+  @@map("cronogramas_manutencao")
+}
+
+model HistoricoManutencao {
+  id              String   @id @default(uuid())
+  contrato_id     String
+  contrato        Contrato @relation(fields: [contrato_id], references: [id], onDelete: Cascade)
+  ticket_id       String
+  ticket          Ticket   @relation(fields: [ticket_id], references: [id], onDelete: Cascade)
+  tipo_manutencao String
+  data_agendada   DateTime? @db.Date
+  data_realizada  DateTime? @db.Date
+  observacoes     String?
+  created_at      DateTime @default(now())
+
+  @@map("historico_manutencao")
 }

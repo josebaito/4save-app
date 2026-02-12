@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { AdminLayout } from '@/components/admin/AdminLayout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -10,16 +11,20 @@ import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Plus, Search, Edit, Eye } from 'lucide-react';
 import { db } from '@/lib/db/supabase';
+import { Pagination } from '@/components/ui/pagination';
 import type { Cliente } from '@/types';
 import { toast } from 'sonner';
 
 export default function ClientesPage() {
+  const { data: session, status } = useSession();
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCliente, setSelectedCliente] = useState<Cliente | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -31,12 +36,16 @@ export default function ClientesPage() {
   });
 
   useEffect(() => {
-    loadClientes();
-  }, []);
+    if (status === 'authenticated' && (session as any)?.accessToken) {
+      loadClientes();
+    }
+  }, [status, session]);
 
   const loadClientes = async () => {
+    if (!(session as any)?.accessToken) return;
     try {
-      const data = await db.getClientes();
+      const token = (session as any).accessToken;
+      const data = await db.getClientes(token);
       setClientes(data);
     } catch (error) {
       console.error('Error loading clientes:', error);
@@ -52,15 +61,26 @@ export default function ClientesPage() {
     cliente.cnpj?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const totalClientes = filteredClientes.length;
+  const paginatedClientes = filteredClientes.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
+      if (!(session as any)?.accessToken) {
+        toast.error('Erro de autenticaÃ§Ã£o');
+        return;
+      }
       if (isEditing && selectedCliente) {
-        await db.updateCliente(selectedCliente.id, formData);
+        await db.updateCliente(selectedCliente.id, formData, (session as any).accessToken);
         toast.success('Cliente atualizado com sucesso!');
       } else {
-        await db.createCliente(formData);
+        await db.createCliente(formData, (session as any).accessToken);
         toast.success('Cliente criado com sucesso!');
       }
       
@@ -159,8 +179,9 @@ export default function ClientesPage() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
               </div>
             ) : filteredClientes.length > 0 ? (
-              <div className="space-y-4">
-                {filteredClientes.map((cliente) => (
+              <>
+                <div className="space-y-4">
+                  {paginatedClientes.map((cliente) => (
                   <div
                     key={cliente.id}
                     className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl hover:bg-slate-700/50 transition-colors border border-slate-600/30"
@@ -195,8 +216,19 @@ export default function ClientesPage() {
                       </Button>
                     </div>
                   </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+                {totalClientes > 0 && (
+                  <Pagination
+                    page={page}
+                    pageSize={pageSize}
+                    totalItems={totalClientes}
+                    onPageChange={setPage}
+                    onPageSizeChange={(v) => { setPageSize(v); setPage(1); }}
+                    label="clientes"
+                  />
+                )}
+              </>
             ) : (
               <div className="text-center py-8 text-slate-500">
                 <p className="text-slate-400">Nenhum cliente encontrado</p>

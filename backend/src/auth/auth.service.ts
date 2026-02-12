@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
 import { CreateAuthDto } from './dto/create-auth.dto';
 import { UpdateAuthDto } from './dto/update-auth.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -16,7 +17,32 @@ export class AuthService {
       where: { email: loginDto.email },
     });
 
-    if (user && user.password === loginDto.password) {
+    if (!user) return null;
+
+    let isMatch = false;
+    let needsMigration = false;
+
+    // 1. Try bcrypt compare
+    isMatch = await bcrypt.compare(loginDto.password, user.password);
+
+    // 2. Fallback: Check plain text (Lazy Migration)
+    if (!isMatch && user.password === loginDto.password) {
+      isMatch = true;
+      needsMigration = true;
+    }
+
+    if (isMatch) {
+      // 3. Migrate if needed
+      if (needsMigration) {
+        const salt = await bcrypt.genSalt();
+        const hashedPassword = await bcrypt.hash(loginDto.password, salt);
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { password: hashedPassword }
+        });
+        console.log(`[Security] Migrated password for user ${user.email}`);
+      }
+
       const { password, ...result } = user;
       const payload = { username: user.email, sub: user.id, type: user.type };
 

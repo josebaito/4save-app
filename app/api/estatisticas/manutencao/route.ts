@@ -12,7 +12,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const token = request.headers.get('Authorization')?.split(' ')[1];
+    // Prefer token from session (server-side), fallback to header
+    const token = (session as any)?.accessToken || request.headers.get('Authorization')?.split(' ')[1];
 
     const userId = session.user.id;
     const userRole = session.user.type;
@@ -23,7 +24,7 @@ export async function GET(request: Request) {
     // Estatísticas diferentes para admin e técnico
     if (userRole === 'admin') {
       // Para admin: estatísticas globais
-      const cronogramas = await db.getCronogramasManutencao();
+      const cronogramas = await db.getCronogramasManutencao(token);
       const tickets = await db.getTickets(token);
       const ticketsManutencao = tickets.filter(t => t.tipo === 'manutencao');
 
@@ -95,7 +96,7 @@ export async function GET(request: Request) {
       // Buscar cronogramas para estes contratos
       for (const contratoId of contratosIds) {
         try {
-          const allCronogramas = await db.getCronogramasManutencao();
+          const allCronogramas = await db.getCronogramasManutencao(token);
           const cronogramasContrato = allCronogramas.filter(c => c.contrato_id === contratoId);
           cronogramas.push(...cronogramasContrato);
         } catch (e) {

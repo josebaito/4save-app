@@ -71,11 +71,16 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
 
     const handleStartTicket = async (ticketId: string) => {
         try {
-            await db.updateTicket(ticketId, { status: 'em_curso' });
+            const token = (session as any)?.accessToken;
+            if (!token) {
+                toast.error('Sessão inválida. Faça login novamente.');
+                return;
+            }
+            await db.updateTicket(ticketId, { status: 'em_curso' }, token);
 
             // Marcar técnico como indisponível quando inicia um ticket
             if (session?.user?.id) {
-                await db.updateTecnico(session.user.id, { disponibilidade: false });
+                await db.updateTecnico(session.user.id, { disponibilidade: false }, token);
             }
 
             toast.success('Ticket iniciado com sucesso!');

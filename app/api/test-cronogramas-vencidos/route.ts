@@ -1,14 +1,21 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/supabase';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth/config';
 
 export async function GET() {
   const startTime = Date.now();
   
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || session.user.type !== 'admin') {
+      return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 });
+    }
+    const token = (session as any)?.accessToken;
     console.log('🧪 Testando verificação de cronogramas vencidos...');
     
     // Verificar cronogramas existentes
-    const cronogramas = await db.getCronogramasManutencao();
+    const cronogramas = await db.getCronogramasManutencao(token);
     console.log(`📋 Total de cronogramas: ${cronogramas.length}`);
     
     // Verificar cronogramas vencidos
@@ -17,15 +24,15 @@ export async function GET() {
     console.log(`📅 Cronogramas vencidos: ${cronogramasVencidos.length}`);
     
     // Verificar técnicos online
-    const tecnicosOnline = await db.getTecnicosOnline();
+    const tecnicosOnline = await db.getTecnicosOnline(token);
     console.log(`👤 Técnicos online: ${tecnicosOnline.length}`);
     
     // Verificar técnicos realmente disponíveis (sem tickets em processo)
-    const tecnicosDisponiveis = await db.getTecnicosOnlineDisponiveis();
+    const tecnicosDisponiveis = await db.getTecnicosDisponiveis(token);
     console.log(`👤 Técnicos disponíveis (sem tickets em processo): ${tecnicosDisponiveis.length}`);
     
     // Verificar tickets existentes antes
-    const ticketsAntes = await db.getTickets();
+    const ticketsAntes = await db.getTickets(token);
     const ticketsManutencaoAntes = ticketsAntes.filter(t => t.tipo === 'manutencao');
     const ticketsSemTecnicoAntes = ticketsManutencaoAntes.filter(t => !t.tecnico_id);
     console.log(`📋 Tickets de manutenção existentes: ${ticketsManutencaoAntes.length}`);
@@ -35,7 +42,7 @@ export async function GET() {
     const resultado = await db.verificarSistemaCompleto();
     
     // Verificar tickets após execução
-    const ticketsDepois = await db.getTickets();
+    const ticketsDepois = await db.getTickets(token);
     const ticketsManutencaoDepois = ticketsDepois.filter(t => t.tipo === 'manutencao');
     const ticketsSemTecnicoDepois = ticketsManutencaoDepois.filter(t => !t.tecnico_id);
     console.log(`📋 Tickets de manutenção após execução: ${ticketsManutencaoDepois.length}`);

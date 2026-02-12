@@ -26,10 +26,10 @@ export function RelatorioCard({
   if (!ticket) return null;
 
   return (
-    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors gap-3">
+    <div className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-card/70 border border-border rounded-xl hover:bg-accent/40 transition-colors gap-3">
       <div className="flex-1 min-w-0">
-        <h4 className="font-semibold text-gray-900 truncate">{ticket.titulo}</h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mt-2 text-sm text-gray-600">
+        <h4 className="font-semibold text-foreground truncate">{ticket.titulo}</h4>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mt-2 text-sm text-muted-foreground">
           <div className="flex items-center gap-1 min-w-0">
             <User className="h-3 w-3 flex-shrink-0" />
             <span className="truncate">Cliente: {ticket.cliente?.nome}</span>
@@ -40,14 +40,17 @@ export function RelatorioCard({
           </div>
           <div className="flex items-center gap-1 min-w-0">
             <Calendar className="h-3 w-3 flex-shrink-0" />
-            <span className="truncate">Finalizado: {relatorio.data_finalizacao ? 
-              new Date(relatorio.data_finalizacao).toLocaleDateString('pt-BR') : 
-              'N/A'
-            }</span>
+            <span className="truncate">
+              Finalizado: {relatorio.data_finalizacao
+                ? new Date(relatorio.data_finalizacao).toLocaleDateString('pt-BR')
+                : 'N/A'}
+            </span>
           </div>
           <div className="flex items-center gap-1 min-w-0">
             <Clock className="h-3 w-3 flex-shrink-0" />
-            <span className="truncate">Tempo: {relatorio.tempo_execucao ? formatDuration(relatorio.tempo_execucao) : 'Não registrado'}</span>
+            <span className="truncate">
+              Tempo: {relatorio.tempo_execucao ? formatDuration(relatorio.tempo_execucao) : 'Não registrado'}
+            </span>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2 mt-2">
@@ -74,20 +77,19 @@ export function RelatorioCard({
               Assinado
             </Badge>
           )}
-          {/* Indicadores de Qualidade */}
           {relatorio.aprovado_admin === true && (
-            <Badge className="bg-green-100 text-green-800 text-xs">
-              ✓ Qualidade OK
+            <Badge className="bg-emerald-500/15 text-emerald-400 text-xs">
+              ? Qualidade OK
             </Badge>
           )}
           {relatorio.aprovado_admin === false && (
-            <Badge className="bg-red-100 text-red-800 text-xs">
-              ✗ Revisar Qualidade
+            <Badge className="bg-rose-500/15 text-rose-400 text-xs">
+              ? Revisar Qualidade
             </Badge>
           )}
           {relatorio.aprovado_admin === undefined && (
-            <Badge className="bg-yellow-100 text-yellow-800 text-xs">
-              ⚠ Em Análise
+            <Badge className="bg-amber-500/15 text-amber-300 text-xs">
+              ? Em Análise
             </Badge>
           )}
         </div>
@@ -114,20 +116,19 @@ export function RelatorioCard({
           >
             <Eye className="h-4 w-4" />
           </Button>
-          {/* Mostrar botão de PDF apenas para relatórios finalizados */}
           {ticket.status === 'finalizado' && (
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => onExportPDF(relatorio)}
-            title="Exportar PDF"
-            className="h-8 w-8 p-0"
-          >
-            <Download className="h-4 w-4" />
-          </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onExportPDF(relatorio)}
+              title="Exportar PDF"
+              className="h-8 w-8 p-0"
+            >
+              <Download className="h-4 w-4" />
+            </Button>
           )}
         </div>
       </div>
     </div>
   );
-} 
+}

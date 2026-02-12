@@ -35,4 +35,8 @@ export class CreateTicketDto {
     @IsString()
     @IsEnum(['pendente', 'em_curso', 'finalizado', 'cancelado'])
     status: 'pendente' | 'em_curso' | 'finalizado' | 'cancelado';
+
+    @IsOptional()
+    @IsString()
+    motivo_cancelamento?: string;
 }

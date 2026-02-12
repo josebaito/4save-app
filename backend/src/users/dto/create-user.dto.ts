@@ -1,4 +1,4 @@
-import { IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
+import { IsBoolean, IsEmail, IsEnum, IsNotEmpty, IsOptional, IsString, MinLength } from 'class-validator';
 
 export enum UserType {
     ADMIN = 'admin',
@@ -30,4 +30,12 @@ export class CreateUserDto {
     @IsOptional()
     @IsString()
     telefone?: string;
+
+    @IsOptional()
+    @IsString()
+    status?: string;
+
+    @IsOptional()
+    @IsBoolean()
+    disponibilidade?: boolean;
 }

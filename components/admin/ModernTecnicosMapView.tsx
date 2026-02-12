@@ -237,6 +237,7 @@ export function ModernTecnicosMapView() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-400">Ativos</p>
+                <p className="text-xs text-slate-500">atividade nos últimos 30 min</p>
                 <p className="text-2xl font-bold text-yellow-400">{activeCount}</p>
               </div>
               <Activity className="h-8 w-8 text-yellow-400" />
@@ -249,6 +250,7 @@ export function ModernTecnicosMapView() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-slate-400">Inativos</p>
+                <p className="text-xs text-slate-500">sem atividade há mais de 30 min</p>
                 <p className="text-2xl font-bold text-red-400">{staleCount}</p>
               </div>
               <AlertCircle className="h-8 w-8 text-red-400" />

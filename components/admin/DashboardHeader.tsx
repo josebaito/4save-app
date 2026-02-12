@@ -9,7 +9,7 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ onRefresh, onSync, loading }: DashboardHeaderProps) {
     return (
-        <div className="sticky top-0 z-50 w-full mb-6 pt-4 pb-4 bg-background/80 backdrop-blur-md border-b border-border/50 transition-all duration-200">
+        <div className="sticky top-0 z-50 w-full mb-6 pt-4 pb-4 bg-card/90 dark:bg-slate-700/50 backdrop-blur-md border-b border-border/50 transition-all duration-200">
             <div className="flex justify-between items-center">
                 <div className="flex flex-col">
                     <h1 className="text-3xl font-heading font-bold text-foreground tracking-tight flex items-center gap-3">

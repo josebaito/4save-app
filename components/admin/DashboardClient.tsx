@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import { useSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 // import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -71,6 +72,14 @@ export function DashboardClient({
             });
         });
     }, [notifications]);
+
+    // Apenas os últimos N registos para o bloco "Recent Activity Log"
+    const RECENT_ACTIVITY_LIMIT = 5;
+    const latestActivityTickets = useMemo(() => {
+        return [...recentTickets]
+            .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+            .slice(0, RECENT_ACTIVITY_LIMIT);
+    }, [recentTickets]);
 
     const handleSyncDisponibilidade = async () => {
         try {
@@ -141,7 +150,7 @@ export function DashboardClient({
                 {/* KPIs (Same as before but wrapped for layout) */}
                 {stats && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <MotionCard delay={0.1} className="bg-card border-border shadow-sm hover:shadow-md transition-all group">
+                        <MotionCard delay={0.1} className="bg-card dark:bg-slate-700/50 border-border shadow-sm hover:shadow-md transition-all group">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
                                     Total de Clientes
@@ -156,7 +165,7 @@ export function DashboardClient({
                             </CardContent>
                         </MotionCard>
                         {/* ... (Repeat for other KPIs with updated styles) */}
-                        <MotionCard delay={0.2} className="bg-card border-border shadow-sm hover:shadow-md transition-all group">
+                        <MotionCard delay={0.2} className="bg-card dark:bg-slate-700/50 border-border shadow-sm hover:shadow-md transition-all group">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
                                     Tickets Pendentes
@@ -171,7 +180,7 @@ export function DashboardClient({
                             </CardContent>
                         </MotionCard>
 
-                        <MotionCard delay={0.3} className="bg-card border-border shadow-sm hover:shadow-md transition-all group">
+                        <MotionCard delay={0.3} className="bg-card dark:bg-slate-700/50 border-border shadow-sm hover:shadow-md transition-all group">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
                                     Técnicos Ativos
@@ -186,7 +195,7 @@ export function DashboardClient({
                             </CardContent>
                         </MotionCard>
 
-                        <MotionCard delay={0.4} className="bg-card border-border shadow-sm hover:shadow-md transition-all group">
+                        <MotionCard delay={0.4} className="bg-card dark:bg-slate-700/50 border-border shadow-sm hover:shadow-md transition-all group">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
                                     Finalizados (Mês)
@@ -205,12 +214,12 @@ export function DashboardClient({
 
                 {/* Charts Area */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                    <div className="lg:col-span-2 bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow p-1">
+                    <div className="lg:col-span-2 bg-card dark:bg-slate-700/50 border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow p-1">
                         <TicketsTrendChart tickets={recentTickets} />
                     </div>
 
                     {/* Live Technicians */}
-                    <MotionCard delay={0.5} className="bg-card border-border shadow-sm flex flex-col h-full">
+                    <MotionCard delay={0.5} className="bg-card dark:bg-slate-700/50 border-border shadow-sm flex flex-col h-full">
                         <CardHeader className="pb-3 border-b border-border/50 bg-secondary/20">
                             <CardTitle className="flex items-center justify-between text-sm font-medium">
                                 <span className="flex items-center gap-2">
@@ -265,12 +274,14 @@ export function DashboardClient({
                             <FileText className="h-4 w-4 text-primary" />
                             Recent Activity Log
                         </h3>
-                        <Button variant="ghost" size="sm" className="h-8 text-xs font-mono text-muted-foreground hover:text-foreground">
-                            VIEW_ALL_LOGS &rarr;
+                        <Button variant="ghost" size="sm" className="h-8 text-xs font-mono text-muted-foreground hover:text-foreground" asChild>
+                            <Link href="/admin/tickets">
+                                Ver todos os tickets &rarr;
+                            </Link>
                         </Button>
                     </div>
 
-                    <div className="border border-border rounded-xl bg-card shadow-sm overflow-hidden">
+                    <div className="border border-border rounded-xl bg-card dark:bg-slate-700/50 shadow-sm overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
@@ -284,8 +295,8 @@ export function DashboardClient({
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border/50">
-                                    {recentTickets.length > 0 ? (
-                                        recentTickets.slice(0, 10).map((ticket) => (
+                                    {latestActivityTickets.length > 0 ? (
+                                        latestActivityTickets.map((ticket) => (
                                             <tr key={ticket.id} className="hover:bg-muted/30 transition-colors group">
                                                 <td className="py-3 px-4 font-mono text-xs text-muted-foreground group-hover:text-foreground transition-colors">
                                                     #{ticket.id.toString().slice(0, 6)}

@@ -6,7 +6,7 @@ export async function fetchAPI(endpoint: string, options: RequestInit = {}, toke
         ...options.headers,
     };
 
-    console.log(`[API] Fetching ${endpoint} | Token present: ${!!token} ${token ? `(${token.substring(0, 10)}...)` : ''}`);
+    console.log(`[API] Fetching ${endpoint} | Token present: ${!!token}`);
 
     if (token) {
         (headers as any)['Authorization'] = `Bearer ${token}`;
@@ -20,7 +20,11 @@ export async function fetchAPI(endpoint: string, options: RequestInit = {}, toke
     if (!response.ok) {
         if (response.status === 204) return null;
         const errorText = await response.text();
-        console.error(`[API Error] ${response.status} ${endpoint}:`, errorText);
+        if (response.status === 401) {
+            console.warn(`[API] 401 Unauthorized ${endpoint}`);
+        } else {
+            console.error(`[API Error] ${response.status} ${endpoint}:`, errorText);
+        }
         throw new Error(`API Error: ${response.statusText} - ${errorText}`);
     }
 
@@ -68,11 +72,11 @@ export const api = {
     },
     // Maintenance endpoints (to be implemented in backend if not exists, for now mocking or mapping)
     manutencao: {
-        listCronogramas: async (token?: string) => [], // TODO: Implement in backend
-        listHistorico: async (token?: string) => [], // TODO: Implement in backend
+        listCronogramas: (token?: string) => fetchAPI('/manutencao/cronogramas', {}, token),
+        listHistorico: (token?: string) => fetchAPI('/manutencao/historico', {}, token),
         verifySystem: async () => ({ ticketsCriados: 0, ticketsAtribuidos: 0, tecnicosAtribuidos: 0 }),
-        createCronograma: async (contratoId: string, plano: any) => { },
-        updateCronograma: async (id: string, data: any) => { },
-        deleteCronograma: async (id: string) => { },
+        createCronograma: (contratoId: string, data: any, token?: string) => fetchAPI('/manutencao/cronogramas', { method: 'POST', body: JSON.stringify({ ...data, contrato_id: contratoId }) }, token),
+        updateCronograma: (id: string, data: any, token?: string) => fetchAPI(`/manutencao/cronogramas/${id}`, { method: 'PATCH', body: JSON.stringify(data) }, token),
+        deleteCronograma: (id: string, token?: string) => fetchAPI(`/manutencao/cronogramas/${id}`, { method: 'DELETE' }, token),
     }
 };

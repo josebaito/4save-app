@@ -1,7 +1,6 @@
 # 🚀 Preparando 4Save App para Deploy na Vercel
 Write-Host "🚀 Preparando 4Save App para Deploy na Vercel" -ForegroundColor Green
 Write-Host "==============================================" -ForegroundColor Green
-
 # Verificar se o git está inicializado
 if (-not (Test-Path ".git")) {
     Write-Host "📁 Inicializando repositório Git..." -ForegroundColor Yellow
@@ -12,7 +11,6 @@ if (-not (Test-Path ".git")) {
 } else {
     Write-Host "✅ Repositório Git já existe" -ForegroundColor Green
 }
-
 # Verificar se existe remote origin
 $origin = git remote get-url origin 2>$null
 if (-not $origin) {
@@ -23,7 +21,6 @@ if (-not $origin) {
 } else {
     Write-Host "✅ Remote origin já configurado" -ForegroundColor Green
 }
-
 # Verificar se o build funciona
 Write-Host "🔨 Testando build..." -ForegroundColor Yellow
 npm run build
@@ -33,11 +30,9 @@ if ($LASTEXITCODE -eq 0) {
     Write-Host "❌ Erro no build. Verifique os logs acima." -ForegroundColor Red
     exit 1
 }
-
 # Verificar dependências
 Write-Host "📦 Verificando dependências..." -ForegroundColor Yellow
 npm install
-
 # Criar arquivo env.example se não existir
 if (-not (Test-Path "env.example")) {
     Write-Host "📝 Criando arquivo env.example..." -ForegroundColor Yellow
@@ -45,23 +40,18 @@ if (-not (Test-Path "env.example")) {
 # 🔐 NextAuth Configuration
 NEXTAUTH_URL=https://seu-app.vercel.app
 NEXTAUTH_SECRET=seu-secret-muito-seguro-aqui
-
 # 🗄️ Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-chave-anon-publica
 SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key-privada
-
 # 📤 UploadThing Configuration (opcional)
-UPLOADTHING_SECRET=seu-uploadthing-secret
-UPLOADTHING_APP_ID=seu-uploadthing-app-id
-
+UPLOADTHING_TOKEN=seu-uploadthing-token
 # 🌍 Environment
 NODE_ENV=production
 "@
     Set-Content -Path "env.example" -Value $content -Encoding UTF8
     Write-Host "✅ Arquivo env.example criado" -ForegroundColor Green
 }
-
 # Gerar NEXTAUTH_SECRET
 Write-Host "🔐 Gerando NEXTAUTH_SECRET..." -ForegroundColor Yellow
 $bytes = New-Object Byte[] 32
@@ -69,7 +59,6 @@ $bytes = New-Object Byte[] 32
 $secret = [Convert]::ToBase64String($bytes)
 Write-Host "✅ NEXTAUTH_SECRET gerado: $secret" -ForegroundColor Green
 Write-Host "💡 Use este secret na configuração da Vercel" -ForegroundColor Cyan
-
 Write-Host ""
 Write-Host "🎯 Próximos passos:" -ForegroundColor Cyan
 Write-Host "1. Configure o Supabase (veja deploy-vercel.md)" -ForegroundColor White

@@ -11,8 +11,11 @@ async function bootstrap() {
   app.use(json({ limit: '50mb' }));
   app.use(urlencoded({ extended: true, limit: '50mb' }));
 
-  // Enable CORS for frontend access
-  app.enableCors();
+  // Enable CORS with specific options
+  app.enableCors({
+    origin: process.env.CORS_ORIGINS ? process.env.CORS_ORIGINS.split(',') : ['http://localhost:3000', 'http://localhost:3001'],
+    credentials: true,
+  });
 
   // Enable Global Validation Pipe
   app.useGlobalPipes(new ValidationPipe({

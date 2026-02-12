@@ -48,7 +48,13 @@ const optimizedQueries = {
   async getTecnicosOnlineCached(token?: string): Promise<User[]> {
     try {
       const users: any[] = await api.users.getOnline(token);
-      return users.filter((u: any) => u.type === 'tecnico' && u.is_online);
+
+      const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+
+      return users.filter((u: any) => {
+        const lastSeen = u.last_seen ? new Date(u.last_seen) : new Date(0);
+        return u.type === 'tecnico' && u.is_online && lastSeen > fiveMinutesAgo;
+      });
     } catch (error) {
       console.error('Error fetching online technicians:', error);
       return [];

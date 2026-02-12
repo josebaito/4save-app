@@ -2,10 +2,12 @@ import { ExtractJwt, Strategy } from 'passport-jwt';
 import { PassportStrategy } from '@nestjs/passport';
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 
-// In a real app, use environment variables!
-// For this fix, I'll use a hardcoded secret but add a TODO to move it to .env
+const jwtSecret = process.env.JWT_SECRET;
+if (!jwtSecret && process.env.NODE_ENV === 'production') {
+    throw new Error('JWT_SECRET is required in production');
+}
 export const jwtConstants = {
-    secret: process.env.JWT_SECRET || 'secretKey', // Fallback for dev only
+    secret: jwtSecret || 'dev-secret',
 };
 
 @Injectable()

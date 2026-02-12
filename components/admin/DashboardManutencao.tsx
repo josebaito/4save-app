@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -19,6 +20,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 export function DashboardManutencao() {
+  const { data: session } = useSession();
   const [cronogramas, setCronogramas] = useState<CronogramaManutencao[]>([]);
   const [historico, setHistorico] = useState<HistoricoManutencao[]>([]);
   const [ticketsManutencao, setTicketsManutencao] = useState<Ticket[]>([]);
@@ -44,8 +46,10 @@ export function DashboardManutencao() {
   });
 
   useEffect(() => {
-    loadData();
-  }, []);
+    if ((session as any)?.accessToken) {
+      loadData();
+    }
+  }, [session]);
 
   const loadData = async () => {
     try {
@@ -53,10 +57,10 @@ export function DashboardManutencao() {
       
       // Carregar dados de manutenção
       const [cronogramasData, historicoData, ticketsData, contratosData] = await Promise.all([
-        db.getCronogramasManutencao(),
-        db.getHistoricoManutencao(),
-        db.getTickets(),
-        db.getContratos()
+        db.getCronogramasManutencao(token),
+        db.getHistoricoManutencao(token),
+        db.getTickets(token),
+        db.getContratos(token)
       ]);
       
       // Filtrar tickets de manutenção
@@ -119,6 +123,8 @@ export function DashboardManutencao() {
   // ✅ NOVO: Função para salvar cronograma
   const handleSaveCronograma = async () => {
     try {
+      const token = (session as any)?.accessToken;
+      if (!token) return;
       if (!cronogramaFormData.contrato_id || !cronogramaFormData.proxima_manutencao) {
         toast.error('Por favor, preencha todos os campos obrigatórios');
         return;
@@ -139,11 +145,11 @@ export function DashboardManutencao() {
           tipo_manutencao: cronogramaFormData.tipo_manutencao,
           frequencia: cronogramaFormData.frequencia,
           proxima_manutencao: cronogramaFormData.proxima_manutencao
-        });
+        }, token);
         toast.success('Cronograma atualizado com sucesso!');
       } else {
         // Criar novo cronograma
-        await db.criarCronogramaManutencao(cronogramaFormData.contrato_id, plano);
+        await db.criarCronogramaManutencao(cronogramaFormData.contrato_id, plano, token);
         toast.success('Cronograma criado com sucesso!');
       }
 
@@ -160,12 +166,14 @@ export function DashboardManutencao() {
 
   // ✅ NOVO: Função para deletar cronograma
   const handleDeleteCronograma = async (cronogramaId: string) => {
+    const token = (session as any)?.accessToken;
+    if (!token) return;
     if (!confirm('Tem certeza que deseja deletar este cronograma?')) {
       return;
     }
 
     try {
-      await db.deletarCronogramaManutencao(cronogramaId);
+      await db.deletarCronogramaManutencao(cronogramaId, token);
       toast.success('Cronograma deletado com sucesso!');
       await loadData();
     } catch (error) {

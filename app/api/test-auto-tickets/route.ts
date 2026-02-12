@@ -1,30 +1,37 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db/supabase';
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth/config';
 
 export async function GET() {
   const startTime = Date.now();
   
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user || session.user.type !== 'admin') {
+      return NextResponse.json({ error: 'Nao autorizado' }, { status: 401 });
+    }
+    const token = (session as any)?.accessToken;
     console.log('🧪 Testando geração automática de tickets com atribuição de técnicos...');
     
     // Verificar cronogramas existentes
-    const cronogramas = await db.getCronogramasManutencao();
+    const cronogramas = await db.getCronogramasManutencao(token);
     console.log(`📋 Encontrados ${cronogramas.length} cronogramas`);
     
     // Verificar técnicos online
-    const tecnicosOnline = await db.getTecnicosOnline();
+    const tecnicosOnline = await db.getTecnicosOnline(token);
     console.log(`👤 Técnicos online: ${tecnicosOnline.length}`);
     
     // Verificar tickets existentes antes
-    const ticketsAntes = await db.getTickets();
+    const ticketsAntes = await db.getTickets(token);
     const ticketsManutencaoAntes = ticketsAntes.filter(t => t.tipo === 'manutencao');
     console.log(`📋 Tickets de manutenção existentes: ${ticketsManutencaoAntes.length}`);
     
     // Executar geração automática
-    await db.gerarTicketsManutencao();
+    await db.gerarTicketsManutencao(token);
     
     // Verificar tickets gerados
-    const ticketsDepois = await db.getTickets();
+    const ticketsDepois = await db.getTickets(token);
     const ticketsManutencaoDepois = ticketsDepois.filter(t => t.tipo === 'manutencao');
     const ticketsNovos = ticketsManutencaoDepois.length - ticketsManutencaoAntes.length;
     

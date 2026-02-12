@@ -166,6 +166,215 @@ export default function TicketViewPage() {
     }
   };
 
+  type MediaGroup = {
+    title: string;
+    photos?: string[];
+    videos?: string[];
+    description?: string;
+  };
+
+  const formatDistanceLabel = (label: string) =>
+    label.replace(/_/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
+
+  const renderMediaBlock = (
+    label: string,
+    items: string[] | undefined,
+    type: 'image' | 'video',
+  ) => {
+    if (!items || items.length === 0) return null;
+
+    return (
+      <div>
+        <div className="flex items-center justify-between text-xs uppercase tracking-wide text-gray-500 mb-2">
+          <span>{label}</span>
+          <span>{items.length}</span>
+        </div>
+        {type === 'image' ? (
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {items.map((item, index) => (
+              <Image
+                key={`${label}-${index}`}
+                src={item}
+                alt={`${label} ${index + 1}`}
+                width={240}
+                height={180}
+                className="w-full h-28 md:h-32 object-cover rounded-lg border"
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {items.map((item, index) => (
+              <video
+                key={`${label}-${index}`}
+                controls
+                preload="metadata"
+                className="w-full h-40 md:h-44 rounded-lg border bg-black/5"
+              >
+                <source src={item} type="video/mp4" />
+                Seu navegador não suporta vídeos.
+              </video>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
+
+  const renderMediaGroup = (group: MediaGroup) => {
+    const hasPhotos = (group.photos?.length || 0) > 0;
+    const hasVideos = (group.videos?.length || 0) > 0;
+    if (!hasPhotos && !hasVideos) return null;
+
+    const mediaCount = (group.photos?.length || 0) + (group.videos?.length || 0);
+
+    return (
+      <div key={group.title} className="bg-gray-50 p-4 rounded-lg border">
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h6 className="font-semibold text-gray-900">{group.title}</h6>
+            {group.description && (
+              <p className="text-sm text-gray-600 mt-1">{group.description}</p>
+            )}
+          </div>
+          <span className="text-xs text-gray-500">{mediaCount} mídia(s)</span>
+        </div>
+        <div className="mt-4 space-y-4">
+          {renderMediaBlock('Fotos', group.photos, 'image')}
+          {renderMediaBlock('Vídeos', group.videos, 'video')}
+        </div>
+      </div>
+    );
+  };
+
+  const dadosEspecificos =
+    relatorio?.dados_especificos as Record<string, any> | undefined;
+
+  const infoCards = dadosEspecificos
+    ? [
+        { label: 'Localização dos Painéis', value: dadosEspecificos.localizacao_paineis },
+        { label: 'Localização dos Inversores', value: dadosEspecificos.localizacao_inversores },
+        { label: 'Localização das Baterias', value: dadosEspecificos.localizacao_baterias },
+        { label: 'Tubagem Instalada', value: dadosEspecificos.tubagem_instalada },
+        { label: 'Qualidade da Água', value: dadosEspecificos.qualidade_agua },
+        { label: 'Localização do Depósito', value: dadosEspecificos.localizacao_deposito },
+        { label: 'Localização da Estação de Tratamento', value: dadosEspecificos.localizacao_estacao_tratamento },
+      ]
+    : [];
+
+  const mediaGroups: MediaGroup[] = dadosEspecificos
+    ? [
+        {
+          title: 'Painéis Solares',
+          photos: dadosEspecificos.fotos_paineis,
+          videos: dadosEspecificos.videos_paineis,
+        },
+        {
+          title: 'Inversores',
+          photos: dadosEspecificos.fotos_inversores,
+          videos: dadosEspecificos.videos_inversores,
+        },
+        {
+          title: 'Baterias',
+          photos: dadosEspecificos.fotos_baterias,
+          videos: dadosEspecificos.videos_baterias,
+        },
+        {
+          title: 'Quadro Elétrico',
+          photos: dadosEspecificos.fotos_quadro_eletrico,
+          videos: dadosEspecificos.videos_quadro_eletrico,
+        },
+        {
+          title: 'Cabos',
+          photos: dadosEspecificos.fotos_cabos,
+          videos: dadosEspecificos.videos_cabos,
+        },
+        {
+          title: 'Gerador',
+          photos: dadosEspecificos.fotos_gerador,
+          videos: dadosEspecificos.videos_gerador,
+        },
+        {
+          title: 'Zona do Furo',
+          photos: dadosEspecificos.fotos_zona_furo,
+          videos: dadosEspecificos.videos_zona_furo,
+        },
+        {
+          title: 'Passagem das Máquinas',
+          photos: dadosEspecificos.fotos_passagem_maquinas,
+          videos: dadosEspecificos.videos_passagem_maquinas,
+        },
+        {
+          title: 'Trabalho das Máquinas',
+          photos: dadosEspecificos.fotos_trabalho_maquinas,
+          videos: dadosEspecificos.videos_trabalho_maquinas,
+        },
+        {
+          title: 'Tubagem',
+          photos: dadosEspecificos.fotos_tubagem,
+          videos: dadosEspecificos.videos_tubagem,
+        },
+        {
+          title: 'Água',
+          photos: dadosEspecificos.fotos_agua,
+          videos: dadosEspecificos.videos_agua,
+        },
+        {
+          title: 'Depósito',
+          photos: dadosEspecificos.fotos_deposito,
+          videos: dadosEspecificos.videos_deposito,
+        },
+        {
+          title: 'Estação de Tratamento',
+          photos: dadosEspecificos.fotos_estacao_tratamento,
+          videos: dadosEspecificos.videos_estacao_tratamento,
+        },
+        {
+          title: 'Equipamento Instalado',
+          photos: dadosEspecificos.fotos_equipamento_instalado,
+          videos: dadosEspecificos.videos_equipamento_instalado,
+        },
+        {
+          title: 'Saída de Água',
+          photos: dadosEspecificos.fotos_saida_agua,
+          videos: dadosEspecificos.videos_saida_agua,
+        },
+        {
+          title: 'Equipamentos do Cliente',
+          photos: dadosEspecificos.fotos_equipamentos_cliente,
+          videos: dadosEspecificos.videos_equipamentos_cliente,
+        },
+      ]
+    : [];
+
+  const mediaGroupsVisiveis = mediaGroups.filter(
+    (group) => (group.photos?.length || 0) + (group.videos?.length || 0) > 0,
+  );
+
+  const serviceMediaGroups: MediaGroup[] = relatorio
+    ? [
+        {
+          title: 'Antes do Serviço',
+          photos: relatorio.fotos_antes,
+          videos: relatorio.videos_antes,
+        },
+        {
+          title: 'Durante o Serviço',
+          photos: relatorio.fotos_manutencao,
+          videos: relatorio.videos_manutencao,
+        },
+        {
+          title: 'Depois do Serviço',
+          photos: relatorio.fotos_depois,
+          videos: relatorio.videos_depois,
+        },
+      ]
+    : [];
+
+  const serviceMediaGroupsVisiveis = serviceMediaGroups.filter(
+    (group) => (group.photos?.length || 0) + (group.videos?.length || 0) > 0,
+  );
+
   if (status === 'loading' || loading) {
     return (
       <TecnicoLayout>
@@ -341,19 +550,18 @@ export default function TicketViewPage() {
               )}
 
               {/* Dados Específicos */}
-              {relatorio.dados_especificos && (
+              {dadosEspecificos && (
                 <div>
                   <h4 className="font-semibold text-gray-900 mb-2">Detalhes Específicos</h4>
                   <div className="space-y-4">
-                    {/* Distâncias entre Equipamentos */}
-                    {relatorio.dados_especificos.distancias_equipamentos &&
-                      Object.keys(relatorio.dados_especificos.distancias_equipamentos).length > 0 && (
+                    {dadosEspecificos.distancias_equipamentos &&
+                      Object.keys(dadosEspecificos.distancias_equipamentos).length > 0 && (
                         <div className="bg-gray-50 p-4 rounded-lg">
                           <h5 className="font-medium text-gray-900 mb-2">Distâncias entre Equipamentos</h5>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                            {Object.entries(relatorio.dados_especificos.distancias_equipamentos).map(([key, value]) => (
+                            {Object.entries(dadosEspecificos.distancias_equipamentos).map(([key, value]) => (
                               <div key={key} className="flex justify-between">
-                                <span className="text-gray-600">{key}:</span>
+                                <span className="text-gray-600">{formatDistanceLabel(key)}:</span>
                                 <span className="font-medium">{String(value)}m</span>
                               </div>
                             ))}
@@ -361,224 +569,35 @@ export default function TicketViewPage() {
                         </div>
                       )}
 
-                    {/* Localização GPS */}
-                    {relatorio.dados_especificos.localizacao_gps && (
+                    {dadosEspecificos.localizacao_gps && (
                       <div className="bg-gray-50 p-4 rounded-lg">
                         <h5 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
                           <MapPin className="h-4 w-4" />
                           Localização GPS
                         </h5>
-                        <p className="text-gray-600">{relatorio.dados_especificos.localizacao_gps}</p>
+                        <p className="text-gray-600">{dadosEspecificos.localizacao_gps}</p>
                       </div>
                     )}
 
-                    {/* Fotos e Vídeos dos Painéis */}
-                    {(relatorio.dados_especificos.fotos_paineis?.length > 0 || relatorio.dados_especificos.videos_paineis?.length > 0) && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h5 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
-                          <Camera className="h-4 w-4" />
-                          Painéis Solares
-                        </h5>
-                        <div className="space-y-3">
-                          {relatorio.dados_especificos.fotos_paineis?.length > 0 && (
-                            <div>
-                              <h6 className="text-sm font-medium text-gray-700 mb-2">Fotos dos Painéis</h6>
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                {relatorio.dados_especificos.fotos_paineis.map((foto: string, index: number) => (
-                                  <Image
-                                    key={index}
-                                    src={foto}
-                                    alt={`Painel ${index + 1}`}
-                                    width={200}
-                                    height={80}
-                                    className="w-full h-20 object-cover rounded border"
-                                  />
-                                ))}
-                              </div>
+                    {infoCards.filter((item) => item.value).length > 0 && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {infoCards
+                          .filter((item) => item.value)
+                          .map((item) => (
+                            <div key={item.label} className="bg-gray-50 p-4 rounded-lg">
+                              <h5 className="font-medium text-gray-900 mb-2">{item.label}</h5>
+                              <p className="text-gray-600">{item.value}</p>
                             </div>
-                          )}
-                          {relatorio.dados_especificos.videos_paineis?.length > 0 && (
-                            <div>
-                              <h6 className="text-sm font-medium text-gray-700 mb-2">Vídeos dos Painéis</h6>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                {relatorio.dados_especificos.videos_paineis.map((video: string, index: number) => (
-                                  <video
-                                    key={index}
-                                    controls
-                                    className="w-full rounded border"
-                                  >
-                                    <source src={video} type="video/mp4" />
-                                    Seu navegador não suporta vídeos.
-                                  </video>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Fotos e Vídeos dos Inversores */}
-                    {(relatorio.dados_especificos.fotos_inversores?.length > 0 || relatorio.dados_especificos.videos_inversores?.length > 0) && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h5 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
-                          <Camera className="h-4 w-4" />
-                          Inversores
-                        </h5>
-                        <div className="space-y-3">
-                          {relatorio.dados_especificos.fotos_inversores?.length > 0 && (
-                            <div>
-                              <h6 className="text-sm font-medium text-gray-700 mb-2">Fotos dos Inversores</h6>
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                {relatorio.dados_especificos.fotos_inversores.map((foto: string, index: number) => (
-                                  <Image
-                                    key={index}
-                                    src={foto}
-                                    alt={`Inversor ${index + 1}`}
-                                    width={200}
-                                    height={80}
-                                    className="w-full h-20 object-cover rounded border"
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {relatorio.dados_especificos.videos_inversores?.length > 0 && (
-                            <div>
-                              <h6 className="text-sm font-medium text-gray-700 mb-2">Vídeos dos Inversores</h6>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                {relatorio.dados_especificos.videos_inversores.map((video: string, index: number) => (
-                                  <video
-                                    key={index}
-                                    controls
-                                    className="w-full rounded border"
-                                  >
-                                    <source src={video} type="video/mp4" />
-                                    Seu navegador não suporta vídeos.
-                                  </video>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Fotos e Vídeos das Baterias */}
-                    {(relatorio.dados_especificos.fotos_baterias?.length > 0 || relatorio.dados_especificos.videos_baterias?.length > 0) && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h5 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
-                          <Camera className="h-4 w-4" />
-                          Baterias
-                        </h5>
-                        <div className="space-y-3">
-                          {relatorio.dados_especificos.fotos_baterias?.length > 0 && (
-                            <div>
-                              <h6 className="text-sm font-medium text-gray-700 mb-2">Fotos das Baterias</h6>
-                              <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                                {relatorio.dados_especificos.fotos_baterias.map((foto: string, index: number) => (
-                                  <Image
-                                    key={index}
-                                    src={foto}
-                                    alt={`Bateria ${index + 1}`}
-                                    width={200}
-                                    height={80}
-                                    className="w-full h-20 object-cover rounded border"
-                                  />
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                          {relatorio.dados_especificos.videos_baterias?.length > 0 && (
-                            <div>
-                              <h6 className="text-sm font-medium text-gray-700 mb-2">Vídeos das Baterias</h6>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
-                                {relatorio.dados_especificos.videos_baterias.map((video: string, index: number) => (
-                                  <video
-                                    key={index}
-                                    controls
-                                    className="w-full rounded border"
-                                  >
-                                    <source src={video} type="video/mp4" />
-                                    Seu navegador não suporta vídeos.
-                                  </video>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
-
-                    {/* Fotos do Trabalho das Máquinas (Furo de Água) */}
-                    {relatorio.dados_especificos.fotos_trabalho_maquinas?.length > 0 && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h5 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
-                          <Camera className="h-4 w-4" />
-                          Trabalho das Máquinas
-                        </h5>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                          {relatorio.dados_especificos.fotos_trabalho_maquinas.map((foto: string, index: number) => (
-                            <Image
-                              key={index}
-                              src={foto}
-                              alt={`Máquina ${index + 1}`}
-                              width={200}
-                              height={80}
-                              className="w-full h-20 object-cover rounded border"
-                            />
                           ))}
+                      </div>
+                    )}
+
+                    {mediaGroupsVisiveis.length > 0 && (
+                      <div className="space-y-3">
+                        <h5 className="font-medium text-gray-900">Mídia por Equipamento</h5>
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                          {mediaGroupsVisiveis.map((group) => renderMediaGroup(group))}
                         </div>
-                      </div>
-                    )}
-
-                    {/* Campos de Texto Específicos */}
-                    {relatorio.dados_especificos.localizacao_paineis && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h5 className="font-medium text-gray-900 mb-2">Localização dos Painéis</h5>
-                        <p className="text-gray-600">{relatorio.dados_especificos.localizacao_paineis}</p>
-                      </div>
-                    )}
-
-                    {relatorio.dados_especificos.localizacao_inversores && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h5 className="font-medium text-gray-900 mb-2">Localização dos Inversores</h5>
-                        <p className="text-gray-600">{relatorio.dados_especificos.localizacao_inversores}</p>
-                      </div>
-                    )}
-
-                    {relatorio.dados_especificos.localizacao_baterias && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h5 className="font-medium text-gray-900 mb-2">Localização das Baterias</h5>
-                        <p className="text-gray-600">{relatorio.dados_especificos.localizacao_baterias}</p>
-                      </div>
-                    )}
-
-                    {relatorio.dados_especificos.tubagem_instalada && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h5 className="font-medium text-gray-900 mb-2">Tubagem Instalada</h5>
-                        <p className="text-gray-600">{relatorio.dados_especificos.tubagem_instalada}</p>
-                      </div>
-                    )}
-
-                    {relatorio.dados_especificos.qualidade_agua && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h5 className="font-medium text-gray-900 mb-2">Qualidade da Água</h5>
-                        <p className="text-gray-600">{relatorio.dados_especificos.qualidade_agua}</p>
-                      </div>
-                    )}
-
-                    {relatorio.dados_especificos.localizacao_deposito && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h5 className="font-medium text-gray-900 mb-2">Localização do Depósito</h5>
-                        <p className="text-gray-600">{relatorio.dados_especificos.localizacao_deposito}</p>
-                      </div>
-                    )}
-
-                    {relatorio.dados_especificos.localizacao_estacao_tratamento && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h5 className="font-medium text-gray-900 mb-2">Localização da Estação de Tratamento</h5>
-                        <p className="text-gray-600">{relatorio.dados_especificos.localizacao_estacao_tratamento}</p>
                       </div>
                     )}
                   </div>
@@ -588,61 +607,17 @@ export default function TicketViewPage() {
           </Card>
         )}
 
-        {/* Fotos Antes */}
-        {relatorio?.fotos_antes && relatorio.fotos_antes.length > 0 && (
+        {serviceMediaGroupsVisiveis.length > 0 && (
           <Card className="border-0 shadow-lg">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Camera className="h-5 w-5 text-blue-600" />
-                Fotos - Antes do Serviço
+                Registro Visual do Serviço
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {relatorio.fotos_antes.map((foto: string, index: number) => (
-                  <div key={index} className="relative">
-                    <Image
-                      src={foto}
-                      alt={`Foto antes ${index + 1}`}
-                      width={200}
-                      height={128}
-                      className="w-full h-32 object-cover rounded-lg border"
-                    />
-                    <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-                      {index + 1}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-
-        {/* Fotos Depois */}
-        {relatorio?.fotos_depois && relatorio.fotos_depois.length > 0 && (
-          <Card className="border-0 shadow-lg">
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <Camera className="h-5 w-5 text-green-600" />
-                Fotos - Após o Serviço
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {relatorio.fotos_depois.map((foto: string, index: number) => (
-                  <div key={index} className="relative">
-                    <Image
-                      src={foto}
-                      alt={`Foto depois ${index + 1}`}
-                      width={200}
-                      height={128}
-                      className="w-full h-32 object-cover rounded-lg border"
-                    />
-                    <div className="absolute bottom-2 left-2 bg-black bg-opacity-50 text-white text-xs px-2 py-1 rounded">
-                      {index + 1}
-                    </div>
-                  </div>
-                ))}
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                {serviceMediaGroupsVisiveis.map((group) => renderMediaGroup(group))}
               </div>
             </CardContent>
           </Card>

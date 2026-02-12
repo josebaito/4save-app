@@ -7,7 +7,30 @@ import { PrismaService } from '../prisma/prisma.service';
 export class RelatoriosService {
   constructor(private prisma: PrismaService) { }
 
-  create(createRelatorioDto: any) {
+  async isTicketOwnedByTecnico(ticketId: string, tecnicoId: string) {
+    const ticket = await this.prisma.ticket.findUnique({
+      where: { id: ticketId },
+      select: { tecnico_id: true }
+    });
+    return ticket?.tecnico_id === tecnicoId;
+  }
+
+  async create(createRelatorioDto: any) {
+    const ticketId = createRelatorioDto?.ticket_id;
+    if (ticketId) {
+      const existente = await this.prisma.relatorioTecnico.findFirst({
+        where: { ticket_id: ticketId },
+      });
+
+      if (existente) {
+        const { id, ...updateData } = createRelatorioDto ?? {};
+        return this.prisma.relatorioTecnico.update({
+          where: { id: existente.id },
+          data: updateData,
+        });
+      }
+    }
+
     return this.prisma.relatorioTecnico.create({ data: createRelatorioDto });
   }
 

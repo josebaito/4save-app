@@ -76,7 +76,13 @@ export function NotificacoesManutencao() {
 
   const marcarTicketComoLido = async (id: string) => {
     try {
-      await db.updateTicket(id, { status: 'finalizado' });
+      const session: any = await import('next-auth/react').then(mod => mod.getSession());
+      const token = session?.accessToken;
+      if (!token) {
+        console.error('Sem sessão: não foi possível marcar ticket como lido');
+        return;
+      }
+      await db.updateTicket(id, { status: 'finalizado' }, token);
       setTicketsNotificacao(prev => prev.filter(t => t.id !== id));
     } catch (error) {
       console.error('Erro ao marcar ticket como lido:', error);

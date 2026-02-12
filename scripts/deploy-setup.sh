@@ -1,8 +1,6 @@
 #!/bin/bash
-
 echo "🚀 Preparando 4Save App para Deploy na Vercel"
 echo "=============================================="
-
 # Verificar se o git está inicializado
 if [ ! -d ".git" ]; then
     echo "📁 Inicializando repositório Git..."
@@ -13,7 +11,6 @@ if [ ! -d ".git" ]; then
 else
     echo "✅ Repositório Git já existe"
 fi
-
 # Verificar se existe remote origin
 if ! git remote get-url origin > /dev/null 2>&1; then
     echo "🔗 Adicionando remote origin..."
@@ -24,7 +21,6 @@ if ! git remote get-url origin > /dev/null 2>&1; then
 else
     echo "✅ Remote origin já configurado"
 fi
-
 # Verificar se o build funciona
 echo "🔨 Testando build..."
 if npm run build; then
@@ -33,11 +29,9 @@ else
     echo "❌ Erro no build. Verifique os logs acima."
     exit 1
 fi
-
 # Verificar dependências
 echo "📦 Verificando dependências..."
 npm install
-
 # Criar arquivo .env.example se não existir
 if [ ! -f "env.example" ]; then
     echo "📝 Criando arquivo env.example..."
@@ -45,22 +39,17 @@ if [ ! -f "env.example" ]; then
 # 🔐 NextAuth Configuration
 NEXTAUTH_URL=https://seu-app.vercel.app
 NEXTAUTH_SECRET=seu-secret-muito-seguro-aqui
-
 # 🗄️ Supabase Configuration
 NEXT_PUBLIC_SUPABASE_URL=https://seu-projeto.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=sua-chave-anon-publica
 SUPABASE_SERVICE_ROLE_KEY=sua-service-role-key-privada
-
 # 📤 UploadThing Configuration (opcional)
-UPLOADTHING_SECRET=seu-uploadthing-secret
-UPLOADTHING_APP_ID=seu-uploadthing-app-id
-
+UPLOADTHING_TOKEN=seu-uploadthing-token
 # 🌍 Environment
 NODE_ENV=production
 EOF
     echo "✅ Arquivo env.example criado"
 fi
-
 # Gerar NEXTAUTH_SECRET
 echo "🔐 Gerando NEXTAUTH_SECRET..."
 if command -v openssl &> /dev/null; then
@@ -70,7 +59,6 @@ if command -v openssl &> /dev/null; then
 else
     echo "⚠️  openssl não encontrado. Gere manualmente em: https://generate-secret.vercel.app/32"
 fi
-
 echo ""
 echo "🎯 Próximos passos:"
 echo "1. Configure o Supabase (veja deploy-vercel.md)"

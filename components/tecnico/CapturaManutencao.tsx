@@ -59,18 +59,6 @@ export function CapturaManutencao({ dados, onChange, disabled = false }: Captura
               <Video className="h-4 w-4" />
               Vídeos do Estado Atual
             </Label>
-            {dados.videos_antes && dados.videos_antes.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
-                {dados.videos_antes.map((video, index) => (
-                  <video
-                    key={index}
-                    src={video}
-                    controls
-                    className="w-full h-20 object-cover rounded-lg"
-                  />
-                ))}
-              </div>
-            )}
             <UploadWrapper
               onComplete={(urls) => updateField('videos_antes' as keyof DadosEspecificosProduto, urls)}
               onError={(error) => toast.error('Erro no upload: ' + error)}
@@ -122,18 +110,6 @@ export function CapturaManutencao({ dados, onChange, disabled = false }: Captura
               <Video className="h-4 w-4" />
               Vídeos do Processo
             </Label>
-            {dados.videos_manutencao && dados.videos_manutencao.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
-                {dados.videos_manutencao.map((video, index) => (
-                  <video
-                    key={index}
-                    src={video}
-                    controls
-                    className="w-full h-20 object-cover rounded-lg"
-                  />
-                ))}
-              </div>
-            )}
             <UploadWrapper
               onComplete={(urls) => updateField('videos_manutencao' as keyof DadosEspecificosProduto, urls)}
               onError={(error) => toast.error('Erro no upload: ' + error)}
@@ -185,18 +161,6 @@ export function CapturaManutencao({ dados, onChange, disabled = false }: Captura
               <Video className="h-4 w-4" />
               Vídeos do Resultado
             </Label>
-            {dados.videos_depois && dados.videos_depois.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
-                {dados.videos_depois.map((video, index) => (
-                  <video
-                    key={index}
-                    src={video}
-                    controls
-                    className="w-full h-20 object-cover rounded-lg"
-                  />
-                ))}
-              </div>
-            )}
             <UploadWrapper
               onComplete={(urls) => updateField('videos_depois' as keyof DadosEspecificosProduto, urls)}
               onError={(error) => toast.error('Erro no upload: ' + error)}

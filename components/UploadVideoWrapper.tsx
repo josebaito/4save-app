@@ -1,8 +1,11 @@
-import { useState, useRef } from 'react';
+'use client';
+
+import { useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Upload, X, AlertCircle } from 'lucide-react';
 import { toast } from 'sonner';
 import { MediaCapture } from './MediaCapture';
+import { useUploadThing } from '@/lib/uploadthing';
 
 interface UploadVideoWrapperProps {
   onComplete: (urls: string[]) => void;
@@ -10,33 +13,69 @@ interface UploadVideoWrapperProps {
   disabled?: boolean;
   maxFiles?: number;
   maxSize?: number; // em MB
+  currentFiles?: string[];
 }
 
 export function UploadVideoWrapper({ 
   onComplete, 
-  // onError, 
+  onError,
   disabled = false, 
   maxFiles = 5,
-  maxSize = 100 // 100MB por padrão
+  maxSize = 100,
+  currentFiles = []
 }: UploadVideoWrapperProps) {
-  const [uploadedVideos, setUploadedVideos] = useState<string[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const lastCaptureTimeRef = useRef<number>(0);
+  const uploadedVideos = currentFiles;
+
+  const { startUpload, isUploading } = useUploadThing('videoUploader', {
+    onUploadError: (error) => {
+      console.error('Erro no upload:', error);
+      onError?.(error.message);
+      toast.error('Erro no upload: ' + error.message);
+    },
+  });
 
   const validateFile = (file: File): boolean => {
-    // Verificar tipo de arquivo
     if (!file.type.startsWith('video/')) {
-      toast.error('Por favor, selecione apenas arquivos de vídeo');
+      toast.error('Por favor, selecione apenas arquivos de v�deo');
       return false;
     }
-
-    // Verificar tamanho
     const fileSizeMB = file.size / (1024 * 1024);
     if (fileSizeMB > maxSize) {
-      toast.error(`Arquivo muito grande. Máximo permitido: ${maxSize}MB`);
+      toast.error(`Arquivo muito grande. M�ximo permitido: ${maxSize}MB`);
       return false;
     }
-
     return true;
+  };
+
+  const appendUrls = (urls: string[]) => {
+    if (urls.length === 0) return;
+    const uniqueUrls = urls.filter((url) => !uploadedVideos.includes(url));
+    if (uniqueUrls.length === 0) return;
+    const newVideos = [...uploadedVideos, ...uniqueUrls];
+    onComplete(newVideos);
+    toast.success(`${uniqueUrls.length} v�deo(s) carregado(s)!`);
+  };
+
+  const uploadFiles = async (files: File[]) => {
+    if (files.length === 0) return;
+    const remainingSlots = maxFiles - uploadedVideos.length;
+    if (remainingSlots <= 0) {
+      toast.error(`M�ximo de ${maxFiles} v�deos permitido`);
+      return;
+    }
+
+    const filesToUpload = files.slice(0, remainingSlots);
+    try {
+      const result = await startUpload(filesToUpload);
+      const urls = (result || []).map((f) => f.url).filter(Boolean) as string[];
+      appendUrls(urls);
+    } catch (error: any) {
+      const message = error?.message || 'Erro inesperado no upload';
+      onError?.(message);
+      toast.error('Erro no upload: ' + message);
+    }
   };
 
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -44,68 +83,53 @@ export function UploadVideoWrapper({
     if (!files || files.length === 0) return;
 
     const videoFiles = Array.from(files).filter(validateFile);
+    if (videoFiles.length === 0) return;
 
-    if (videoFiles.length === 0) {
-      return;
-    }
-
-    // Verificar limite de arquivos
     if (uploadedVideos.length + videoFiles.length > maxFiles) {
-      toast.error(`Máximo de ${maxFiles} vídeos permitido`);
+      toast.error(`M�ximo de ${maxFiles} v�deos permitido`);
       return;
     }
 
-    // Para simplicidade, vamos usar data URLs para vídeos locais
-    videoFiles.forEach(file => {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        const dataUrl = e.target?.result as string;
-        // Verificar se já não existe
-        if (!uploadedVideos.includes(dataUrl)) {
-          const newVideos = [...uploadedVideos, dataUrl];
-          setUploadedVideos(newVideos);
-          onComplete(newVideos);
-          toast.success('Vídeo carregado!');
-        }
-      };
-      reader.onerror = () => {
-        toast.error('Erro ao ler arquivo de vídeo');
-      };
-      reader.readAsDataURL(file);
-    });
+    uploadFiles(videoFiles);
 
-    // Limpar o input
     if (fileInputRef.current) {
       fileInputRef.current.value = '';
     }
   };
 
-  const handleCapture = (dataUrl: string) => {
-    // Verificar limite de arquivos
+  const handleCapture = async (dataUrl: string) => {
+    const now = Date.now();
+    if (now - lastCaptureTimeRef.current < 2000) return;
+    lastCaptureTimeRef.current = now;
+
     if (uploadedVideos.length >= maxFiles) {
-      toast.error(`Máximo de ${maxFiles} vídeos permitido`);
+      toast.error(`M�ximo de ${maxFiles} v�deos permitido`);
       return;
     }
 
-    // Verificar se já não existe
-    if (!uploadedVideos.includes(dataUrl)) {
-      const newVideos = [...uploadedVideos, dataUrl];
-      setUploadedVideos(newVideos);
-      onComplete(newVideos);
-      toast.success('Vídeo capturado e adicionado!');
+    try {
+      const response = await fetch(dataUrl);
+      const blob = await response.blob();
+      const file = new File([blob], `video-${Date.now()}.webm`, {
+        type: blob.type || 'video/webm',
+      });
+      await uploadFiles([file]);
+      toast.success('V�deo capturado e enviado!');
+    } catch (error: any) {
+      const message = error?.message || 'Erro ao processar captura';
+      onError?.(message);
+      toast.error(message);
     }
   };
 
   const removeVideo = (index: number) => {
     const newVideos = uploadedVideos.filter((_, i) => i !== index);
-    setUploadedVideos(newVideos);
     onComplete(newVideos);
-    toast.success('Vídeo removido');
+    toast.success('V�deo removido');
   };
 
   return (
     <div className="space-y-4">
-      {/* Preview dos vídeos carregados */}
       {uploadedVideos.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
           {uploadedVideos.map((video, index) => (
@@ -115,11 +139,10 @@ export function UploadVideoWrapper({
                 controls
                 className="w-full h-20 object-cover rounded-lg"
                 onError={(e) => {
-                  console.error('Erro ao carregar vídeo:', video);
                   e.currentTarget.style.display = 'none';
                   const errorDiv = document.createElement('div');
                   errorDiv.className = 'w-full h-20 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-500';
-                  errorDiv.textContent = 'Erro ao carregar vídeo';
+                  errorDiv.textContent = 'Erro ao carregar v�deo';
                   e.currentTarget.parentNode?.appendChild(errorDiv);
                 }}
               />
@@ -138,30 +161,26 @@ export function UploadVideoWrapper({
         </div>
       )}
 
-      {/* Opções de upload */}
       {!disabled && uploadedVideos.length < maxFiles && (
         <div className="flex flex-col sm:flex-row gap-2">
-          {/* Captura da câmera */}
           <div className="flex-1">
             <MediaCapture
               onCapture={handleCapture}
               type="video"
-              disabled={disabled}
+              disabled={disabled || isUploading}
             />
           </div>
-          
-          {/* Upload tradicional */}
           <div className="flex-1">
             <Button
               variant="outline"
               size="sm"
               onClick={() => fileInputRef.current?.click()}
               className="flex items-center gap-2 w-full justify-center"
+              disabled={isUploading}
             >
               <Upload className="h-4 w-4" />
-              Escolher Vídeos
+              {isUploading ? 'Enviando...' : 'Escolher V�deos'}
             </Button>
-            
             <input
               ref={fileInputRef}
               type="file"
@@ -174,14 +193,12 @@ export function UploadVideoWrapper({
         </div>
       )}
 
-      {/* Mensagem quando limite atingido */}
       {uploadedVideos.length >= maxFiles && (
         <div className="text-sm text-orange-600 bg-orange-50 p-2 rounded">
-          Limite máximo de {maxFiles} vídeos atingido.
+          Limite m�ximo de {maxFiles} v�deos atingido.
         </div>
       )}
 
-      {/* Aviso sobre compatibilidade */}
       <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
         <AlertCircle className="h-3 w-3 inline mr-1" />
         Use formatos MP4, WebM ou MOV para melhor compatibilidade

@@ -61,12 +61,19 @@ export function EquipamentoManutencao({
 
     setSaving(true);
     try {
+      const session: any = await import('next-auth/react').then(mod => mod.getSession());
+      const token = session?.accessToken;
+      if (!token) {
+        toast.error('Sessão inválida. Faça login novamente.');
+        setSaving(false);
+        return;
+      }
       const todosEquipamentos = [...equipamentosExistentes, ...novosEquipamentos];
       
       // Atualizar equipamentos no contrato
       await db.updateContrato(contratoId, {
         equipamentos: todosEquipamentos
-      });
+      }, token);
 
       // Chamar callback
       onSave(todosEquipamentos);

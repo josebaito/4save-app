@@ -14,6 +14,12 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
+  images: {
+    remotePatterns: [
+      { protocol: 'https', hostname: 'utfs.io' },
+      { protocol: 'https', hostname: 'uploadthing.com' },
+    ],
+  },
   // Configurações de performance
   experimental: {
     optimizePackageImports: ['lucide-react', '@radix-ui/react-icons'],

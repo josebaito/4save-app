@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Wifi, Clock } from 'lucide-react';
 import { optimizedQueries } from '@/lib/db/optimizedQueries';
@@ -22,6 +23,7 @@ interface OnlineStatusCardProps {
 }
 
 export function OnlineStatusCard({ refreshInterval = 30000 }: OnlineStatusCardProps) {
+  const { data: session } = useSession();
   const [tecnicosOnline, setTecnicosOnline] = useState<User[]>([]);
   const [totalTecnicos, setTotalTecnicos] = useState(0);
   const [loading, setLoading] = useState(true);
@@ -29,10 +31,12 @@ export function OnlineStatusCard({ refreshInterval = 30000 }: OnlineStatusCardPr
 
   const loadOnlineStatus = async () => {
     try {
+      const token = (session as any)?.accessToken;
+      if (!token) return;
       // Usar queries otimizadas com cache
       const [tecnicosOnline, todosTecnicos] = await Promise.all([
-        optimizedQueries.getTecnicosOnlineCached(),
-        db.getTecnicos() // Manter query original para total (dados menos frequentes)
+        optimizedQueries.getTecnicosOnlineCached(token),
+        db.getTecnicos(token) // Manter query original para total (dados menos frequentes)
       ]);
 
       setTecnicosOnline(tecnicosOnline as User[]);

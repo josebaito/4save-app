@@ -77,23 +77,35 @@ export const db = {
         return api.relatorios.update(id, updates, token);
     },
 
-    async getRelatorioById(id: string): Promise<RelatorioTecnico | null> {
+    async getRelatorioById(id: string, token?: string): Promise<RelatorioTecnico | null> {
         try {
-            return await api.relatorios.get(id);
+            return await api.relatorios.get(id, token);
         } catch { return null; }
     },
 
-    async getAllRelatorios(): Promise<RelatorioTecnico[]> {
-        return api.relatorios.list();
+    async getAllRelatorios(token?: string): Promise<RelatorioTecnico[]> {
+        return api.relatorios.list(token);
     },
 
-    async getDashboardStats(): Promise<DashboardStats> {
-        return api.relatorios.getStats();
+    async getDashboardStats(token?: string): Promise<DashboardStats> {
+        return api.relatorios.getStats(token);
     },
 
     // Técnicos
     async getTecnicos(token?: string): Promise<User[]> {
-        return api.users.listTecnicos(token);
+        const users = await api.users.listTecnicos(token);
+
+        // Correct online status based on last_seen timestamp (5 min threshold)
+        const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000);
+
+        return users.map((u: any) => {
+            const lastSeen = u.last_seen ? new Date(u.last_seen) : new Date(0);
+            // If marked online but hasn't been seen in 5 mins, mark as offline
+            if (u.is_online && lastSeen < fiveMinutesAgo) {
+                return { ...u, is_online: false };
+            }
+            return u;
+        });
     },
 
     async getTecnicoById(id: string, token?: string): Promise<User | null> {
@@ -133,12 +145,12 @@ export const db = {
         }));
     },
 
-    async getTecnicosOnline(): Promise<User[]> {
-        return api.users.getOnline();
+    async getTecnicosOnline(token?: string): Promise<User[]> {
+        return api.users.getOnline(token);
     },
 
-    async getTecnicosDisponiveis(): Promise<User[]> {
-        const tecnicos = await api.users.listTecnicos();
+    async getTecnicosDisponiveis(token?: string): Promise<User[]> {
+        const tecnicos = await api.users.listTecnicos(token);
         return tecnicos.filter((t: any) => t.disponibilidade);
     },
 
@@ -155,71 +167,151 @@ export const db = {
         return api.manutencao.listHistorico(token);
     },
 
-    async criarCronogramaManutencao(contratoId: string, plano: PlanoManutencao): Promise<void> {
-        return api.manutencao.createCronograma(contratoId, plano);
+    async criarCronogramaManutencao(contratoId: string, plano: PlanoManutencao, token?: string): Promise<void> {
+        return api.manutencao.createCronograma(contratoId, plano, token);
     },
 
-    async atualizarCronogramaManutencao(id: string, updates: any): Promise<void> {
-        return api.manutencao.updateCronograma(id, updates);
+    async atualizarCronogramaManutencao(id: string, updates: any, token?: string): Promise<void> {
+        return api.manutencao.updateCronograma(id, updates, token);
     },
 
-    async deletarCronogramaManutencao(id: string): Promise<void> {
-        return api.manutencao.deleteCronograma(id);
+    async deletarCronogramaManutencao(id: string, token?: string): Promise<void> {
+        return api.manutencao.deleteCronograma(id, token);
+    },
+    async gerarTicketsManutencao(token?: string): Promise<void> {
+        console.log('[INFO] Executing maintenance generation logic (BFF/Simulation)...');
+        try {
+            const cronogramas = await this.getCronogramasManutencao(token);
+            if (!cronogramas || cronogramas.length === 0) {
+                console.log('[INFO] No maintenance schedules found.');
+                return;
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const tickets = await this.getTickets(token);
+            const contratos = await this.getContratos(token);
+            const contratosById = new Map(contratos.map(c => [c.id, c]));
+
+            const dueSchedules = cronogramas.filter(c => {
+                if (!c.proxima_manutencao) return false;
+                const nextDate = new Date(c.proxima_manutencao);
+                nextDate.setHours(0, 0, 0, 0);
+                return nextDate <= today && c.status === 'ativo';
+            });
+
+            console.log(`[INFO] Found ${dueSchedules.length} due schedules.`);
+
+            for (const schedule of dueSchedules) {
+                try {
+                    const existingOpenTicket = tickets.find(t =>
+                        t.contrato_id === schedule.contrato_id &&
+                        t.tipo === 'manutencao' &&
+                        t.status !== 'finalizado' &&
+                        t.status !== 'cancelado'
+                    );
+
+                    if (existingOpenTicket) {
+                        console.log(`[INFO] Ticket already exists for contract ${schedule.contrato_id}, skipping.`);
+                        continue;
+                    }
+
+                    const contrato = schedule.contrato ?? contratosById.get(schedule.contrato_id);
+                    const clienteId = contrato?.cliente_id;
+
+                    if (!clienteId) {
+                        console.error(`[ERROR] Missing cliente_id for contrato ${schedule.contrato_id}. Skipping.`);
+                        continue;
+                    }
+
+                    const novoTicket = {
+                        cliente_id: clienteId,
+                        contrato_id: schedule.contrato_id,
+                        titulo: `Manutencao ${schedule.tipo_manutencao} - ${contrato?.numero || 'Contrato'}`,
+                        descricao: `Manutencao automatica gerada pelo cronograma. Tipo: ${schedule.tipo_manutencao}. Observacoes: ${schedule.observacoes || 'N/A'}`,
+                        tipo: 'manutencao',
+                        prioridade: schedule.tipo_manutencao === 'corretiva' ? 'alta' : 'media',
+                        status: 'pendente'
+                    };
+
+                    const created = await this.createTicket(novoTicket, token);
+                    if (created?.id) {
+                        tickets.push(created);
+                        await this.atribuirTecnicoInteligente(created.id, contrato?.tipo_produto, token);
+                    }
+
+                    console.log(`[OK] Ticket created for contract ${schedule.contrato_id}`);
+
+                    const nextDate = new Date(schedule.proxima_manutencao);
+                    switch (schedule.frequencia) {
+                        case 'mensal': nextDate.setMonth(nextDate.getMonth() + 1); break;
+                        case 'trimestral': nextDate.setMonth(nextDate.getMonth() + 3); break;
+                        case 'semestral': nextDate.setMonth(nextDate.getMonth() + 6); break;
+                        case 'anual': nextDate.setFullYear(nextDate.getFullYear() + 1); break;
+                    }
+
+                    await this.atualizarCronogramaManutencao(schedule.id, {
+                        proxima_manutencao: nextDate.toISOString().split('T')[0]
+                    }, token);
+
+                } catch (err) {
+                    console.error(`[ERROR] Failed to process schedule ${schedule.id}:`, err);
+                }
+            }
+        } catch (error) {
+            console.error('[ERROR] Error generating maintenance tickets:', error);
+            throw error;
+        }
     },
 
     async atribuirTecnicoInteligente(ticketId: string, tipoProduto?: string, token?: string): Promise<User | null> {
-        // Fetch fresh list of technicians
         const allTecnicos = await api.users.listTecnicos(token);
+        const allTickets = await api.tickets.list(token);
 
-        // 1. Filter: Valid Status & Availability
-        let candidates = allTecnicos.filter((t: any) =>
-            t.status === 'ativo' &&
-            t.disponibilidade === true &&
-            t.is_online === true // Prefer online technicians for immediate response
-        );
-
-        // Fallback: If no online techs, check all available active ones
-        if (candidates.length === 0) {
-            candidates = allTecnicos.filter((t: any) => t.status === 'ativo' && t.disponibilidade === true);
+        const ticketsPorTecnico: Record<string, number> = {};
+        for (const t of allTecnicos) {
+            ticketsPorTecnico[t.id] = 0;
+        }
+        for (const ticket of allTickets) {
+            if (ticket.tecnico_id && ticket.status !== 'finalizado' && ticket.status !== 'cancelado') {
+                const tid = String(ticket.tecnico_id);
+                ticketsPorTecnico[tid] = (ticketsPorTecnico[tid] ?? 0) + 1;
+            }
         }
 
+        const candidates = allTecnicos.filter((t: any) =>
+            t.status === 'ativo' && t.disponibilidade === true
+        );
         if (candidates.length === 0) return null;
 
-        // 2. Score Candidates
         const scoredCandidates = candidates.map((t: any) => {
-            let score = 0;
-
-            // Specialty Match
+            const numTickets = ticketsPorTecnico[t.id] ?? 0;
+            let tieBreak = 0;
             if (tipoProduto && t.especialidade) {
                 const prod = tipoProduto.toLowerCase();
-                const spec = t.especialidade.toLowerCase();
+                const spec = (t.especialidade || '').toLowerCase();
                 if (spec.includes(prod) ||
-                    (prod.includes('solar') && spec.includes('elétrica')) ||
-                    (prod.includes('agua') && spec.includes('hidráulica'))) {
-                    score += 100;
+                    (prod.includes('solar') && spec.includes('eletrica')) ||
+                    (prod.includes('agua') && spec.includes('hidraulica'))) {
+                    tieBreak += 50;
                 }
             }
-
-            // Rating Weight (0-50 pts)
             const rating = parseFloat(t.avaliacao) || 0;
-            score += rating * 10;
-
-            // Workload balancing (Mock: random penalty 0-20 to distribute work)
-            score -= Math.random() * 20;
-
-            return { tecnico: t, score };
+            tieBreak += rating * 5;
+            if (t.is_online === true) tieBreak += 10;
+            return { tecnico: t, numTickets, tieBreak };
         });
 
-        // 3. Sort by Score Descending
-        scoredCandidates.sort((a: any, b: any) => b.score - a.score);
-
+        scoredCandidates.sort((a: any, b: any) => {
+            if (a.numTickets !== b.numTickets) return a.numTickets - b.numTickets;
+            return b.tieBreak - a.tieBreak;
+        });
         const selected = scoredCandidates[0].tecnico;
 
-        // 4. Assign
         if (selected) {
             await api.tickets.update(ticketId, {
-                tecnico_id: selected.id,
-                status: 'em_curso'
+                tecnico_id: selected.id
             }, token);
             return selected;
         }
@@ -258,12 +350,12 @@ export const db = {
         }
     },
 
-    async liberarTecnico(userId: string): Promise<void> {
+    async liberarTecnico(userId: string, token?: string): Promise<void> {
         try {
             await api.users.update(userId, {
                 disponibilidade: true,
                 status: 'ativo'
-            });
+            }, token);
         } catch (error) {
             console.error('Error liberating technician:', error);
         }
@@ -279,13 +371,13 @@ export const db = {
         }
     },
 
-    async verificarQualidadeRelatorio(relatorioId: string): Promise<{
+    async verificarQualidadeRelatorio(relatorioId: string, token?: string): Promise<{
         checklist_completo: boolean;
         fotos_minimas_atingidas: boolean;
         tempo_dentro_limite: boolean;
         observacoes_qualidade: string[];
     }> {
-        const relatorio = await api.relatorios.get(relatorioId);
+        const relatorio = await api.relatorios.get(relatorioId, token);
         if (!relatorio) throw new Error("Relatório não encontrado");
 
         const fotos_minimas_atingidas = (relatorio.fotos_antes?.length || 0) >= 2 && (relatorio.fotos_depois?.length || 0) >= 2;
@@ -305,15 +397,15 @@ export const db = {
         };
     },
 
-    async aprovarRelatorio(relatorioId: string): Promise<void> {
-        return api.relatorios.update(relatorioId, { aprovado_admin: true });
+    async aprovarRelatorio(relatorioId: string, token?: string): Promise<void> {
+        return api.relatorios.update(relatorioId, { aprovado_admin: true }, token);
     },
 
-    async rejeitarRelatorio(relatorioId: string, adminId: string, motivo: string): Promise<void> {
+    async rejeitarRelatorio(relatorioId: string, adminId: string, motivo: string, token?: string): Promise<void> {
         return api.relatorios.update(relatorioId, {
             aprovado_admin: false,
             feedback_admin: motivo
-        });
+        }, token);
     }
 };
 

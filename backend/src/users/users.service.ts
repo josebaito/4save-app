@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import * as bcrypt from 'bcryptjs';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -7,7 +8,11 @@ import { PrismaService } from '../prisma/prisma.service';
 export class UsersService {
   constructor(private prisma: PrismaService) { }
 
-  create(data: any) {
+  async create(data: any) {
+    if (data.password) {
+      const salt = await bcrypt.genSalt();
+      data.password = await bcrypt.hash(data.password, salt);
+    }
     return this.prisma.user.create({ data });
   }
 
@@ -105,7 +110,7 @@ export class UsersService {
     return this.prisma.user.findUnique({ where: { email } });
   }
 
-  update(id: string, data: any) {
+  async update(id: string, data: any) {
     // Prevent accidental password overwrite with empty string if passed
     if (data.password === '' || data.password === undefined) {
       delete data.password;
@@ -114,6 +119,12 @@ export class UsersService {
     // Ensure decimal fields are numbers (Prisma handles Decimal input as number/string)
     if (data.avaliacao) {
       data.avaliacao = Number(data.avaliacao);
+    }
+
+    // Hash password if present
+    if (data.password) {
+      const salt = await bcrypt.genSalt();
+      data.password = await bcrypt.hash(data.password, salt);
     }
 
     return this.prisma.user.update({ where: { id }, data });

@@ -13,7 +13,7 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
     }
 
-    const token = request.headers.get('Authorization')?.split(' ')[1];
+    const token = (session as any)?.accessToken || request.headers.get('Authorization')?.split(' ')[1];
 
     // Obter parâmetros da URL
     const { searchParams } = new URL(request.url);
@@ -34,7 +34,7 @@ export async function GET(request: Request) {
     const dataInicio = subMonths(new Date(), parseInt(periodo));
 
     // Buscar histórico de manutenção
-    let historicoManutencao = await db.getHistoricoManutencao();
+    let historicoManutencao = await db.getHistoricoManutencao(token);
 
     // Filtrar por período
     historicoManutencao = historicoManutencao.filter(h => {

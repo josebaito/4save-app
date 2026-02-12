@@ -24,6 +24,8 @@ export function MediaCapture({ onCapture, type, disabled = false }: MediaCapture
   const streamRef = useRef<MediaStream | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const recordedChunksRef = useRef<Blob[]>([]);
+  const videoOnStopFiredRef = useRef(false);
+  const photoCaptureFiredRef = useRef(false);
 
   // Verificação completa como no teste completo
   useEffect(() => {
@@ -217,29 +219,28 @@ export function MediaCapture({ onCapture, type, disabled = false }: MediaCapture
       toast.error('Câmera não está disponível');
       return;
     }
+    if (photoCaptureFiredRef.current) return;
+    photoCaptureFiredRef.current = true;
 
     try {
       const canvas = document.createElement('canvas');
       canvas.width = videoRef.current.videoWidth;
       canvas.height = videoRef.current.videoHeight;
       
-      console.log('📸 Capturando foto:', canvas.width, 'x', canvas.height);
-      
       const ctx = canvas.getContext('2d');
       if (ctx) {
         ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
         const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
-        
-        // Chamar onCapture apenas uma vez
         onCapture(dataUrl);
         console.log('✅ Foto capturada e enviada');
       }
     } catch (error) {
       console.error('❌ Erro ao capturar foto:', error);
       toast.error('Erro ao capturar foto');
+    } finally {
+      photoCaptureFiredRef.current = false; // permitir nova captura depois
     }
     
-    // Parar a câmera após capturar
     stopCapture();
   };
 
@@ -251,7 +252,8 @@ export function MediaCapture({ onCapture, type, disabled = false }: MediaCapture
 
     try {
       recordedChunksRef.current = [];
-      
+      videoOnStopFiredRef.current = false;
+
       const options = { mimeType: 'video/webm; codecs=vp9' };
       const mediaRecorder = new MediaRecorder(streamRef.current, MediaRecorder.isTypeSupported(options.mimeType) ? options : undefined);
       mediaRecorderRef.current = mediaRecorder;
@@ -263,13 +265,14 @@ export function MediaCapture({ onCapture, type, disabled = false }: MediaCapture
       };
 
       mediaRecorder.onstop = () => {
+        if (videoOnStopFiredRef.current) return;
+        videoOnStopFiredRef.current = true;
+        mediaRecorder.onstop = () => {}; // anular de imediato para evitar 2ª execução (Chrome/Edge)
         const blob = new Blob(recordedChunksRef.current, { type: 'video/webm' });
         const dataUrl = URL.createObjectURL(blob);
-        
+        mediaRecorderRef.current = null;
         onCapture(dataUrl);
         console.log('✅ Vídeo gravado e enviado');
-        
-        // Parar a câmera após gravar
         stopCapture();
       };
 

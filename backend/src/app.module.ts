@@ -6,6 +6,7 @@ import { TicketsModule } from './tickets/tickets.module';
 import { RelatoriosModule } from './relatorios/relatorios.module';
 import { ClientesModule } from './clientes/clientes.module';
 import { ContratosModule } from './contratos/contratos.module';
+import { ManutencaoModule } from './manutencao/manutencao.module';
 
 @Module({
   imports: [
@@ -15,7 +16,8 @@ import { ContratosModule } from './contratos/contratos.module';
     TicketsModule,
     RelatoriosModule,
     ClientesModule,
-    ContratosModule
+    ContratosModule,
+    ManutencaoModule
   ],
   controllers: [],
   providers: [],

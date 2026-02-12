@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { PDFDocument, rgb, StandardFonts, PDFFont, PDFImage, type Color } from 'pdf-lib';
-import { db } from '@/lib/db/supabase'; // Simulação do seu módulo de banco de dados
+import { getServerSession } from 'next-auth';
+import { authOptions } from '@/lib/auth/config';
+import { db } from '@/lib/db/supabase';
+import { readAppConfig } from '@/lib/app-config'; // Simulação do seu módulo de banco de dados
 // import type { DadosEspecificosProduto } from '@/types'; // Simulação dos seus tipos
 
 // --- TIPOS E INTERFACES (Melhora a organização e o type safety) ---
@@ -266,25 +269,84 @@ async function embedImageFromUrl(pdfDoc: PDFDocument, imageUrl: string): Promise
  * @param fonts As fontes carregadas.
  * @param data Os dados do relatório para determinar o tipo.
  */
-function drawHeader(layout: LayoutManager, fonts: { normal: PDFFont; bold: PDFFont }, data: ReportData) {
-  // Determinar o tipo de relatório e título apropriado
+function drawHeader(
+  layout: LayoutManager,
+  fonts: { normal: PDFFont; bold: PDFFont },
+  data: ReportData,
+  config: { appName: string; reportLogoUrl?: string; pdfTemplate: 'classic' | 'modern' },
+  logoImage: PDFImage | null
+) {
   const isInstalacao = data.tipo === 'instalacao';
   const tituloRelatorio = isInstalacao ? 'RELATÓRIO DE INSTALAÇÃO' : 'RELATÓRIO DE MANUTENÇÃO';
   const subtitulo = isInstalacao ? 'Relatório Técnico de Instalação' : 'Relatório Técnico de Manutenção';
-  
+
+  const page = layout.getPage();
+  const pageWidth = layout.getWidth();
+  const contentWidth = pageWidth - STYLES.margins.left - STYLES.margins.right;
+
+  if (config.pdfTemplate === 'modern') {
+    const bandHeight = 22;
+    page.drawRectangle({
+      x: STYLES.margins.left,
+      y: layout.getY() - bandHeight + 6,
+      width: contentWidth,
+      height: bandHeight,
+      color: rgb(0.2, 0.33, 0.44),
+    });
+
+    if (logoImage) {
+      const scaled = logoImage.scaleToFit(90, bandHeight - 4);
+      page.drawImage(logoImage, {
+        x: STYLES.margins.left + 6,
+        y: layout.getY() - scaled.height + 6,
+        width: scaled.width,
+        height: scaled.height,
+      });
+    }
+
+    drawText(layout, config.appName || '4Save', {
+      x: STYLES.margins.left + (logoImage ? 110 : 10),
+      font: fonts.bold,
+      size: 11,
+      color: rgb(1, 1, 1),
+    });
+    layout.spaceDown(28);
+  } else {
+    let logoOffset = 0;
+    if (logoImage) {
+      const scaled = logoImage.scaleToFit(120, 36);
+      page.drawImage(logoImage, {
+        x: STYLES.margins.left,
+        y: layout.getY() - scaled.height + 6,
+        width: scaled.width,
+        height: scaled.height,
+      });
+      logoOffset = scaled.width + 12;
+    }
+
+    drawText(layout, config.appName || '4Save', {
+      x: STYLES.margins.left + logoOffset,
+      font: fonts.bold,
+      size: 12,
+      color: STYLES.colors.darkGray,
+    });
+    layout.spaceDown(26);
+  }
+
   drawText(layout, tituloRelatorio, { x: STYLES.margins.left, font: fonts.bold, size: STYLES.fontSizes.h1, color: STYLES.colors.header });
   layout.spaceDown(10);
   drawText(layout, subtitulo, { x: STYLES.margins.left, font: fonts.normal, size: STYLES.fontSizes.body, color: STYLES.colors.lightGray });
   layout.spaceDown(STYLES.sectionGap);
-  const page = layout.getPage();
+
   page.drawLine({
     start: { x: STYLES.margins.left, y: layout.getY() },
-    end: { x: layout.getWidth() - STYLES.margins.right, y: layout.getY() },
+    end: { x: pageWidth - STYLES.margins.right, y: layout.getY() },
     thickness: 2,
     color: STYLES.colors.darkGray,
   });
   layout.spaceDown(STYLES.sectionGap);
 }
+
 
 /**
  * Desenha a seção com as informações do ticket.
@@ -533,6 +595,18 @@ function drawFooter(pdfDoc: PDFDocument, fonts: { normal: PDFFont }) {
 
 export async function POST(request: NextRequest) {
   try {
+    const session = await getServerSession(authOptions);
+    if (!session || !session.user) {
+      return NextResponse.json({ error: 'Não autorizado' }, { status: 401 });
+    }
+
+    const token =
+      (session as any)?.accessToken ||
+      request.headers.get('Authorization')?.split(' ')[1];
+    if (!token) {
+      return NextResponse.json({ error: 'Token ausente' }, { status: 401 });
+    }
+
     const { ticketId } = await request.json();
     if (!ticketId) {
       return NextResponse.json({ error: 'ticketId é obrigatório' }, { status: 400 });
@@ -540,16 +614,31 @@ export async function POST(request: NextRequest) {
 
     // 1. Obter dados do banco de dados
     console.log('Debug PDF - Buscando ticket com ID:', ticketId);
-    const ticket = (await db.getTickets()).find(t => t.id === ticketId);
+    const userRole = session.user.type;
+    const userId = session.user.id;
+    let ticket = null as any;
+
+    if (userRole === 'admin') {
+      ticket = (await db.getTickets(token)).find(t => t.id === ticketId);
+    } else if (userRole === 'tecnico') {
+      ticket = (await db.getTicketsByTecnico(userId, token)).find(t => t.id === ticketId);
+    } else {
+      return NextResponse.json({ error: 'Perfil não autorizado' }, { status: 403 });
+    }
+
     if (!ticket) {
       console.log('Debug PDF - Ticket não encontrado:', ticketId);
       return NextResponse.json({ error: 'Ticket não encontrado' }, { status: 404 });
+    }
+
+    if (userRole === 'tecnico' && ticket.tecnico_id && ticket.tecnico_id !== userId) {
+      return NextResponse.json({ error: 'Acesso negado ao ticket' }, { status: 403 });
     }
     
     console.log('Debug PDF - Ticket encontrado:', ticket);
     console.log('Debug PDF - Status do ticket:', ticket.status);
 
-    const relatorio = await db.getRelatorioByTicket(ticketId);
+    const relatorio = await db.getRelatorioByTicket(ticketId, token);
     if (!relatorio) {
       console.log('Debug PDF - Relatório não encontrado para ticket:', ticketId);
       return NextResponse.json({ error: 'Relatório não encontrado' }, { status: 404 });
@@ -614,8 +703,11 @@ export async function POST(request: NextRequest) {
     const boldFont = await pdfDoc.embedFont(STYLES.boldFont);
     const fonts = { normal: normalFont, bold: boldFont };
 
+    const appConfig = await readAppConfig();
+    const logoImage = appConfig.reportLogoUrl ? await embedImageFromUrl(pdfDoc, appConfig.reportLogoUrl) : null;
+
         // 3. Construção do conteúdo do PDF por seções
-    drawHeader(layout, fonts, reportData);
+    drawHeader(layout, fonts, reportData, appConfig, logoImage);
     drawTicketInfo(layout, reportData, fonts);
 
     drawReportSection(layout, 'DESCRIÇÃO DO PROBLEMA', reportData.descricao, fonts, reportData);

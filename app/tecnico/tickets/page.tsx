@@ -73,7 +73,8 @@ export default function TecnicoTicketsPage() {
     let heartbeatCount = 0;
     const heartbeat = async () => {
       try {
-        await db.updateTecnicoOnlineStatus(session.user.id, true);
+        const token = (session as any)?.accessToken;
+        await db.updateTecnicoOnlineStatus(session.user.id, true, token);
         heartbeatCount++;
 
         // Log apenas ocasionalmente para reduzir spam
@@ -95,11 +96,12 @@ export default function TecnicoTicketsPage() {
 
   const handleStartTicket = async (ticketId: string) => {
     try {
-      await db.updateTicket(ticketId, { status: 'em_curso' });
+      const token = (session as any)?.accessToken;
+      await db.updateTicket(ticketId, { status: 'em_curso' }, token);
 
       // Marcar técnico como indisponível quando inicia um ticket
       if (session?.user?.id) {
-        await db.updateTecnico(session.user.id, { disponibilidade: false });
+        await db.updateTecnico(session.user.id, { disponibilidade: false }, token);
       }
 
       toast.success('Ticket iniciado com sucesso!');
@@ -117,10 +119,11 @@ export default function TecnicoTicketsPage() {
     }
 
     try {
+      const token = (session as any)?.accessToken;
       await db.updateTicket(selectedTicket.id, {
         status: 'cancelado',
         motivo_cancelamento: cancelReason.trim()
-      });
+      }, token);
       toast.success('Ticket cancelado com sucesso!');
       setShowCancelDialog(false);
       setSelectedTicket(null);

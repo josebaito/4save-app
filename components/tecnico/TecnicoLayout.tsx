@@ -1,4 +1,4 @@
-'use client';
+﻿'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
@@ -16,12 +16,14 @@ import {
   Wifi,
   WifiOff,
   Calendar,
+  User,
 } from 'lucide-react';
 import { offlineSync } from '@/lib/offline/sync';
 import { toast } from 'sonner';
 import { db } from '@/lib/db/supabase';
 import { LocationTracker } from './LocationTracker';
 import { AdminTheme } from '../admin/AdminTheme';
+import { ThemeToggle } from '@/components/ThemeToggle';
 
 interface TecnicoLayoutProps {
   children: React.ReactNode;
@@ -31,6 +33,7 @@ const navigation = [
   { name: 'Dashboard', href: '/tecnico', icon: Home },
   { name: 'Meus Tickets', href: '/tecnico/tickets', icon: FileText },
   { name: 'Manutenções', href: '/tecnico/manutencao', icon: Calendar },
+  { name: 'Perfil', href: '/tecnico/perfil', icon: User },
 ];
 
 export function TecnicoLayout({ children }: TecnicoLayoutProps) {
@@ -52,13 +55,10 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
     hasPendingData: false
   });
 
-  // Verificar status online
   useEffect(() => {
     const updateOnlineStatus = () => {
       const online = navigator.onLine;
       setIsOnline(online);
-
-      // Atualizar status de sincronização
       const status = offlineSync.getSyncStatus();
       setSyncStatus(status);
     };
@@ -73,7 +73,6 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
     };
   }, []);
 
-  // Atualizar status de sincronização periodicamente
   useEffect(() => {
     const updateSyncStatus = () => {
       const status = offlineSync.getSyncStatus();
@@ -81,48 +80,51 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
     };
 
     updateSyncStatus();
-    const interval = setInterval(updateSyncStatus, 5000); // Verificar a cada 5 segundos
+    const interval = setInterval(updateSyncStatus, 5000);
 
     return () => clearInterval(interval);
   }, []);
 
-  // Sistema de heartbeat otimizado para manter status online
   useEffect(() => {
     if (!session?.user?.id || session.user.type !== 'tecnico') return;
 
     let heartbeatCount = 0;
     const heartbeat = async () => {
       try {
-        const token = (session as any)?.accessToken;
-        await db.updateTecnicoOnlineStatus(session.user.id, true, token);
+        const currentSession: any = await import('next-auth/react').then((mod) => mod.getSession());
+        const token = currentSession?.accessToken;
+        const userId = currentSession?.user?.id;
+        if (!token || !userId) return;
+        await db.updateTecnicoOnlineStatus(userId, true, token);
         heartbeatCount++;
-
-        // Log a cada heartbeat para debug
         console.log(`Heartbeat #${heartbeatCount} - Técnico online`);
       } catch (error) {
         console.error('Erro no heartbeat:', error);
       }
     };
 
-    // Primeiro heartbeat imediato
     heartbeat();
 
-    // Heartbeat a cada 30 segundos
     const interval = setInterval(heartbeat, 30000);
 
-    // Cleanup
     return () => {
       clearInterval(interval);
-      // Marcar como offline quando sair
-      if (session?.user?.id) {
-        const token = (session as any)?.accessToken;
-        db.updateTecnicoOnlineStatus(session.user.id, false, token).catch(console.error);
-      }
+      (async () => {
+        try {
+          const currentSession: any = await import('next-auth/react').then((mod) => mod.getSession());
+          const token = currentSession?.accessToken;
+          const userId = currentSession?.user?.id;
+          if (userId && token) {
+            await db.updateTecnicoOnlineStatus(userId, false, token);
+          }
+        } catch (e) {
+          console.error('Erro ao marcar offline:', e);
+        }
+      })();
     };
-  }, [session?.user?.id, session?.user?.type, session]);
+  }, [session?.user?.id, session?.user?.type]);
 
   const handleSignOut = async () => {
-    // Marcar como offline antes de sair
     if (session?.user?.id) {
       const token = (session as any)?.accessToken;
       await db.updateTecnicoOnlineStatus(session.user.id, false, token).catch(console.error);
@@ -151,7 +153,6 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
         toast.success(result.message);
       }
 
-      // Recarregar dados apenas se houve sincronização
       if (result.synced > 0) {
         window.location.reload();
       }
@@ -165,8 +166,7 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
 
   return (
     <AdminTheme>
-      <div className="flex h-screen w-full overflow-hidden bg-slate-900">
-        {/* Mobile sidebar overlay */}
+      <div className="flex h-screen w-full overflow-hidden bg-background">
         {sidebarOpen && (
           <div
             className="fixed inset-0 z-[90] bg-black/80 lg:hidden backdrop-blur-sm"
@@ -174,26 +174,28 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
           />
         )}
 
-        {/* Sidebar - Fixed on Mobile, Static on Desktop but inside flex container */}
         <aside
           className={cn(
-            'fixed inset-y-0 left-0 z-[100] flex w-72 flex-col bg-slate-800 shadow-2xl transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 border-r border-slate-700/50',
+            'fixed inset-y-0 left-0 z-[100] flex w-72 flex-col bg-card shadow-2xl transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 border-r border-border',
             sidebarOpen ? 'translate-x-0' : '-translate-x-full',
             sidebarCollapsed ? 'lg:w-20' : 'lg:w-72'
           )}
         >
-          {/* Sidebar Header */}
-          <div className={cn(
-            "flex h-16 items-center border-b border-slate-700/50",
-            sidebarCollapsed ? "justify-center" : "justify-between px-6"
-          )}>
+          <div
+            className={cn(
+              'flex h-16 items-center border-b border-border',
+              sidebarCollapsed ? 'justify-center' : 'justify-between px-6'
+            )}
+          >
             {!sidebarCollapsed && (
-              <h2 className="text-xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">4Save Técnico</h2>
+              <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-orange-300 bg-clip-text text-transparent">
+                4Save Técnico
+              </h2>
             )}
             <Button
               variant="ghost"
               size="sm"
-              className="hidden lg:flex text-slate-400 hover:text-white hover:bg-slate-700/50"
+              className="hidden lg:flex text-muted-foreground hover:text-foreground"
               onClick={toggleSidebar}
             >
               <Menu className="h-4 w-4" />
@@ -201,14 +203,13 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden text-slate-400 hover:text-white"
+              className="lg:hidden text-muted-foreground hover:text-foreground"
               onClick={() => setSidebarOpen(false)}
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
 
-          {/* Navigation */}
           <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
             {navigation.map((item) => {
               const isActive = pathname === item.href;
@@ -219,20 +220,20 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
                   className={cn(
                     'flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group relative',
                     isActive
-                      ? 'bg-blue-600/10 text-blue-400'
-                      : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/50',
+                      ? 'bg-primary/10 text-primary'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/60',
                     sidebarCollapsed ? 'justify-center' : ''
                   )}
                   onClick={() => setSidebarOpen(false)}
                   title={sidebarCollapsed ? item.name : undefined}
                 >
                   {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-blue-500 rounded-r-full" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full" />
                   )}
                   <item.icon
                     className={cn(
                       'h-5 w-5 transition-colors',
-                      isActive ? 'text-blue-400' : 'text-slate-500 group-hover:text-slate-300',
+                      isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
                       sidebarCollapsed ? '' : 'mr-3'
                     )}
                   />
@@ -242,12 +243,12 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
             })}
           </nav>
 
-          {/* Actions Footer (Sync) */}
-          <div className={cn(
-            "border-t border-slate-700/50 p-4 space-y-2 bg-slate-800/50",
-            sidebarCollapsed ? "px-2 items-center flex flex-col" : ""
-          )}>
-            {/* Status de Sincronização */}
+          <div
+            className={cn(
+              'border-t border-border p-4 space-y-2 bg-card',
+              sidebarCollapsed ? 'px-2 items-center flex flex-col' : ''
+            )}
+          >
             {!sidebarCollapsed && syncStatus.hasPendingData && (
               <div className="mb-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
                 <div className="flex items-center gap-2 text-amber-300">
@@ -264,64 +265,63 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
               size="sm"
               onClick={handleSync}
               className={cn(
-                "w-full text-slate-300 border-slate-600 hover:bg-slate-700 hover:text-white transition-colors",
-                sidebarCollapsed ? "h-10 w-10 p-0 justify-center" : "justify-start"
+                'w-full',
+                sidebarCollapsed ? 'h-10 w-10 p-0 justify-center' : 'justify-start'
               )}
               disabled={syncing || !isOnline}
               title={sidebarCollapsed ? (syncing ? 'Sincronizando...' : isOnline ? 'Sincronizar' : 'Offline') : undefined}
             >
               {syncing ? (
-                <RefreshCw className={cn("h-4 w-4 animate-spin", !sidebarCollapsed && "mr-2")} />
+                <RefreshCw className={cn('h-4 w-4 animate-spin', !sidebarCollapsed && 'mr-2')} />
               ) : isOnline ? (
-                <Wifi className={cn("h-4 w-4 text-green-400", !sidebarCollapsed && "mr-2")} />
+                <Wifi className={cn('h-4 w-4 text-emerald-400', !sidebarCollapsed && 'mr-2')} />
               ) : (
-                <WifiOff className={cn("h-4 w-4 text-red-400", !sidebarCollapsed && "mr-2")} />
+                <WifiOff className={cn('h-4 w-4 text-rose-400', !sidebarCollapsed && 'mr-2')} />
               )}
               {!sidebarCollapsed && (syncing ? 'Sincronizando...' : isOnline ? 'Sincronizar' : 'Offline')}
             </Button>
 
-            {/* Última sincronização */}
             {!sidebarCollapsed && syncStatus.lastSync && (
-              <p className="text-[10px] text-slate-500 text-center">
+              <p className="text-[10px] text-muted-foreground text-center">
                 Última: {new Date(syncStatus.lastSync).toLocaleTimeString('pt-BR')}
               </p>
             )}
+
+            <ThemeToggle collapsed={sidebarCollapsed} />
           </div>
         </aside>
 
-        {/* Main Content Wrapper */}
-        <div className="flex flex-1 flex-col overflow-hidden min-w-0 bg-slate-900">
-          {/* Top Header */}
-          <header className="flex h-16 items-center justify-between border-b border-slate-700/50 bg-slate-800/50 px-4 lg:px-8 backdrop-blur-sm shrink-0">
+        <div className="flex flex-1 flex-col overflow-hidden min-w-0 bg-background">
+          <header className="flex h-16 items-center justify-between border-b border-border bg-card/70 px-4 lg:px-8 backdrop-blur-sm shrink-0">
             <div className="flex items-center">
               <Button
                 variant="ghost"
                 size="sm"
-                className="mr-4 text-slate-400 lg:hidden"
+                className="mr-4 text-muted-foreground lg:hidden"
                 onClick={() => setSidebarOpen(true)}
               >
                 <Menu className="h-5 w-5" />
               </Button>
-              <h1 className="text-lg font-semibold text-slate-200">
-                {navigation.find(item => item.href === pathname)?.name || 'Dashboard'}
+              <h1 className="text-lg font-semibold text-foreground">
+                {navigation.find((item) => item.href === pathname)?.name || 'Dashboard'}
               </h1>
             </div>
 
             <div className="flex items-center gap-4">
-              <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-full bg-slate-800/50 border border-slate-700/50">
-                <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-blue-500 to-cyan-500 flex items-center justify-center text-[10px] font-bold text-white shadow-lg shadow-blue-500/20">
+              <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-full bg-card border border-border">
+                <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-primary to-orange-300 flex items-center justify-center text-[10px] font-bold text-primary-foreground shadow-lg">
                   {session?.user?.name?.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-xs font-medium text-slate-200 leading-none">{session?.user?.name}</span>
-                  <span className="text-[10px] text-slate-500 leading-none mt-0.5">{session?.user?.email}</span>
+                  <span className="text-xs font-medium text-foreground leading-none">{session?.user?.name}</span>
+                  <span className="text-[10px] text-muted-foreground leading-none mt-0.5">{session?.user?.email}</span>
                 </div>
               </div>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
-                className="text-slate-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
+                className="text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
                 title="Sair"
               >
                 <LogOut className="h-4 w-4" />
@@ -329,10 +329,8 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
             </div>
           </header>
 
-          {/* Scrollable Page Content */}
           <main className="flex-1 overflow-y-auto p-4 lg:p-6 scroll-smooth">
             <div className="mx-auto max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-              {/* Localização em tempo real Container - Keeping it somewhat fluid in the layout */}
               <div className="mb-6">
                 <LocationTracker />
               </div>
@@ -340,9 +338,8 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
               {children}
             </div>
 
-            {/* Footer inside scroll area or separate? AdminLayout didn't have one, but Tecnico did. Let's keep it simple at the bottom of content. */}
-            <div className="mt-8 pt-4 border-t border-slate-800/50 flex justify-center pb-4">
-              <span className="text-xs text-slate-500">
+            <div className="mt-8 pt-4 border-t border-border flex justify-center pb-4">
+              <span className="text-xs text-muted-foreground">
                 © 2024 4Save - Sistema de Gestão Técnico
               </span>
             </div>

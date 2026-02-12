@@ -104,7 +104,7 @@ export interface RelatorioTecnico {
 // ✅ NOVOS TIPOS PARA SISTEMA DE MANUTENÇÃO
 
 export interface PlanoManutencao {
-  tipo: 'preventiva' | 'corretiva' | 'preditiva';
+  tipo_manutencao: 'preventiva' | 'corretiva' | 'preditiva';
   frequencia: 'mensal' | 'trimestral' | 'semestral' | 'anual';
   inicio_manutencao: string; // Data após instalação
   duracao_contrato: number; // Meses
@@ -158,7 +158,7 @@ export type TipoProduto = 'solar_baterias' | 'solar' | 'baterias' | 'furo_agua' 
 export interface DadosEspecificosProduto {
   distancias_equipamentos: Record<string, number>;
   localizacao_gps?: string;
-  
+
   // ✅ NOVO: Campos para manutenção
   fotos_antes?: string[];
   videos_antes?: string[];
@@ -166,7 +166,7 @@ export interface DadosEspecificosProduto {
   videos_manutencao?: string[];
   fotos_depois?: string[];
   videos_depois?: string[];
-  
+
   // Solar com Baterias
   localizacao_paineis?: string;
   fotos_paineis?: string[];
@@ -177,22 +177,22 @@ export interface DadosEspecificosProduto {
   localizacao_baterias?: string;
   fotos_baterias?: string[];
   videos_baterias?: string[];
-  
+
   // Quadro Elétrico
   descricao_quadro_eletrico?: string;
   fotos_quadro_eletrico?: string[];
   videos_quadro_eletrico?: string[];
-  
+
   // Cabos
   descricao_cabos?: string;
   fotos_cabos?: string[];
   videos_cabos?: string[];
-  
+
   // Gerador
   descricao_gerador?: string;
   fotos_gerador?: string[];
   videos_gerador?: string[];
-  
+
   // Furo de Água
   descricao_zona_furo?: string;
   fotos_zona_furo?: string[];
@@ -207,7 +207,7 @@ export interface DadosEspecificosProduto {
   videos_tubagem?: string[];
   fotos_agua?: string[];
   videos_agua?: string[];
-  
+
   // Tratamento de Água
   descricao_deposito?: string;
   fotos_deposito?: string[];

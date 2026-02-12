@@ -15,10 +15,12 @@ export function useOptimizedDashboard() {
     if (!session?.user?.id) return;
     
     try {
+      const token = (session as any)?.accessToken;
+      if (!token) return;
       const [dashboardStats, ticketsData, tecnicosData] = await Promise.all([
-        optimizedQueries.getDashboardStatsCached(),
-        optimizedQueries.getTicketsCached(),
-        optimizedQueries.getTecnicosOnlineCached()
+        optimizedQueries.getDashboardStatsCached(token),
+        optimizedQueries.getTicketsCached(token),
+        optimizedQueries.getTecnicosOnlineCached(token)
       ]);
 
       setStats(dashboardStats as DashboardStats);

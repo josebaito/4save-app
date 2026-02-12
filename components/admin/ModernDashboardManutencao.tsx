@@ -25,6 +25,7 @@ import {
   Search
 } from 'lucide-react';
 import { RelatorioManutencao } from './RelatorioManutencao';
+import { Pagination } from '@/components/ui/pagination';
 import { db } from '@/lib/db/supabase';
 import { toast } from 'sonner';
 import { format, parseISO, isAfter, isBefore, addDays } from 'date-fns';
@@ -45,6 +46,10 @@ export function ModernDashboardManutencao() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [pageCronogramas, setPageCronogramas] = useState(1);
+  const [pageSizeCronogramas, setPageSizeCronogramas] = useState(10);
+  const [pageTickets, setPageTickets] = useState(1);
+  const [pageSizeTickets, setPageSizeTickets] = useState(10);
   const [stats, setStats] = useState({
     proximasManutencoes: 0,
     manutencoesPendentes: 0,
@@ -90,8 +95,8 @@ export function ModernDashboardManutencao() {
       }
 
       const [cronogramasData, historicoData, ticketsData, contratosData] = await Promise.all([
-        db.getCronogramasManutencao(),
-        db.getHistoricoManutencao(),
+        db.getCronogramasManutencao(token),
+        db.getHistoricoManutencao(token),
         db.getTickets(token),
         db.getContratos(token)
       ]);
@@ -171,10 +176,10 @@ export function ModernDashboardManutencao() {
           tipo_manutencao: cronogramaFormData.tipo_manutencao,
           frequencia: cronogramaFormData.frequencia,
           proxima_manutencao: cronogramaFormData.proxima_manutencao
-        });
+        }, (session as any)?.accessToken);
         toast.success('Cronograma atualizado com sucesso!');
       } else {
-        await db.criarCronogramaManutencao(cronogramaFormData.contrato_id, plano);
+        await db.criarCronogramaManutencao(cronogramaFormData.contrato_id, plano, (session as any)?.accessToken);
         toast.success('Cronograma criado com sucesso!');
       }
 
@@ -194,7 +199,7 @@ export function ModernDashboardManutencao() {
     }
 
     try {
-      await db.deletarCronogramaManutencao(cronogramaId);
+      await db.deletarCronogramaManutencao(cronogramaId, (session as any)?.accessToken);
       toast.success('Cronograma deletado com sucesso!');
       await loadData();
     } catch (error) {
@@ -220,7 +225,7 @@ export function ModernDashboardManutencao() {
       const token = (session as any).accessToken;
 
       // Buscar todos os cronogramas ativos (não apenas de hoje)
-      const cronogramas = await db.getCronogramasManutencao();
+      const cronogramas = await db.getCronogramasManutencao(token);
 
       let ticketsCriados = 0;
 
@@ -302,6 +307,21 @@ export function ModernDashboardManutencao() {
 
     return matchesSearch && matchesStatus;
   });
+
+  const totalCronogramas = filteredCronogramas.length;
+  const paginatedCronogramas = filteredCronogramas.slice(
+    (pageCronogramas - 1) * pageSizeCronogramas,
+    pageCronogramas * pageSizeCronogramas
+  );
+  const totalTicketsManutencao = ticketsManutencao.length;
+  const paginatedTicketsManutencao = ticketsManutencao.slice(
+    (pageTickets - 1) * pageSizeTickets,
+    pageTickets * pageSizeTickets
+  );
+
+  useEffect(() => {
+    setPageCronogramas(1);
+  }, [searchTerm, filterStatus]);
 
   if (loading) {
     return (
@@ -482,8 +502,9 @@ export function ModernDashboardManutencao() {
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {filteredCronogramas.map((cronograma) => (
+                <>
+                  <div className="space-y-4">
+                    {paginatedCronogramas.map((cronograma) => (
                     <div
                       key={cronograma.id}
                       className={`p-6 rounded-xl border transition-all hover:bg-slate-700/30 ${isVencida(cronograma.proxima_manutencao)
@@ -576,8 +597,19 @@ export function ModernDashboardManutencao() {
                         </div>
                       </div>
                     </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                  {totalCronogramas > 0 && (
+                    <Pagination
+                      page={pageCronogramas}
+                      pageSize={pageSizeCronogramas}
+                      totalItems={totalCronogramas}
+                      onPageChange={setPageCronogramas}
+                      onPageSizeChange={(v) => { setPageSizeCronogramas(v); setPageCronogramas(1); }}
+                      label="cronogramas"
+                    />
+                  )}
+                </>
               )}
             </CardContent>
           </Card>
@@ -601,8 +633,9 @@ export function ModernDashboardManutencao() {
                   </p>
                 </div>
               ) : (
-                <div className="space-y-4">
-                  {ticketsManutencao.map((ticket) => (
+                <>
+                  <div className="space-y-4">
+                    {paginatedTicketsManutencao.map((ticket) => (
                     <div
                       key={ticket.id}
                       className="p-6 rounded-xl border border-slate-600/30 bg-slate-700/20 hover:bg-slate-700/30 transition-all"
@@ -656,8 +689,19 @@ export function ModernDashboardManutencao() {
                         )}
                       </div>
                     </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                  {totalTicketsManutencao > 0 && (
+                    <Pagination
+                      page={pageTickets}
+                      pageSize={pageSizeTickets}
+                      totalItems={totalTicketsManutencao}
+                      onPageChange={setPageTickets}
+                      onPageSizeChange={(v) => { setPageSizeTickets(v); setPageTickets(1); }}
+                      label="tickets"
+                    />
+                  )}
+                </>
               )}
             </CardContent>
           </Card>

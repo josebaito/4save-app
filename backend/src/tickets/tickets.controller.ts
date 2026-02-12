@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from '@nestjs/common';
+import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards, Req, ForbiddenException } from '@nestjs/common';
 import { TicketsService } from './tickets.service';
 import { CreateTicketDto } from './dto/create-ticket.dto';
 import { UpdateTicketDto } from './dto/update-ticket.dto';
@@ -9,33 +9,67 @@ import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 export class TicketsController {
   constructor(private readonly ticketsService: TicketsService) { }
 
+  private ensureAdmin(req: any) {
+    if (req?.user?.type !== 'admin') {
+      throw new ForbiddenException('Apenas admin pode executar esta ação');
+    }
+  }
+
   @Post()
-  create(@Body() createTicketDto: CreateTicketDto) {
+  create(@Req() req: any, @Body() createTicketDto: CreateTicketDto) {
+    this.ensureAdmin(req);
     return this.ticketsService.create(createTicketDto);
   }
 
   @Get()
-  findAll() {
-    return this.ticketsService.findAll();
-  }
-
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.ticketsService.findOne(id);
+  findAll(@Req() req: any) {
+    if (req?.user?.type === 'admin') {
+      return this.ticketsService.findAll();
+    }
+    return this.ticketsService.findAllByTecnico(req?.user?.userId);
   }
 
   @Get('tecnico/:id')
-  findByTecnico(@Param('id') id: string) {
+  findByTecnico(@Req() req: any, @Param('id') id: string) {
+    if (req?.user?.type !== 'admin' && req?.user?.userId !== id) {
+      throw new ForbiddenException('Acesso negado');
+    }
     return this.ticketsService.findByTecnico(id);
   }
 
+  @Get(':id')
+  async findOne(@Req() req: any, @Param('id') id: string) {
+    const ticket = await this.ticketsService.findOne(id);
+    if (req?.user?.type === 'admin') return ticket;
+    if (ticket?.tecnico_id !== req?.user?.userId) {
+      throw new ForbiddenException('Acesso negado');
+    }
+    return ticket;
+  }
+
   @Patch(':id')
-  update(@Param('id') id: string, @Body() updateTicketDto: UpdateTicketDto) {
-    return this.ticketsService.update(id, updateTicketDto);
+  async update(@Req() req: any, @Param('id') id: string, @Body() updateTicketDto: UpdateTicketDto) {
+    if (req?.user?.type === 'admin') {
+      return this.ticketsService.update(id, updateTicketDto);
+    }
+
+    const ticket = await this.ticketsService.findOne(id);
+    if (!ticket || ticket.tecnico_id !== req?.user?.userId) {
+      throw new ForbiddenException('Acesso negado');
+    }
+
+    const allowedUpdates: Partial<UpdateTicketDto> = {};
+    if (updateTicketDto.status) allowedUpdates.status = updateTicketDto.status;
+    if (updateTicketDto.motivo_cancelamento !== undefined) {
+      allowedUpdates.motivo_cancelamento = updateTicketDto.motivo_cancelamento;
+    }
+
+    return this.ticketsService.update(id, allowedUpdates);
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string) {
+  remove(@Req() req: any, @Param('id') id: string) {
+    this.ensureAdmin(req);
     return this.ticketsService.remove(id);
   }
 }

@@ -57,21 +57,10 @@ export function FormularioSolarBaterias({ dados, onChange, disabled = false }: F
 
           <div className="space-y-2">
             <Label>Vídeos dos Painéis</Label>
-            {dados.videos_paineis && dados.videos_paineis.length > 0 && (
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 mb-2">
-                {dados.videos_paineis.map((video, index) => (
-                  <video
-                    key={index}
-                    src={video}
-                    controls
-                    className="w-full h-20 object-cover rounded-lg"
-                  />
-                ))}
-              </div>
-            )}
             <UploadVideoWrapper
               onComplete={(urls) => updateField('videos_paineis', urls)}
               onError={(error) => toast.error('Erro no upload: ' + error)}
+              currentFiles={dados.videos_paineis || []}
               disabled={disabled}
             />
           </div>
@@ -109,6 +98,7 @@ export function FormularioSolarBaterias({ dados, onChange, disabled = false }: F
             <UploadVideoWrapper
               onComplete={(urls) => updateField('videos_inversores', urls)}
               onError={(error) => toast.error('Erro no upload: ' + error)}
+              currentFiles={dados.videos_inversores || []}
               disabled={disabled}
             />
           </div>
@@ -146,6 +136,7 @@ export function FormularioSolarBaterias({ dados, onChange, disabled = false }: F
             <UploadVideoWrapper
               onComplete={(urls) => updateField('videos_baterias', urls)}
               onError={(error) => toast.error('Erro no upload: ' + error)}
+              currentFiles={dados.videos_baterias || []}
               disabled={disabled}
             />
           </div>
@@ -183,6 +174,7 @@ export function FormularioSolarBaterias({ dados, onChange, disabled = false }: F
             <UploadVideoWrapper
               onComplete={(urls) => updateField('videos_quadro_eletrico', urls)}
               onError={(error) => toast.error('Erro no upload: ' + error)}
+              currentFiles={dados.videos_quadro_eletrico || []}
               disabled={disabled}
             />
           </div>
@@ -220,6 +212,7 @@ export function FormularioSolarBaterias({ dados, onChange, disabled = false }: F
             <UploadVideoWrapper
               onComplete={(urls) => updateField('videos_cabos', urls)}
               onError={(error) => toast.error('Erro no upload: ' + error)}
+              currentFiles={dados.videos_cabos || []}
               disabled={disabled}
             />
           </div>
@@ -257,6 +250,7 @@ export function FormularioSolarBaterias({ dados, onChange, disabled = false }: F
             <UploadVideoWrapper
               onComplete={(urls) => updateField('videos_gerador', urls)}
               onError={(error) => toast.error('Erro no upload: ' + error)}
+              currentFiles={dados.videos_gerador || []}
               disabled={disabled}
             />
           </div>

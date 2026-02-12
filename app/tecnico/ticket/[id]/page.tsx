@@ -25,6 +25,8 @@ import {
   X,
   Clock,
   AlertTriangle,
+  Pause,
+  Play,
 } from "lucide-react";
 import { TecnicoLayout } from "@/components/tecnico/TecnicoLayout";
 import { FormularioEspecifico } from "@/components/tecnico/FormularioEspecifico";
@@ -93,6 +95,9 @@ export default function TicketDetailsPage() {
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [timerSeconds, setTimerSeconds] = useState(0);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const timerSecondsRef = useRef(0);
+  const isTimerRunningRef = useRef(false);
+  const relatorioRef = useRef<RelatorioTecnico | null>(null);
   // const [startTime, setStartTime] = useState<Date | null>(null);
   const autoSaveRef = useRef<NodeJS.Timeout | null>(null); // Referência para o intervalo de salvamento automático
 
@@ -105,6 +110,18 @@ export default function TicketDetailsPage() {
   const [fotosDepois, setFotosDepois] = useState<string[]>([]);
   const [localizacaoGPS, setLocalizacaoGPS] = useState("");
   const [relatorioInicialSalvo, setRelatorioInicialSalvo] = useState(false);
+
+  useEffect(() => {
+    timerSecondsRef.current = timerSeconds;
+  }, [timerSeconds]);
+
+  useEffect(() => {
+    isTimerRunningRef.current = isTimerRunning;
+  }, [isTimerRunning]);
+
+  useEffect(() => {
+    relatorioRef.current = relatorio;
+  }, [relatorio]);
 
   // Dados específicos por tipo de produto
   const [dadosEspecificos, setDadosEspecificos] = useState<{
@@ -142,6 +159,52 @@ export default function TicketDetailsPage() {
   const [sigClienteRef, setSigClienteRef] = useState<SignatureCanvas | null>(
     null,
   );
+
+  // Signature container refs (to measure actual width for canvas sizing)
+  const sigTecnicoContainerRef = useRef<HTMLDivElement>(null);
+  const sigClienteContainerRef = useRef<HTMLDivElement>(null);
+
+  // Sync canvas internal resolution with actual displayed size to prevent cursor offset
+  useEffect(() => {
+    const resizeCanvas = (
+      container: HTMLDivElement | null,
+      sigRef: SignatureCanvas | null,
+    ) => {
+      if (!container || !sigRef) return;
+      const canvas = sigRef.getCanvas();
+      const rect = container.getBoundingClientRect();
+      const displayWidth = Math.floor(rect.width);
+      const displayHeight = 200;
+      // Only resize if the dimensions actually changed
+      if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+        canvas.width = displayWidth;
+        canvas.height = displayHeight;
+        // Re-apply background color after resize (canvas clears on dimension change)
+        const ctx = canvas.getContext("2d");
+        if (ctx) {
+          ctx.fillStyle = "rgb(255, 255, 255)";
+          ctx.fillRect(0, 0, displayWidth, displayHeight);
+        }
+      }
+    };
+
+    // Initial resize after a short delay to ensure layout is settled
+    const timeout = setTimeout(() => {
+      resizeCanvas(sigTecnicoContainerRef.current, sigTecnicoRef);
+      resizeCanvas(sigClienteContainerRef.current, sigClienteRef);
+    }, 150);
+
+    const handleResize = () => {
+      resizeCanvas(sigTecnicoContainerRef.current, sigTecnicoRef);
+      resizeCanvas(sigClienteContainerRef.current, sigClienteRef);
+    };
+
+    window.addEventListener("resize", handleResize);
+    return () => {
+      clearTimeout(timeout);
+      window.removeEventListener("resize", handleResize);
+    };
+  }, [sigTecnicoRef, sigClienteRef]);
 
   // Função para capturar localização GPS
   const capturarLocalizacaoGPS = async (): Promise<string | null> => {
@@ -191,27 +254,31 @@ export default function TicketDetailsPage() {
 
   // ✅ NOVA FUNÇÃO: Salvar tempo atual no relatório
   const salvarTempoAtual = useCallback(async () => {
-    if (!relatorio) return;
+    const relatorioAtual = relatorioRef.current;
+    if (!relatorioAtual) return;
+    const token = (session as any)?.accessToken;
+    if (!token) return;
+    const tempoAtual = timerSecondsRef.current;
 
     try {
-      await db.updateRelatorio(relatorio.id, {
-        tempo_execucao: timerSeconds,
-      });
-      console.log("Tempo atual salvo:", timerSeconds, "segundos");
+      await db.updateRelatorio(relatorioAtual.id, {
+        tempo_execucao: tempoAtual,
+      }, token);
+      console.log("Tempo atual salvo:", tempoAtual, "segundos");
     } catch (error) {
       console.error("Erro ao salvar tempo atual:", error);
 
       // ✅ MELHORIA: Salvar offline se não conseguir salvar online
       if (!offlineSync.isOnline()) {
         const relatorioOffline = {
-          ...relatorio,
-          tempo_execucao: timerSeconds,
+          ...relatorioAtual,
+          tempo_execucao: tempoAtual,
         };
-        offlineSync.saveOfflineRelatorio(relatorioOffline);
+        await offlineSync.saveOfflineRelatorio(relatorioOffline);
         toast.info("Dados salvos offline - serão sincronizados quando online");
       }
     }
-  }, [relatorio, timerSeconds]);
+  }, [session]);
 
   // ✅ NOVA FUNÇÃO: Parar salvamento automático
   const stopAutoSave = useCallback(() => {
@@ -225,61 +292,209 @@ export default function TicketDetailsPage() {
   const startAutoSave = useCallback(() => {
     // Parar qualquer intervalo existente primeiro
     stopAutoSave();
-    
-    // Configurar novo intervalo de salvamento automático (a cada 5 minutos = 300000ms)
-    autoSaveRef.current = setInterval(async () => {
-      if (relatorio && isTimerRunning) {
-        console.log("Salvamento automático do tempo:", timerSeconds, "segundos");
-        await salvarTempoAtual();
-        toast.info("Tempo salvo automaticamente", { duration: 2000 });
+
+    // Configurar novo intervalo de salvamento automático (a cada 60 segundos)
+    autoSaveRef.current = setInterval(() => {
+      if (relatorioRef.current && isTimerRunningRef.current) {
+        console.log("💾 Auto-save: salvando tempo...");
+        salvarTempoAtual().catch((err) =>
+          console.error("❌ Erro no auto-save:", err),
+        );
       }
-    }, 300000); // 5 minutos
-  }, [relatorio, isTimerRunning, timerSeconds, salvarTempoAtual, stopAutoSave]);
+    }, 60000); // 60 segundos
+  }, [stopAutoSave, salvarTempoAtual]);
 
   // Timer functions
+  const atualizarEstadoTimer = useCallback(async (pausado: boolean) => {
+    const relatorioAtual = relatorioRef.current;
+    if (!relatorioAtual) return;
+    const token = (session as any)?.accessToken;
+    if (!token) return;
+
+    const dadosBase =
+      (relatorioAtual.dados_especificos as Record<string, unknown>) || {};
+    if (dadosBase._timer_pausado === pausado) return;
+
+    const dadosAtualizados = {
+      ...dadosBase,
+      _timer_pausado: pausado,
+    };
+
+    try {
+      await db.updateRelatorio(relatorioAtual.id, {
+        dados_especificos: dadosAtualizados,
+      }, token);
+
+      setRelatorio((prev) =>
+        prev ? { ...prev, dados_especificos: dadosAtualizados } : prev,
+      );
+    } catch (error) {
+      console.error("Erro ao salvar estado do timer:", error);
+
+      if (!offlineSync.isOnline()) {
+        const relatorioOffline = {
+          ...relatorioAtual,
+          dados_especificos: dadosAtualizados,
+        };
+        await offlineSync.saveOfflineRelatorio(relatorioOffline);
+        toast.info("Dados salvos offline - serão sincronizados quando online");
+      }
+    }
+  }, [session]);
+
   const startTimer = useCallback(() => {
-    if (isTimerRunning) {
+    if (isTimerRunningRef.current) {
       console.log("Timer já está rodando, ignorando...");
       return;
     }
     console.log("Iniciando timer...");
 
     // ✅ MELHORIA: Mostrar informação sobre tempo existente
-    if (timerSeconds > 0) {
-      const horas = Math.floor(timerSeconds / 3600);
-      const minutos = Math.floor((timerSeconds % 3600) / 60);
+    const tempoAtual = timerSecondsRef.current;
+    if (tempoAtual > 0) {
+      const horas = Math.floor(tempoAtual / 3600);
+      const minutos = Math.floor((tempoAtual % 3600) / 60);
       console.log(`Continuando timer de: ${horas}h ${minutos}min`);
-      toast.info(`Continuando timer: ${formatTime(timerSeconds)}`);
+      toast.info(`Continuando timer: ${formatTime(tempoAtual)}`);
     }
 
     setIsTimerRunning(true);
+    isTimerRunningRef.current = true;
     // setStartTime(new Date());
     timerRef.current = setInterval(() => {
       setTimerSeconds((prev) => prev + 1);
     }, 1000);
-    
+
     // ✅ NOVA MELHORIA: Iniciar salvamento automático a cada 5 minutos
     startAutoSave();
-  }, [isTimerRunning, timerSeconds, startAutoSave]);
+    void atualizarEstadoTimer(false);
+  }, [startAutoSave, atualizarEstadoTimer]);
 
-  const stopTimer = () => {
+  const stopTimer = useCallback(() => {
     console.log("Parando timer...");
     setIsTimerRunning(false);
+    isTimerRunningRef.current = false;
     if (timerRef.current) {
       clearInterval(timerRef.current);
       timerRef.current = null;
     }
-    
+
     // ✅ NOVA MELHORIA: Parar salvamento automático
     stopAutoSave();
-  };
+  }, [stopAutoSave]);
 
-  const formatTime = (seconds: number) => {
+  // Pausar timer: para o timer e salva o tempo acumulado no relatório
+  const pausarTimer = useCallback(async () => {
+    const tempoAtual = timerSecondsRef.current;
+    console.log("Pausando timer em:", tempoAtual, "segundos");
+    setIsTimerRunning(false);
+    isTimerRunningRef.current = false;
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = null;
+    }
+    stopAutoSave();
+
+    // Salvar tempo acumulado imediatamente
+    const relatorioAtual = relatorioRef.current;
+    if (relatorioAtual) {
+      const token = (session as any)?.accessToken;
+      if (token) {
+        const dadosBase =
+          (relatorioAtual.dados_especificos as Record<string, unknown>) || {};
+        const dadosAtualizados = {
+          ...dadosBase,
+          _timer_pausado: true,
+        };
+
+        try {
+          await db.updateRelatorio(relatorioAtual.id, {
+            tempo_execucao: tempoAtual,
+            dados_especificos: dadosAtualizados,
+          }, token);
+          setRelatorio((prev) =>
+            prev ? { ...prev, dados_especificos: dadosAtualizados } : prev,
+          );
+          console.log("Tempo salvo ao pausar:", tempoAtual);
+          toast.info(`Timer pausado em ${formatTimeFn(tempoAtual)}`);
+        } catch (error) {
+          console.error("Erro ao salvar tempo na pausa:", error);
+
+          if (!offlineSync.isOnline()) {
+            const relatorioOffline = {
+              ...relatorioAtual,
+              tempo_execucao: tempoAtual,
+              dados_especificos: dadosAtualizados,
+            };
+            await offlineSync.saveOfflineRelatorio(relatorioOffline);
+            toast.info("Dados salvos offline - serão sincronizados quando online");
+          }
+        }
+      }
+    }
+  }, [session, stopAutoSave]);
+
+  // Salvar estado do fluxo no relatório (dados_especificos._fluxo_estado)
+  const salvarFluxoEstado = useCallback(async (novoEstado: string) => {
+    console.log("🔵 [SALVAR] Iniciando salvamento do estado:", novoEstado);
+    console.log("🔵 [SALVAR] Relatório existe?", !!relatorio);
+    console.log("🔵 [SALVAR] Relatório ID:", relatorio?.id);
+
+    if (!relatorio) {
+      console.warn("⚠️ [SALVAR] Sem relatório, abortando salvamento");
+      return;
+    }
+    const token = (session as any)?.accessToken;
+    if (!token) {
+      console.warn("⚠️ [SALVAR] Sem token, abortando salvamento");
+      return;
+    }
+
+    try {
+      const dadosAtualizados = {
+        ...(relatorio.dados_especificos as Record<string, unknown> || {}),
+        ...dadosEspecificos,
+        _fluxo_estado: novoEstado,
+      };
+
+      console.log("🔵 [SALVAR] Dados que serão salvos:", dadosAtualizados);
+      console.log("🔵 [SALVAR] _fluxo_estado:", dadosAtualizados._fluxo_estado);
+
+      await db.updateRelatorio(relatorio.id, {
+        dados_especificos: dadosAtualizados,
+        tempo_execucao: timerSeconds,
+      }, token);
+
+      console.log("✅ [SALVAR] Relatório atualizado na BD com sucesso");
+
+      // Atualizar relatório local
+      setRelatorio(prev => prev ? {
+        ...prev,
+        dados_especificos: dadosAtualizados,
+        tempo_execucao: timerSeconds,
+      } : null);
+
+      console.log("✅ [SALVAR] Estado local atualizado");
+      console.log("💾 [SALVAR] RESUMO - Estado salvo:", {
+        step: novoEstado,
+        tempo: timerSeconds,
+        relatorioId: relatorio.id,
+        _fluxo_estado: dadosAtualizados._fluxo_estado
+      });
+    } catch (error) {
+      console.error("❌ [SALVAR] Erro ao salvar estado do fluxo:", error);
+      throw error;
+    }
+  }, [relatorio, session, dadosEspecificos, timerSeconds]);
+
+  const formatTimeFn = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
     return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
   };
+
+  const formatTime = formatTimeFn;
 
   const loadTicketData = useCallback(async () => {
     try {
@@ -288,8 +503,14 @@ export default function TicketDetailsPage() {
         router.push("/tecnico");
         return;
       }
+      const token = (session as any)?.accessToken;
+      if (!token) {
+        toast.error("Sessão inválida. Faça login novamente.");
+        router.push("/tecnico");
+        return;
+      }
 
-      const tickets = await db.getTicketsByTecnico(session.user.id);
+      const tickets = await db.getTicketsByTecnico(session.user.id, token);
       const foundTicket = tickets.find((t) => t.id === ticketId);
 
       if (!foundTicket) {
@@ -298,63 +519,73 @@ export default function TicketDetailsPage() {
         return;
       }
 
+      let relatorioEncontrado = foundTicket.relatorio;
+      if (!relatorioEncontrado) {
+        relatorioEncontrado = await db.getRelatorioByTicket(ticketId, token);
+      }
+
+      const ticketComRelatorio = relatorioEncontrado
+        ? { ...foundTicket, relatorio: relatorioEncontrado }
+        : foundTicket;
+
       console.log(
         "Ticket carregado:",
         foundTicket.status,
-        foundTicket.relatorio,
+        relatorioEncontrado,
       );
 
-      // Evitar recarregar se o ticket já estiver carregado e for o mesmo
-      if (
-        ticket &&
-        ticket.id === foundTicket.id &&
-        ticket.status === foundTicket.status
-      ) {
-        console.log("Ticket já carregado, pulando recarregamento");
-        return;
+      // Evitar recarregar dados básicos se o ticket já estiver carregado
+      // MAS sempre executar a lógica de determinar o step correto
+      const isAlreadyLoaded = ticket && ticket.id === foundTicket.id && ticket.status === foundTicket.status;
+
+      if (!isAlreadyLoaded) {
+        console.log("🔄 Carregando ticket pela primeira vez ou status mudou");
+        setTicket(ticketComRelatorio);
+      } else {
+        console.log("♻️ Ticket já carregado, mas vamos verificar o estado do fluxo...");
       }
 
-      setTicket(foundTicket);
-
       // Verificar se já existe relatório
-      if (foundTicket.relatorio) {
-        console.log("Relatório encontrado:", foundTicket.relatorio);
+      if (relatorioEncontrado) {
+        console.log("Relatório encontrado:", relatorioEncontrado);
         console.log(
           "Localização GPS do relatório:",
-          foundTicket.relatorio.localizacao_gps,
+          relatorioEncontrado.localizacao_gps,
         );
 
-        setRelatorio(foundTicket.relatorio);
+        setRelatorio(relatorioEncontrado);
         setObservacoesIniciais(
-          foundTicket.relatorio.observacoes_iniciais || "",
+          relatorioEncontrado.observacoes_iniciais || "",
         );
-        setDiagnostico(foundTicket.relatorio.diagnostico || "");
-        setAcoesRealizadas(foundTicket.relatorio.acoes_realizadas || "");
-        setFotosAntes(foundTicket.relatorio.fotos_antes || []);
-        setFotosDepois(foundTicket.relatorio.fotos_depois || []);
-        setLocalizacaoGPS(foundTicket.relatorio.localizacao_gps || "");
+        setDiagnostico(relatorioEncontrado.diagnostico || "");
+        setAcoesRealizadas(relatorioEncontrado.acoes_realizadas || "");
+        setFotosAntes(relatorioEncontrado.fotos_antes || []);
+        setFotosDepois(relatorioEncontrado.fotos_depois || []);
+        setLocalizacaoGPS(relatorioEncontrado.localizacao_gps || "");
 
         // ✅ CORREÇÃO: Carregar tempo existente do relatório
-        if (foundTicket.relatorio.tempo_execucao) {
+        const tempoExecucao = relatorioEncontrado.tempo_execucao ?? 0;
+        if (tempoExecucao > 0) {
           console.log(
             "Carregando tempo existente:",
-            foundTicket.relatorio.tempo_execucao,
+            tempoExecucao,
             "segundos",
           );
-          setTimerSeconds(foundTicket.relatorio.tempo_execucao);
         }
+        setTimerSeconds(tempoExecucao);
+        timerSecondsRef.current = tempoExecucao;
 
         // Marcar relatório inicial como salvo se já existe
         setRelatorioInicialSalvo(true);
 
         // Carregar dados específicos
-        if (foundTicket.relatorio.dados_especificos) {
+        if (relatorioEncontrado.dados_especificos) {
           console.log(
             "Carregando dados específicos:",
-            foundTicket.relatorio.dados_especificos,
+            relatorioEncontrado.dados_especificos,
           );
           // Garantir que os dados tenham a estrutura correta
-          const dadosCarregados = foundTicket.relatorio
+          const dadosCarregados = relatorioEncontrado
             .dados_especificos as Record<string, unknown>;
           const dadosCompletos = {
             distancias_equipamentos:
@@ -371,60 +602,71 @@ export default function TicketDetailsPage() {
         // Log das assinaturas
         console.log(
           "Assinatura técnico carregada:",
-          !!foundTicket.relatorio.assinatura_tecnico,
+          !!relatorioEncontrado.assinatura_tecnico,
         );
         console.log(
           "Assinatura cliente carregada:",
-          !!foundTicket.relatorio.assinatura_cliente,
+          !!relatorioEncontrado.assinatura_cliente,
         );
 
-        // Determinar step baseado no status e progresso
+        // Determinar step baseado no estado persistido ou inferido
         if (foundTicket.status === "finalizado") {
           setCurrentStep("concluido");
         } else if (foundTicket.status === "cancelado") {
           setCurrentStep("cancelado");
-        } else if (
-          foundTicket.relatorio.fotos_depois &&
-          foundTicket.relatorio.fotos_depois.length > 0
-        ) {
-          setCurrentStep("final");
-        } else if (
-          foundTicket.relatorio.dados_especificos &&
-          Object.keys(foundTicket.relatorio.dados_especificos).length > 1
-        ) {
-          // Se tem dados específicos salvos, está no step de equipamentos ou final
-          setCurrentStep("equipamentos");
-          if (foundTicket.status === "em_curso") {
-            startTimer();
-          }
-        } else if (
-          foundTicket.relatorio.fotos_antes &&
-          foundTicket.relatorio.fotos_antes.length > 0 &&
-          foundTicket.relatorio.observacoes_iniciais &&
-          (!foundTicket.relatorio.dados_especificos || 
-           Object.keys(foundTicket.relatorio.dados_especificos).length <= 1)
-        ) {
-          // Se tem relatório inicial completo mas não tem dados específicos, vai para dados da instalação
-          setCurrentStep("dados_instalacao");
-          if (foundTicket.status === "em_curso") {
-            startTimer();
-          }
         } else if (foundTicket.status === "em_curso") {
-          // Se está em curso mas sem relatório inicial, vai para 'formularios' (fotos antes + relatório)
-          setCurrentStep("formularios");
-          startTimer();
+          // Prioridade 1: Estado explicitamente persistido
+          const dadosEsp = relatorioEncontrado?.dados_especificos as Record<string, unknown> | null;
+          const fluxoEstado = dadosEsp?._fluxo_estado as string | undefined;
+          const timerPausado = !!dadosEsp?._timer_pausado;
+
+          if (fluxoEstado && ["escolha", "dados_instalacao", "equipamentos", "final"].includes(fluxoEstado)) {
+            setCurrentStep(fluxoEstado as typeof currentStep);
+            console.log("✅ Fluxo retomado do estado persistido:", fluxoEstado);
+          }
+          // Prioridade 2: Inferir do conteúdo do relatório
+          else if (relatorioEncontrado?.observacoes_iniciais) {
+            setCurrentStep("escolha");
+            console.log("✅ Fluxo retomado: relatório inicial existe → escolha");
+          }
+          // Prioridade 3: Começar do formulário inicial
+          else {
+            setCurrentStep("formularios");
+            console.log("✅ Fluxo iniciado: sem relatório → formularios");
+          }
+
+          // Log detalhado do estado carregado
+          console.log("📊 Estado carregado:", {
+            ticketStatus: foundTicket.status,
+            hasRelatorio: !!relatorioEncontrado,
+            hasObservacoes: !!relatorioEncontrado?.observacoes_iniciais,
+            fluxoEstado: fluxoEstado,
+            currentStep: fluxoEstado || (relatorioEncontrado?.observacoes_iniciais ? "escolha" : "formularios"),
+            timerSeconds: tempoExecucao,
+            timerPausado: timerPausado,
+          });
+
+          // Iniciar timer para tickets em curso
+          if (timerPausado) {
+            stopTimer();
+          } else {
+            startTimer();
+          }
         } else {
+          // Ticket pendente ou outro estado
           setCurrentStep("inicio");
         }
       } else {
         // Sem relatório ainda
+        setTimerSeconds(0);
+        timerSecondsRef.current = 0;
         if (foundTicket.status === "em_curso") {
           setCurrentStep("formularios");
           startTimer();
+        } else if (foundTicket.status === "pendente") {
+          setCurrentStep("inicio");
         } else {
-          setCurrentStep(
-            foundTicket.status === "pendente" ? "inicio" : "formularios",
-          );
+          setCurrentStep("formularios");
         }
       }
     } catch (error) {
@@ -433,7 +675,7 @@ export default function TicketDetailsPage() {
     } finally {
       setLoading(false);
     }
-  }, [session, router, ticketId, ticket, startTimer]); // Adicionado startTimer nas dependências
+  }, [session, router, ticketId, startTimer, stopTimer]); // Removido 'ticket' para evitar loop circular
 
   useEffect(() => {
     if (status === "loading") return;
@@ -454,15 +696,14 @@ export default function TicketDetailsPage() {
         }
       });
     }
-  }, [session, status, router, ticketId, localizacaoGPS, loadTicketData]); // Adicionado loadTicketData nas dependências
+  }, [session, status, router, ticketId, loadTicketData]); // Removido localizacaoGPS para evitar loop involuntário
 
-  // Cleanup timer on unmount
+  // Cleanup timers ao desmontar o componente
   useEffect(() => {
     return () => {
       if (timerRef.current) {
         clearInterval(timerRef.current);
       }
-      // ✅ NOVA MELHORIA: Limpar intervalo de salvamento automático ao desmontar
       if (autoSaveRef.current) {
         clearInterval(autoSaveRef.current);
       }
@@ -472,10 +713,12 @@ export default function TicketDetailsPage() {
   // Heartbeat para manter status online durante o trabalho
   useEffect(() => {
     if (!session?.user?.id || session.user.type !== "tecnico") return;
+    const token = (session as any)?.accessToken;
+    if (!token) return;
 
     const heartbeat = async () => {
       try {
-        await db.updateTecnicoOnlineStatus(session.user.id, true);
+        await db.updateTecnicoOnlineStatus(session.user.id, true, token);
       } catch (error) {
         console.error("Erro no heartbeat:", error);
       }
@@ -487,23 +730,61 @@ export default function TicketDetailsPage() {
     return () => {
       clearInterval(interval);
     };
-  }, [session?.user?.id, session?.user?.type]);
+  }, [session?.user?.id, session?.user?.type, session]);
 
   // Debug: monitorar mudanças no currentStep
   useEffect(() => {
     console.log("CurrentStep mudou para:", currentStep);
   }, [currentStep]);
 
+  // ✅ NOVA VALIDAÇÃO: Prevenir duplicação do relatório inicial
+  useEffect(() => {
+    if (currentStep === "formularios" && relatorio?.observacoes_iniciais) {
+      console.log("⚠️ Relatório inicial já existe, saltando para escolha");
+      toast.info("Relatório inicial já foi salvo anteriormente");
+      setCurrentStep("escolha");
+    }
+  }, [currentStep, relatorio]);
+
   const handleIniciarServico = async () => {
+    const token = (session as any)?.accessToken;
+    if (!token) {
+      toast.error("Sessão inválida. Faça login novamente.");
+      return;
+    }
     try {
       console.log("Iniciando serviço...");
-      await db.updateTicket(ticketId, { status: "em_curso" });
-      
-      // Marcar técnico como indisponível quando inicia um ticket
+
+      // ✅ MELHORIA: Tentar bloquear a disponibilidade do técnico PRIMEIRO
+      // Se falhar aqui, o ticket não muda e nada quebra gravemente.
       if (session?.user?.id) {
-        await db.updateTecnico(session.user.id, { disponibilidade: false });
+        try {
+          await db.updateTecnico(session.user.id, { disponibilidade: false }, token);
+        } catch (error) {
+          console.error("Erro ao atualizar disponibilidade:", error);
+          toast.error("Erro ao reservar técnico. Tente novamente.");
+          return; // Aborta se não conseguir marcar como indisponível
+        }
       }
-      
+
+      // Agora atualiza o ticket
+      try {
+        await db.updateTicket(ticketId, { status: "em_curso" }, token);
+      } catch (error) {
+        console.error("Erro ao atualizar ticket:", error);
+        // ⚠️ ROLLBACK: Se o ticket falhar, tentar liberar o técnico novamente
+        if (session?.user?.id) {
+          try {
+            await db.liberarTecnico(session.user.id, token);
+            console.log("Rollback: Técnico liberado após falha no ticket.");
+          } catch (rollbackError) {
+            console.error("CRÍTICO: Falha no rollback:", rollbackError);
+          }
+        }
+        toast.error("Erro ao iniciar ticket. Tente novamente.");
+        return;
+      }
+
       toast.success("Serviço iniciado!");
 
       // Atualizar o ticket localmente sem recarregar do servidor
@@ -557,16 +838,24 @@ export default function TicketDetailsPage() {
         );
       }
 
+      const token = (session as any)?.accessToken;
+      if (!token) {
+        toast.error("Sessão inválida. Faça login novamente.");
+        return;
+      }
+
+      const tempoAtual = timerSecondsRef.current;
+
       // Se há relatório em andamento, salvar o tempo de execução e dados do cancelamento
       if (relatorio) {
         const relatorioFinalCancelado = {
           data_finalizacao: new Date().toISOString(),
-          tempo_execucao: timerSeconds,
+          tempo_execucao: tempoAtual,
           localizacao_gps: coordsGPS, // Adicionar GPS no cancelamento
           observacoes_qualidade: `Serviço cancelado: ${motivoCancelamento}`,
         };
 
-        await db.updateRelatorio(relatorio.id, relatorioFinalCancelado);
+        await db.updateRelatorio(relatorio.id, relatorioFinalCancelado, token);
         console.log(
           "Relatório atualizado com dados do cancelamento e GPS:",
           coordsGPS,
@@ -576,11 +865,11 @@ export default function TicketDetailsPage() {
       await db.updateTicket(ticketId, {
         status: "cancelado",
         motivo_cancelamento: motivoCancelamento,
-      });
+      }, token);
 
       // Liberar técnico para novos tickets
       if (session?.user?.id) {
-        await db.liberarTecnico(session.user.id);
+        await db.liberarTecnico(session.user.id, token);
       }
 
       toast.success("Serviço cancelado!");
@@ -593,7 +882,7 @@ export default function TicketDetailsPage() {
           motivo_cancelamento: motivoCancelamento,
         });
       }
-      
+
       // ✅ NOVO: Invalidar cache para forçar atualização
       try {
         await fetch('/api/sync-disponibilidade', { method: 'POST' });
@@ -611,12 +900,31 @@ export default function TicketDetailsPage() {
 
   // ✅ NOVA FUNÇÃO: Salvar relatório com fallback offline
   const salvarRelatorioComFallback = async (relatorioData: Partial<RelatorioTecnico>) => {
+    const sessionAuth = await import("next-auth/react").then((mod) => mod.getSession());
+    const token = (sessionAuth as any)?.accessToken;
+    if (!token) {
+      console.error("Sem token para salvar relatório");
+      return false;
+    }
     try {
       if (relatorio) {
-        await db.updateRelatorio(relatorio.id, relatorioData);
+        const atualizado = await db.updateRelatorio(relatorio.id, relatorioData, token);
+        setRelatorio(atualizado);
       } else {
-        const novoRelatorio = await db.createRelatorio(relatorioData as Omit<RelatorioTecnico, 'id' | 'created_at' | 'updated_at'>);
-        setRelatorio(novoRelatorio);
+        const ticketIdParaBusca = relatorioData.ticket_id || ticketId;
+        let relatorioExistente: RelatorioTecnico | null = null;
+
+        if (ticketIdParaBusca) {
+          relatorioExistente = await db.getRelatorioByTicket(ticketIdParaBusca, token);
+        }
+
+        if (relatorioExistente) {
+          const atualizado = await db.updateRelatorio(relatorioExistente.id, relatorioData, token);
+          setRelatorio(atualizado);
+        } else {
+          const novoRelatorio = await db.createRelatorio(relatorioData as Omit<RelatorioTecnico, 'id' | 'created_at' | 'updated_at'>, token);
+          setRelatorio(novoRelatorio);
+        }
       }
       return true;
     } catch (error) {
@@ -628,7 +936,7 @@ export default function TicketDetailsPage() {
           ...relatorioData,
           pendingSync: true,
         };
-        offlineSync.saveOfflineRelatorio(relatorioOffline as RelatorioTecnico);
+        await offlineSync.saveOfflineRelatorio(relatorioOffline as RelatorioTecnico);
         toast.info("Relatório salvo offline - será sincronizado quando online");
         return true;
       }
@@ -680,22 +988,29 @@ export default function TicketDetailsPage() {
         console.log("Usando localização GPS existente:", coordsGPS);
       }
 
+      const tempoAtual = timerSecondsRef.current;
+      const timerPausado = !isTimerRunningRef.current;
+
       const relatorioData = {
         ticket_id: ticketId,
         tecnico_id: session!.user!.id,
         observacoes_iniciais: observacoesIniciais,
         diagnostico: diagnostico,
         fotos_antes: fotosAntes,
-        data_inicio: new Date().toISOString(),
+        data_inicio: relatorio?.data_inicio || new Date().toISOString(), // Preservar data_inicio se já existe
         localizacao_gps: coordsGPS,
-        // ✅ MELHORIA: Salvar tempo atual para preservar progresso
-        tempo_execucao: timerSeconds,
+        tempo_execucao: tempoAtual,
         tipo_produto: ticket?.contrato?.tipo_produto,
+        // Persistir o estado do fluxo para retomar corretamente
+        dados_especificos: {
+          ...(relatorio?.dados_especificos as Record<string, unknown> || {}),
+          _fluxo_estado: "escolha",
+          _timer_pausado: timerPausado,
+        },
       };
 
       console.log("Relatório inicial sendo salvo:", relatorioData);
 
-      // ✅ MELHORIA: Usar fallback offline
       await salvarRelatorioComFallback(relatorioData);
 
       toast.success(
@@ -739,7 +1054,7 @@ export default function TicketDetailsPage() {
         assinatura_tecnico: assinaturaTecnico,
         assinatura_cliente: assinaturaCliente,
         data_finalizacao: new Date().toISOString(),
-        tempo_execucao: timerSeconds,
+        tempo_execucao: timerSecondsRef.current,
         dados_especificos: dadosEspecificosAtualizados,
       };
 
@@ -756,11 +1071,16 @@ export default function TicketDetailsPage() {
       // ✅ MELHORIA: Usar fallback offline
       await salvarRelatorioComFallback(relatorioFinal);
 
-      await db.updateTicket(ticketId, { status: "finalizado" });
+      const tokenFinal = (session as any)?.accessToken;
+      if (!tokenFinal) {
+        toast.error("Sessão inválida. Faça login novamente.");
+        return;
+      }
+      await db.updateTicket(ticketId, { status: "finalizado" }, tokenFinal);
 
       // Liberar técnico para novos tickets
       if (session?.user?.id) {
-        await db.liberarTecnico(session.user.id);
+        await db.liberarTecnico(session.user.id, tokenFinal);
       }
 
       // Gerar PDF do relatório final
@@ -862,7 +1182,24 @@ export default function TicketDetailsPage() {
         <div className="flex items-center gap-4">
           <Button
             variant="ghost"
-            onClick={() => router.push("/tecnico")}
+            onClick={async () => {
+              try {
+                // Salvar tempo E estado do fluxo antes de sair
+                if (relatorio && ticket?.status === "em_curso") {
+                  console.log("💾 Salvando estado antes de voltar...");
+                  await salvarTempoAtual();
+                  await salvarFluxoEstado(currentStep);
+                  console.log("✅ Estado salvo com sucesso");
+                }
+                stopTimer();
+                router.push("/tecnico");
+              } catch (error) {
+                console.error("❌ Erro ao salvar antes de voltar:", error);
+                // Mesmo com erro, permitir voltar
+                stopTimer();
+                router.push("/tecnico");
+              }
+            }}
             className="flex items-center gap-2"
           >
             <ArrowLeft className="h-4 w-4" />
@@ -879,16 +1216,40 @@ export default function TicketDetailsPage() {
           </div>
         </div>
 
-        {/* Timer Display */}
-        {isTimerRunning && (
-          <Card className="border-blue-200 bg-blue-50">
+        {/* Timer Display - sempre visível quando ticket em curso */}
+        {ticket.status === "em_curso" && currentStep !== "concluido" && currentStep !== "cancelado" && (
+          <Card className={`${isTimerRunning ? "border-blue-200 bg-blue-50" : "border-yellow-200 bg-yellow-50"}`}>
             <CardContent className="p-4">
               <div className="flex items-center justify-center gap-4">
-                <Clock className="h-6 w-6 text-blue-600" />
-                <span className="text-2xl font-mono font-bold text-blue-800">
+                <Clock className={`h-6 w-6 ${isTimerRunning ? "text-blue-600" : "text-yellow-600"}`} />
+                <span className={`text-2xl font-mono font-bold ${isTimerRunning ? "text-blue-800" : "text-yellow-800"}`}>
                   {formatTime(timerSeconds)}
                 </span>
-                <span className="text-sm text-blue-600">Tempo de execução</span>
+                <span className={`text-sm ${isTimerRunning ? "text-blue-600" : "text-yellow-600"}`}>
+                  {isTimerRunning ? "Tempo de execução" : "Pausado"}
+                </span>
+                {/* Botão Pausar/Retomar */}
+                {isTimerRunning ? (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={pausarTimer}
+                    className="border-blue-400 text-blue-700 hover:bg-blue-100"
+                  >
+                    <Pause className="h-4 w-4 mr-1" />
+                    Pausar
+                  </Button>
+                ) : (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={startTimer}
+                    className="border-green-400 text-green-700 hover:bg-green-100"
+                  >
+                    <Play className="h-4 w-4 mr-1" />
+                    Retomar
+                  </Button>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -1114,9 +1475,33 @@ export default function TicketDetailsPage() {
                 Relatório inicial salvo com sucesso! Escolha como deseja
                 prosseguir:
               </p>
+
+              {/* Resumo do relatório inicial */}
+              {relatorio?.observacoes_iniciais && (
+                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 space-y-1 text-sm">
+                  <p className="font-medium text-slate-700 dark:text-slate-300">Relatório Inicial:</p>
+                  <p className="text-slate-600 dark:text-slate-400">
+                    <span className="font-medium">Observações:</span> {relatorio.observacoes_iniciais.substring(0, 100)}{relatorio.observacoes_iniciais.length > 100 ? "..." : ""}
+                  </p>
+                  {relatorio.diagnostico && (
+                    <p className="text-slate-600 dark:text-slate-400">
+                      <span className="font-medium">Diagnóstico:</span> {relatorio.diagnostico.substring(0, 100)}{relatorio.diagnostico.length > 100 ? "..." : ""}
+                    </p>
+                  )}
+                  {fotosAntes.length > 0 && (
+                    <p className="text-slate-600 dark:text-slate-400">
+                      <span className="font-medium">Fotos antes:</span> {fotosAntes.length} foto(s)
+                    </p>
+                  )}
+                </div>
+              )}
               <div className="flex gap-4">
                 <Button
-                  onClick={() => setCurrentStep("dados_instalacao")}
+                  onClick={async () => {
+                    await salvarFluxoEstado("dados_instalacao");
+                    setCurrentStep("dados_instalacao");
+                    if (!isTimerRunning) startTimer();
+                  }}
                   className="flex-1 bg-green-600 hover:bg-green-700"
                 >
                   <CheckCircle className="mr-2 h-4 w-4" />
@@ -1155,7 +1540,10 @@ export default function TicketDetailsPage() {
             <Card>
               <CardContent className="p-4">
                 <Button
-                  onClick={() => setCurrentStep("equipamentos")}
+                  onClick={async () => {
+                    await salvarFluxoEstado("equipamentos");
+                    setCurrentStep("equipamentos");
+                  }}
                   className="w-full bg-blue-600 hover:bg-blue-700"
                 >
                   <ArrowRight className="mr-2 h-4 w-4" />
@@ -1205,7 +1593,7 @@ export default function TicketDetailsPage() {
               <CardContent className="p-4">
                 <Button
                   onClick={async () => {
-                    await salvarTempoAtual(); // Salva o tempo antes de avançar
+                    await salvarFluxoEstado("final");
                     setCurrentStep("final");
                   }}
                   className="w-full bg-green-600 hover:bg-green-700"
@@ -1242,8 +1630,8 @@ export default function TicketDetailsPage() {
               <div className="flex gap-4">
                 <Button
                   onClick={async () => {
-                    await salvarTempoAtual(); // Salva o tempo antes de voltar
-                    setCurrentStep("formularios");
+                    await salvarTempoAtual();
+                    setCurrentStep("escolha");
                   }}
                   variant="outline"
                   className="flex-1"
@@ -1310,14 +1698,19 @@ export default function TicketDetailsPage() {
 
                 {/* Assinatura Técnico */}
                 <div className="space-y-2">
-                  <Label>Assinatura do Técnico</Label>
-                  <div className="border rounded-lg p-2 bg-white">
+                  <Label className="text-white font-medium">Assinatura do Técnico</Label>
+                  <p className="text-xs text-slate-400">Assine no campo branco abaixo</p>
+                  <div
+                    ref={sigTecnicoContainerRef}
+                    className="border-2 border-slate-500 rounded-lg overflow-hidden bg-white"
+                    style={{ height: "200px" }}
+                  >
                     <SignatureCanvas
                       ref={(ref) => setSigTecnicoRef(ref)}
+                      penColor="#1e293b"
+                      backgroundColor="rgb(255, 255, 255)"
                       canvasProps={{
-                        width: 400,
-                        height: 150,
-                        className: "signature-canvas w-full",
+                        className: "signature-canvas cursor-crosshair",
                       }}
                     />
                   </div>
@@ -1326,6 +1719,7 @@ export default function TicketDetailsPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => sigTecnicoRef?.clear()}
+                    className="text-slate-300 border-slate-600 hover:bg-slate-700"
                   >
                     Limpar Assinatura
                   </Button>
@@ -1333,14 +1727,19 @@ export default function TicketDetailsPage() {
 
                 {/* Assinatura Cliente */}
                 <div className="space-y-2">
-                  <Label>Assinatura do Cliente</Label>
-                  <div className="border rounded-lg p-2 bg-white">
+                  <Label className="text-white font-medium">Assinatura do Cliente</Label>
+                  <p className="text-xs text-slate-400">O cliente deve assinar no campo branco abaixo</p>
+                  <div
+                    ref={sigClienteContainerRef}
+                    className="border-2 border-slate-500 rounded-lg overflow-hidden bg-white"
+                    style={{ height: "200px" }}
+                  >
                     <SignatureCanvas
                       ref={(ref) => setSigClienteRef(ref)}
+                      penColor="#1e293b"
+                      backgroundColor="rgb(255, 255, 255)"
                       canvasProps={{
-                        width: 400,
-                        height: 150,
-                        className: "signature-canvas w-full",
+                        className: "signature-canvas cursor-crosshair",
                       }}
                     />
                   </div>
@@ -1349,6 +1748,7 @@ export default function TicketDetailsPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => sigClienteRef?.clear()}
+                    className="text-slate-300 border-slate-600 hover:bg-slate-700"
                   >
                     Limpar Assinatura
                   </Button>

@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Textarea } from '@/components/ui/textarea';
 import { Plus, Search, Edit, Eye, User, RefreshCw, AlertTriangle, RotateCcw, Zap } from 'lucide-react';
 import { db } from '@/lib/db/supabase';
+import { Pagination } from '@/components/ui/pagination';
 import type { Ticket, Cliente, Contrato, User as UserType } from '@/types';
 import { toast } from 'sonner';
 
@@ -31,6 +32,8 @@ export default function TicketsPage() {
   const [selectedTicket, setSelectedTicket] = useState<Ticket | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
   // Form state
   const [formData, setFormData] = useState({
@@ -99,6 +102,13 @@ export default function TicketsPage() {
 
     return matchesSearch && matchesTipo && matchesStatus && matchesTecnico;
   });
+
+  const totalTickets = filteredTickets.length;
+  const paginatedTickets = filteredTickets.slice((page - 1) * pageSize, page * pageSize);
+
+  useEffect(() => {
+    setPage(1);
+  }, [searchTerm, filterTipo, filterStatus, filterTecnico]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -355,8 +365,9 @@ export default function TicketsPage() {
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
               </div>
             ) : filteredTickets.length > 0 ? (
-              <div className="space-y-4">
-                {filteredTickets.map((ticket) => (
+              <>
+                <div className="space-y-4">
+                  {paginatedTickets.map((ticket) => (
                   <div
                     key={ticket.id}
                     className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl hover:bg-slate-700/50 transition-colors border border-slate-600/30"
@@ -450,8 +461,19 @@ export default function TicketsPage() {
                       )}
                     </div>
                   </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+                {totalTickets > 0 && (
+                  <Pagination
+                    page={page}
+                    pageSize={pageSize}
+                    totalItems={totalTickets}
+                    onPageChange={setPage}
+                    onPageSizeChange={(v) => { setPageSize(v); setPage(1); }}
+                    label="tickets"
+                  />
+                )}
+              </>
             ) : (
               <div className="text-center py-8 text-slate-500">
                 <p className="text-slate-400">Nenhum ticket encontrado</p>

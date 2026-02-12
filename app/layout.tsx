@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Outfit, Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import { SessionProvider } from "@/components/SessionProvider";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
 
 const outfit = Outfit({
@@ -35,10 +36,12 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={`${outfit.variable} ${manrope.variable} ${jetbrainsMono.variable} font-body antialiased bg-background text-foreground relative overflow-x-hidden`}>
-        <SessionProvider>
-          {children}
-          <Toaster />
-        </SessionProvider>
+        <ThemeProvider>
+          <SessionProvider>
+            {children}
+            <Toaster />
+          </SessionProvider>
+        </ThemeProvider>
       </body>
     </html>
   );
