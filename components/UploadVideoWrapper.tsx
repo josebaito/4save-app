@@ -7,22 +7,24 @@ import { toast } from 'sonner';
 import { MediaCapture } from './MediaCapture';
 import { useUploadThing } from '@/lib/uploadthing';
 
+const hasUploadThingToken = Boolean(process.env.NEXT_PUBLIC_UPLOADTHING_TOKEN);
+
 interface UploadVideoWrapperProps {
   onComplete: (urls: string[]) => void;
   onError?: (error: string) => void;
   disabled?: boolean;
   maxFiles?: number;
-  maxSize?: number; // em MB
+  maxSize?: number;
   currentFiles?: string[];
 }
 
-export function UploadVideoWrapper({ 
-  onComplete, 
+export function UploadVideoWrapper({
+  onComplete,
   onError,
-  disabled = false, 
+  disabled = false,
   maxFiles = 5,
   maxSize = 100,
-  currentFiles = []
+  currentFiles = [],
 }: UploadVideoWrapperProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const lastCaptureTimeRef = useRef<number>(0);
@@ -38,12 +40,12 @@ export function UploadVideoWrapper({
 
   const validateFile = (file: File): boolean => {
     if (!file.type.startsWith('video/')) {
-      toast.error('Por favor, selecione apenas arquivos de vÃ­deo');
+      toast.error('Por favor, selecione apenas arquivos de vídeo');
       return false;
     }
     const fileSizeMB = file.size / (1024 * 1024);
     if (fileSizeMB > maxSize) {
-      toast.error(`Arquivo muito grande. MÃ¡ximo permitido: ${maxSize}MB`);
+      toast.error(`Arquivo muito grande. Máximo permitido: ${maxSize}MB`);
       return false;
     }
     return true;
@@ -55,14 +57,51 @@ export function UploadVideoWrapper({
     if (uniqueUrls.length === 0) return;
     const newVideos = [...uploadedVideos, ...uniqueUrls];
     onComplete(newVideos);
-    toast.success(`${uniqueUrls.length} vÃ­deo(s) carregado(s)!`);
+    toast.success(`${uniqueUrls.length} vídeo(s) carregado(s)!`);
+  };
+
+  const uploadBase64Fallback = async (files: File[]) => {
+    const remainingSlots = maxFiles - uploadedVideos.length;
+    if (remainingSlots <= 0) {
+      toast.error(`Máximo de ${maxFiles} vídeos permitido`);
+      return;
+    }
+
+    const filesToProcess = files.slice(0, remainingSlots);
+    let processedCount = 0;
+    const processedUrls: string[] = [];
+
+    filesToProcess.forEach((file) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const dataUrl = e.target?.result as string;
+        processedUrls.push(dataUrl);
+        processedCount++;
+        if (processedCount === filesToProcess.length) {
+          appendUrls(processedUrls);
+        }
+      };
+      reader.onerror = () => {
+        processedCount++;
+        if (processedCount === filesToProcess.length && processedUrls.length > 0) {
+          appendUrls(processedUrls);
+        }
+      };
+      reader.readAsDataURL(file);
+    });
   };
 
   const uploadFiles = async (files: File[]) => {
     if (files.length === 0) return;
+
+    if (!hasUploadThingToken) {
+      await uploadBase64Fallback(files);
+      return;
+    }
+
     const remainingSlots = maxFiles - uploadedVideos.length;
     if (remainingSlots <= 0) {
-      toast.error(`MÃ¡ximo de ${maxFiles} vÃ­deos permitido`);
+      toast.error(`Máximo de ${maxFiles} vídeos permitido`);
       return;
     }
 
@@ -86,7 +125,7 @@ export function UploadVideoWrapper({
     if (videoFiles.length === 0) return;
 
     if (uploadedVideos.length + videoFiles.length > maxFiles) {
-      toast.error(`MÃ¡ximo de ${maxFiles} vÃ­deos permitido`);
+      toast.error(`Máximo de ${maxFiles} vídeos permitido`);
       return;
     }
 
@@ -103,7 +142,13 @@ export function UploadVideoWrapper({
     lastCaptureTimeRef.current = now;
 
     if (uploadedVideos.length >= maxFiles) {
-      toast.error(`MÃ¡ximo de ${maxFiles} vÃ­deos permitido`);
+      toast.error(`Máximo de ${maxFiles} vídeos permitido`);
+      return;
+    }
+
+    if (!hasUploadThingToken) {
+      appendUrls([dataUrl]);
+      toast.success('Vídeo capturado e adicionado!');
       return;
     }
 
@@ -114,7 +159,7 @@ export function UploadVideoWrapper({
         type: blob.type || 'video/webm',
       });
       await uploadFiles([file]);
-      toast.success('VÃ­deo capturado e enviado!');
+      toast.success('Vídeo capturado e enviado!');
     } catch (error: any) {
       const message = error?.message || 'Erro ao processar captura';
       onError?.(message);
@@ -125,7 +170,7 @@ export function UploadVideoWrapper({
   const removeVideo = (index: number) => {
     const newVideos = uploadedVideos.filter((_, i) => i !== index);
     onComplete(newVideos);
-    toast.success('VÃ­deo removido');
+    toast.success('Vídeo removido');
   };
 
   return (
@@ -142,7 +187,7 @@ export function UploadVideoWrapper({
                   e.currentTarget.style.display = 'none';
                   const errorDiv = document.createElement('div');
                   errorDiv.className = 'w-full h-20 bg-gray-200 rounded-lg flex items-center justify-center text-xs text-gray-500';
-                  errorDiv.textContent = 'Erro ao carregar vÃ­deo';
+                  errorDiv.textContent = 'Erro ao carregar vídeo';
                   e.currentTarget.parentNode?.appendChild(errorDiv);
                 }}
               />
@@ -164,11 +209,7 @@ export function UploadVideoWrapper({
       {!disabled && uploadedVideos.length < maxFiles && (
         <div className="flex flex-col sm:flex-row gap-2">
           <div className="flex-1">
-            <MediaCapture
-              onCapture={handleCapture}
-              type="video"
-              disabled={disabled || isUploading}
-            />
+            <MediaCapture onCapture={handleCapture} type="video" disabled={disabled || isUploading} />
           </div>
           <div className="flex-1">
             <Button
@@ -179,7 +220,7 @@ export function UploadVideoWrapper({
               disabled={isUploading}
             >
               <Upload className="h-4 w-4" />
-              {isUploading ? 'Enviando...' : 'Escolher VÃ­deos'}
+              {isUploading ? 'Enviando...' : hasUploadThingToken ? 'Escolher Vídeos' : 'Adicionar Vídeos'}
             </Button>
             <input
               ref={fileInputRef}
@@ -195,7 +236,7 @@ export function UploadVideoWrapper({
 
       {uploadedVideos.length >= maxFiles && (
         <div className="text-sm text-orange-600 bg-orange-50 p-2 rounded">
-          Limite mÃ¡ximo de {maxFiles} vÃ­deos atingido.
+          Limite máximo de {maxFiles} vídeos atingido.
         </div>
       )}
 
@@ -205,4 +246,4 @@ export function UploadVideoWrapper({
       </div>
     </div>
   );
-}
+}
