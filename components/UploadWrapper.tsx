@@ -51,7 +51,7 @@ export function UploadWrapper({
   const uploadBase64Fallback = async (files: File[]) => {
     const remainingSlots = maxFiles - uploadedFiles.length;
     if (remainingSlots <= 0) {
-      toast.error(`Máximo de ${maxFiles} imagens permitido`);
+      toast.error(`Mximo de ${maxFiles} imagens permitido`);
       return;
     }
 
@@ -89,7 +89,7 @@ export function UploadWrapper({
 
     const remainingSlots = maxFiles - uploadedFiles.length;
     if (remainingSlots <= 0) {
-      toast.error(`Máximo de ${maxFiles} imagens permitido`);
+      toast.error(`Mximo de ${maxFiles} imagens permitido`);
       return;
     }
 
@@ -205,7 +205,7 @@ export function UploadWrapper({
 
       {uploadedFiles.length >= maxFiles && (
         <div className="text-sm text-orange-600 bg-orange-50 p-2 rounded">
-          Limite máximo de {maxFiles} imagens atingido.
+          Limite mximo de {maxFiles} imagens atingido.
         </div>
       )}
     </div>
