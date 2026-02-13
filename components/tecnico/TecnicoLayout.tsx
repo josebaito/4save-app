@@ -56,10 +56,10 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
   });
 
   useEffect(() => {
-    const updateOnlineStatus = () => {
+    const updateOnlineStatus = async () => {
       const online = navigator.onLine;
       setIsOnline(online);
-      const status = offlineSync.getSyncStatus();
+      const status = await offlineSync.getSyncStatus();
       setSyncStatus(status);
     };
 
@@ -74,8 +74,8 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
   }, []);
 
   useEffect(() => {
-    const updateSyncStatus = () => {
-      const status = offlineSync.getSyncStatus();
+    const updateSyncStatus = async () => {
+      const status = await offlineSync.getSyncStatus();
       setSyncStatus(status);
     };
 

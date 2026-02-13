@@ -133,7 +133,7 @@ export function DashboardManutencao() {
       }
 
       const plano: PlanoManutencao = {
-        tipo: cronogramaFormData.tipo_manutencao,
+        tipo_manutencao: cronogramaFormData.tipo_manutencao,
         frequencia: cronogramaFormData.frequencia,
         inicio_manutencao: cronogramaFormData.proxima_manutencao,
         duracao_contrato: 12,

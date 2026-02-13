@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useSession } from 'next-auth/react';
 import dynamic from 'next/dynamic';
 import { RefreshCw, MapPin, Clock, User, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,6 +36,7 @@ const MapWithNoSSR = dynamic(() => import('./MapComponent'), {
 });
 
 export function TecnicosMapView() {
+  const { data: session } = useSession();
   const [locations, setLocations] = useState<TecnicoLocation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -43,10 +45,12 @@ export function TecnicosMapView() {
 
   const fetchLocations = async () => {
     try {
+      const token = (session as any)?.accessToken;
+      if (!token) return;
       setIsLoading(true);
       console.log('🗺️ Buscando localizações dos técnicos...');
       
-      const data = await db.getAllTecnicoLocations() as TecnicoLocation[];
+      const data = await db.getTecnicoLocationsWithUsers(token) as TecnicoLocation[];
       
       console.log(`📍 Encontradas ${data.length} localizações:`, data);
       

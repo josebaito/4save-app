@@ -768,7 +768,7 @@ export const db = {
       
       const cronograma = {
         contrato_id: contratoId,
-        tipo_manutencao: plano.tipo,
+        tipo_manutencao: plano.tipo_manutencao,
         frequencia: plano.frequencia,
         proxima_manutencao: plano.inicio_manutencao,
         status: 'ativo'
