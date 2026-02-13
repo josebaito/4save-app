@@ -54,8 +54,10 @@ export function DashboardManutencao() {
   const loadData = async () => {
     try {
       setLoading(true);
+      const token = (session as any)?.accessToken;
+      if (!token) return;
       
-      // Carregar dados de manutenção
+      // Carregar dados de manuten??oção
       const [cronogramasData, historicoData, ticketsData, contratosData] = await Promise.all([
         db.getCronogramasManutencao(token),
         db.getHistoricoManutencao(token),
