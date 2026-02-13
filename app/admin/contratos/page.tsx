@@ -79,8 +79,8 @@ export default function ContratosPage() {
 
   const loadData = async () => {
     try {
-      const session: { accessToken?: string } | null = await getSession();
-      const token = session?.accessToken;
+      const session = await getSession();
+      const token = (session as any)?.accessToken;
 
       if (!token) {
         toast.error('Sessão expirada ou não autorizada. A terminar sessão...');
@@ -133,8 +133,8 @@ export default function ContratosPage() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const session: { accessToken?: string } | null = await getSession();
-    const token = session?.accessToken;
+    const session = await getSession();
+    const token = (session as any)?.accessToken;
 
     if (!token) {
       toast.error('Sessão expirada ou não autorizada. A terminar sessão...');
@@ -375,8 +375,8 @@ export default function ContratosPage() {
   // Sincronizar cronogramas para contratos existentes com plano
   const handleSincronizarCronogramas = async () => {
     try {
-      const session: { accessToken?: string } | null = await getSession();
-      const token = session?.accessToken;
+      const session = await getSession();
+      const token = (session as any)?.accessToken;
       if (!token) {
         toast.error('Sessão expirada. A terminar sessão...');
         await signOut({ callbackUrl: '/auth/signin', redirect: true });
@@ -428,7 +428,7 @@ export default function ContratosPage() {
   const handleEliminarConfirm = async () => {
     if (!contratoToEliminar) return;
     const session = await getSession();
-    const token = session?.accessToken;
+    const token = (session as any)?.accessToken;
     if (!token) {
       toast.error('Sessão expirada. A terminar sessão...');
       await signOut({ callbackUrl: '/auth/signin', redirect: true });
