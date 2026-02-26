@@ -14,11 +14,16 @@ export interface TecnicoLocation {
   latitude: number;
   longitude: number;
   accuracy?: number;
+  speed?: number;
+  heading?: number;
   timestamp: string;
   users: {
     id: string;
     name: string;
     email: string;
+    is_online?: boolean;
+    last_seen?: string;
+    disponibilidade?: boolean;
   };
 }
 
@@ -42,6 +47,8 @@ export function TecnicosMapView() {
   const [error, setError] = useState<string | null>(null);
   const [lastUpdate, setLastUpdate] = useState<Date | null>(null);
   const [autoRefresh, setAutoRefresh] = useState(true);
+  const [showTrails, setShowTrails] = useState(true);
+  const [trailMinutes, setTrailMinutes] = useState(120);
 
   const fetchLocations = async () => {
     try {
@@ -114,40 +121,69 @@ export function TecnicosMapView() {
     return `${diffInDays} dias atrás`;
   };
 
+  const cutoff = Date.now() - trailMinutes * 60 * 1000;
+  const filteredLocations = locations.filter(loc => new Date(loc.timestamp).getTime() >= cutoff);
+
   const recentLocations = locations.filter(loc => isLocationRecent(loc.timestamp));
   const staleLocations = locations.filter(loc => !isLocationRecent(loc.timestamp));
 
   return (
     <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2">
-        <div className="flex items-center gap-2">
-          <CardTitle className="flex items-center gap-2">
-            <MapPin className="h-5 w-5" />
-            Localização dos Técnicos
-          </CardTitle>
-          <Badge variant={locations.length > 0 ? "default" : "secondary"}>
-            {locations.length} ativo(s)
-          </Badge>
+      <CardHeader className="flex flex-col gap-3 pb-2">
+        <div className="flex flex-row items-center justify-between">
+          <div className="flex items-center gap-2">
+            <CardTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5" />
+              Localiza
+            </CardTitle>
+            <Badge variant={locations.length > 0 ? "default" : "secondary"}>
+              {locations.length} ativo(s)
+            </Badge>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setAutoRefresh(!autoRefresh)}
+              className={autoRefresh ? 'bg-green-50 border-green-200' : ''}
+            >
+              <Clock className="h-4 w-4 mr-2" />
+              {autoRefresh ? 'Auto ON' : 'Auto OFF'}
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={fetchLocations}
+              disabled={isLoading}
+            >
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+              Atualizar
+            </Button>
+          </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={() => setAutoRefresh(!autoRefresh)}
-            className={autoRefresh ? 'bg-green-50 border-green-200' : ''}
-          >
-            <Clock className="h-4 w-4 mr-2" />
-            {autoRefresh ? 'Auto ON' : 'Auto OFF'}
-          </Button>
-          <Button 
-            variant="outline" 
-            size="sm" 
-            onClick={fetchLocations} 
-            disabled={isLoading}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Atualizar
-          </Button>
+
+        <div className="flex flex-col md:flex-row md:items-center gap-4">
+          <div className="flex items-center gap-3">
+            <label className="text-xs text-muted-foreground">Trilhas</label>
+            <button
+              className={`px-2 py-1 rounded text-xs border ${showTrails ? 'border-emerald-500/50 text-emerald-300' : 'border-border text-muted-foreground'}`}
+              onClick={() => setShowTrails((v) => !v)}
+            >
+              {showTrails ? 'Ativas' : 'Desligadas'}
+            </button>
+          </div>
+          <div className="flex items-center gap-3">
+            <label className="text-xs text-muted-foreground">Tempo de rastreio</label>
+            <input
+              type="range"
+              min={15}
+              max={720}
+              step={15}
+              value={trailMinutes}
+              onChange={(e) => setTrailMinutes(Number(e.target.value))}
+            />
+            <span className="text-xs text-muted-foreground">{trailMinutes} min</span>
+          </div>
         </div>
       </CardHeader>
       <CardContent>
@@ -167,7 +203,7 @@ export function TecnicosMapView() {
         ) : (
           <>
             <div className="h-[500px] w-full rounded-md overflow-hidden border">
-              <MapWithNoSSR locations={locations} />
+              <MapWithNoSSR locations={filteredLocations} showTrails={showTrails} />
             </div>
             
             {/* Informações detalhadas */}
@@ -202,7 +238,7 @@ export function TecnicosMapView() {
                     {locations.map((location) => (
                       <div 
                         key={location.tecnico_id}
-                        className="flex items-center justify-between text-xs bg-white p-2 rounded border"
+                        className="flex items-center justify-between text-xs bg-card p-2 rounded border"
                       >
                         <div className="flex items-center gap-2">
                           <div className={`w-2 h-2 rounded-full ${

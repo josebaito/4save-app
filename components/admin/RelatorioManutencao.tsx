@@ -178,7 +178,7 @@ export function RelatorioManutencao() {
         </CardHeader>
         <CardContent className="min-h-[400px] flex flex-col items-center justify-center">
           <FileText className="h-16 w-16 text-gray-300 mb-4" />
-          <p className="text-gray-500">Não foi possível carregar os dados do relatório</p>
+          <p className="text-muted-foreground">Não foi possível carregar os dados do relatório</p>
           <Button onClick={carregarRelatorio} variant="outline" className="mt-4">
             <RefreshCw className="h-4 w-4 mr-2" />
             Tentar novamente
@@ -341,7 +341,7 @@ export function RelatorioManutencao() {
                     ))}
                     {relatorio.historicoRecente.length === 0 && (
                       <tr>
-                        <td colSpan={5} className="p-4 text-center text-gray-500">
+                        <td colSpan={5} className="p-4 text-center text-muted-foreground">
                           Nenhum histórico de manutenção encontrado
                         </td>
                       </tr>
@@ -373,7 +373,7 @@ export function RelatorioManutencao() {
                         <td className="p-4">{ticket.cliente_nome}</td>
                         <td className="p-4">{ticket.tecnico_nome}</td>
                         <td className="p-4">
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${ticket.status === 'finalizado' ? 'bg-green-100 text-green-800' : ticket.status === 'em_andamento' ? 'bg-blue-100 text-blue-800' : ticket.status === 'pendente' ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-800'}`}>
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${ticket.status === 'finalizado' ? 'bg-green-100 text-green-800' : ticket.status === 'em_andamento' ? 'bg-blue-100 text-blue-800' : ticket.status === 'pendente' ? 'bg-amber-100 text-amber-800' : 'bg-slate-500/15 text-foreground'}`}>
                             {ticket.status.replace('_', ' ')}
                           </span>
                         </td>
@@ -387,7 +387,7 @@ export function RelatorioManutencao() {
                     ))}
                     {relatorio.ticketsRecentes.length === 0 && (
                       <tr>
-                        <td colSpan={6} className="p-4 text-center text-gray-500">
+                        <td colSpan={6} className="p-4 text-center text-muted-foreground">
                           Nenhum ticket de manutenção encontrado
                         </td>
                       </tr>

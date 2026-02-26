@@ -147,7 +147,7 @@ export default function TecnicoTicketsPage() {
       case 'cancelado':
         return 'bg-red-100 text-red-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-500/15 text-foreground';
     }
   };
 
@@ -162,7 +162,7 @@ export default function TecnicoTicketsPage() {
       case 'baixa':
         return 'bg-green-100 text-green-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-500/15 text-foreground';
     }
   };
 

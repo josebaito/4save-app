@@ -17,7 +17,7 @@ export function Loading({ size = 'md', text, className = '' }: LoadingProps) {
     <div className={`flex flex-col items-center justify-center p-4 ${className}`}>
       <Loader2 className={`${sizeClasses[size]} animate-spin text-blue-600`} />
       {text && (
-        <p className="mt-2 text-sm text-gray-600 text-center">{text}</p>
+        <p className="mt-2 text-sm text-muted-foreground text-center">{text}</p>
       )}
     </div>
   );

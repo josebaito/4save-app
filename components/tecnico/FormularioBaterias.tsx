@@ -24,7 +24,7 @@ export function FormularioBaterias({ dados, onChange, disabled = false }: Formul
   return (
     <div className="space-y-6">
       {/* Localização dos Inversores */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Localização dos Inversores</h3>
         
         <div className="space-y-4">
@@ -61,7 +61,7 @@ export function FormularioBaterias({ dados, onChange, disabled = false }: Formul
       </div>
 
       {/* Localização das Baterias */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Localização das Baterias</h3>
         
         <div className="space-y-4">
@@ -98,7 +98,7 @@ export function FormularioBaterias({ dados, onChange, disabled = false }: Formul
       </div>
 
       {/* Cabos */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Cabos</h3>
         
         <div className="space-y-4">
@@ -135,7 +135,7 @@ export function FormularioBaterias({ dados, onChange, disabled = false }: Formul
       </div>
 
       {/* Quadro Elétrico */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Quadro Elétrico</h3>
         
         <div className="space-y-4">
@@ -172,7 +172,7 @@ export function FormularioBaterias({ dados, onChange, disabled = false }: Formul
       </div>
 
       {/* Gerador (se existir) */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Gerador (se existir)</h3>
         
         <div className="space-y-4">
@@ -209,7 +209,7 @@ export function FormularioBaterias({ dados, onChange, disabled = false }: Formul
       </div>
 
       {/* Distâncias entre Equipamentos */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Distâncias entre Equipamentos</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

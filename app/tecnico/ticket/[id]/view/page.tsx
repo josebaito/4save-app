@@ -113,7 +113,7 @@ export default function TicketViewPage() {
       case 'finalizado':
         return 'bg-green-100 text-green-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-500/15 text-foreground';
     }
   };
 
@@ -128,7 +128,7 @@ export default function TicketViewPage() {
       case 'baixa':
         return 'bg-green-100 text-green-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-500/15 text-foreground';
     }
   };
 
@@ -185,7 +185,7 @@ export default function TicketViewPage() {
 
     return (
       <div>
-        <div className="flex items-center justify-between text-xs uppercase tracking-wide text-gray-500 mb-2">
+        <div className="flex items-center justify-between text-xs uppercase tracking-wide text-muted-foreground mb-2">
           <span>{label}</span>
           <span>{items.length}</span>
         </div>
@@ -229,15 +229,15 @@ export default function TicketViewPage() {
     const mediaCount = (group.photos?.length || 0) + (group.videos?.length || 0);
 
     return (
-      <div key={group.title} className="bg-gray-50 p-4 rounded-lg border">
+      <div key={group.title} className="bg-card/50 p-4 rounded-lg border">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h6 className="font-semibold text-gray-900">{group.title}</h6>
+            <h6 className="font-semibold text-foreground">{group.title}</h6>
             {group.description && (
-              <p className="text-sm text-gray-600 mt-1">{group.description}</p>
+              <p className="text-sm text-muted-foreground mt-1">{group.description}</p>
             )}
           </div>
-          <span className="text-xs text-gray-500">{mediaCount} mídia(s)</span>
+          <span className="text-xs text-muted-foreground">{mediaCount} mídia(s)</span>
         </div>
         <div className="mt-4 space-y-4">
           {renderMediaBlock('Fotos', group.photos, 'image')}
@@ -381,7 +381,7 @@ export default function TicketViewPage() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Carregando dados do ticket...</p>
+            <p className="mt-2 text-muted-foreground">Carregando dados do ticket...</p>
           </div>
         </div>
       </TecnicoLayout>
@@ -392,7 +392,7 @@ export default function TicketViewPage() {
     return (
       <TecnicoLayout>
         <div className="text-center py-8">
-          <p className="text-gray-500">Ticket não encontrado</p>
+          <p className="text-muted-foreground">Ticket não encontrado</p>
         </div>
       </TecnicoLayout>
     );
@@ -413,8 +413,8 @@ export default function TicketViewPage() {
               Voltar
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Visualização do Ticket</h1>
-              <p className="text-gray-600">Detalhes completos do serviço finalizado</p>
+              <h1 className="text-3xl font-bold text-foreground">Visualização do Ticket</h1>
+              <p className="text-muted-foreground">Detalhes completos do serviço finalizado</p>
             </div>
           </div>
           <Button
@@ -455,8 +455,8 @@ export default function TicketViewPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <h3 className="font-semibold text-lg text-gray-900">{ticket.titulo}</h3>
-                <p className="text-gray-600 mt-1">{ticket.descricao}</p>
+                <h3 className="font-semibold text-lg text-foreground">{ticket.titulo}</h3>
+                <p className="text-muted-foreground mt-1">{ticket.descricao}</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Badge className={getStatusColor(ticket.status)}>
@@ -472,20 +472,20 @@ export default function TicketViewPage() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-4 border-t">
               <div className="flex items-center gap-2">
-                <User className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-600">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
                   Cliente: <span className="font-medium">{ticket.cliente?.nome}</span>
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-600">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
                   Criado: {formatDate(ticket.created_at)}
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-gray-500" />
-                <span className="text-sm text-gray-600">
+                <Calendar className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
                   Finalizado: {relatorio?.data_finalizacao ? formatDate(relatorio.data_finalizacao) : 'N/A'}
                 </span>
               </div>
@@ -506,14 +506,14 @@ export default function TicketViewPage() {
               {/* Informações do Relatório */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Tempo de Execução</h4>
-                  <p className="text-gray-600">
+                  <h4 className="font-semibold text-foreground mb-2">Tempo de Execução</h4>
+                  <p className="text-muted-foreground">
                     {relatorio.tempo_execucao ? formatDuration(relatorio.tempo_execucao) : 'N/A'}
                   </p>
                 </div>
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Localização GPS</h4>
-                  <p className="text-gray-600">
+                  <h4 className="font-semibold text-foreground mb-2">Localização GPS</h4>
+                  <p className="text-muted-foreground">
                     {relatorio.localizacao_gps || 'N/A'}
                   </p>
                 </div>
@@ -522,8 +522,8 @@ export default function TicketViewPage() {
               {/* Observações Iniciais */}
               {relatorio.observacoes_iniciais && (
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Observações Iniciais</h4>
-                  <p className="text-gray-600 bg-gray-50 p-3 rounded-lg">
+                  <h4 className="font-semibold text-foreground mb-2">Observações Iniciais</h4>
+                  <p className="text-muted-foreground bg-card/50 p-3 rounded-lg">
                     {relatorio.observacoes_iniciais}
                   </p>
                 </div>
@@ -532,8 +532,8 @@ export default function TicketViewPage() {
               {/* Diagnóstico */}
               {relatorio.diagnostico && (
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Diagnóstico</h4>
-                  <p className="text-gray-600 bg-gray-50 p-3 rounded-lg">
+                  <h4 className="font-semibold text-foreground mb-2">Diagnóstico</h4>
+                  <p className="text-muted-foreground bg-card/50 p-3 rounded-lg">
                     {relatorio.diagnostico}
                   </p>
                 </div>
@@ -542,8 +542,8 @@ export default function TicketViewPage() {
               {/* Ações Realizadas */}
               {relatorio.acoes_realizadas && (
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Ações Realizadas</h4>
-                  <p className="text-gray-600 bg-gray-50 p-3 rounded-lg">
+                  <h4 className="font-semibold text-foreground mb-2">Ações Realizadas</h4>
+                  <p className="text-muted-foreground bg-card/50 p-3 rounded-lg">
                     {relatorio.acoes_realizadas}
                   </p>
                 </div>
@@ -552,16 +552,16 @@ export default function TicketViewPage() {
               {/* Dados Específicos */}
               {dadosEspecificos && (
                 <div>
-                  <h4 className="font-semibold text-gray-900 mb-2">Detalhes Específicos</h4>
+                  <h4 className="font-semibold text-foreground mb-2">Detalhes Específicos</h4>
                   <div className="space-y-4">
                     {dadosEspecificos.distancias_equipamentos &&
                       Object.keys(dadosEspecificos.distancias_equipamentos).length > 0 && (
-                        <div className="bg-gray-50 p-4 rounded-lg">
-                          <h5 className="font-medium text-gray-900 mb-2">Distâncias entre Equipamentos</h5>
+                        <div className="bg-card/50 p-4 rounded-lg">
+                          <h5 className="font-medium text-foreground mb-2">Distâncias entre Equipamentos</h5>
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
                             {Object.entries(dadosEspecificos.distancias_equipamentos).map(([key, value]) => (
                               <div key={key} className="flex justify-between">
-                                <span className="text-gray-600">{formatDistanceLabel(key)}:</span>
+                                <span className="text-muted-foreground">{formatDistanceLabel(key)}:</span>
                                 <span className="font-medium">{String(value)}m</span>
                               </div>
                             ))}
@@ -570,12 +570,12 @@ export default function TicketViewPage() {
                       )}
 
                     {dadosEspecificos.localizacao_gps && (
-                      <div className="bg-gray-50 p-4 rounded-lg">
-                        <h5 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
+                      <div className="bg-card/50 p-4 rounded-lg">
+                        <h5 className="font-medium text-foreground mb-2 flex items-center gap-2">
                           <MapPin className="h-4 w-4" />
                           Localização GPS
                         </h5>
-                        <p className="text-gray-600">{dadosEspecificos.localizacao_gps}</p>
+                        <p className="text-muted-foreground">{dadosEspecificos.localizacao_gps}</p>
                       </div>
                     )}
 
@@ -584,9 +584,9 @@ export default function TicketViewPage() {
                         {infoCards
                           .filter((item) => item.value)
                           .map((item) => (
-                            <div key={item.label} className="bg-gray-50 p-4 rounded-lg">
-                              <h5 className="font-medium text-gray-900 mb-2">{item.label}</h5>
-                              <p className="text-gray-600">{item.value}</p>
+                            <div key={item.label} className="bg-card/50 p-4 rounded-lg">
+                              <h5 className="font-medium text-foreground mb-2">{item.label}</h5>
+                              <p className="text-muted-foreground">{item.value}</p>
                             </div>
                           ))}
                       </div>
@@ -594,7 +594,7 @@ export default function TicketViewPage() {
 
                     {mediaGroupsVisiveis.length > 0 && (
                       <div className="space-y-3">
-                        <h5 className="font-medium text-gray-900">Mídia por Equipamento</h5>
+                        <h5 className="font-medium text-foreground">Mídia por Equipamento</h5>
                         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                           {mediaGroupsVisiveis.map((group) => renderMediaGroup(group))}
                         </div>
@@ -636,7 +636,7 @@ export default function TicketViewPage() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {relatorio?.assinatura_tecnico && (
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Assinatura do Técnico</h4>
+                    <h4 className="font-semibold text-foreground mb-2">Assinatura do Técnico</h4>
                     <Image
                       src={relatorio.assinatura_tecnico}
                       alt="Assinatura do técnico"
@@ -648,7 +648,7 @@ export default function TicketViewPage() {
                 )}
                 {relatorio?.assinatura_cliente && (
                   <div>
-                    <h4 className="font-semibold text-gray-900 mb-2">Assinatura do Cliente</h4>
+                    <h4 className="font-semibold text-foreground mb-2">Assinatura do Cliente</h4>
                     <Image
                       src={relatorio.assinatura_cliente}
                       alt="Assinatura do cliente"

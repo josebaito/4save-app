@@ -99,7 +99,7 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
             case 'pendente': return 'bg-yellow-100 text-yellow-800';
             case 'em_curso': return 'bg-blue-100 text-blue-800';
             case 'finalizado': return 'bg-green-100 text-green-800';
-            default: return 'bg-gray-100 text-gray-800';
+            default: return 'bg-slate-500/15 text-foreground';
         }
     };
 
@@ -109,7 +109,7 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
             case 'alta': return 'bg-orange-100 text-orange-800';
             case 'media': return 'bg-yellow-100 text-yellow-800';
             case 'baixa': return 'bg-green-100 text-green-800';
-            default: return 'bg-gray-100 text-gray-800';
+            default: return 'bg-slate-500/15 text-foreground';
         }
     };
 
@@ -154,7 +154,7 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
 
                 {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card className="bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-white/15">
+                    <Card className="bg-card/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-card/15">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium text-slate-200">
                                 Pendentes
@@ -169,7 +169,7 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-white/15">
+                    <Card className="bg-card/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-card/15">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium text-slate-200">
                                 Em Curso
@@ -184,7 +184,7 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-white/15">
+                    <Card className="bg-card/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-card/15">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                             <CardTitle className="text-sm font-medium text-slate-200">
                                 Finalizados
@@ -202,7 +202,7 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
 
                 {/* Tickets Em Curso */}
                 {ticketsEmCurso.length > 0 && (
-                    <Card className="bg-white/10 border-white/20 shadow-xl">
+                    <Card className="bg-card/10 border-white/20 shadow-xl">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-white">
                                 <PlayCircle className="h-5 w-5 text-blue-400" />
@@ -248,7 +248,7 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
 
                 {/* Tickets Cancelados */}
                 {ticketsCancelados.length > 0 && (
-                    <Card className="bg-white/10 border-white/20 shadow-xl">
+                    <Card className="bg-card/10 border-white/20 shadow-xl">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-white">
                                 <AlertCircle className="h-5 w-5 text-red-400" />
@@ -291,7 +291,7 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
                 )}
 
                 {/* Tickets Pendentes */}
-                <Card className="bg-white/10 border-white/20 shadow-xl">
+                <Card className="bg-card/10 border-white/20 shadow-xl">
                     <CardHeader>
                         <CardTitle className="flex items-center gap-2 text-white">
                             <FileText className="h-5 w-5 text-slate-300" />
@@ -304,7 +304,7 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
                                 {ticketsPendentes.map((ticket) => (
                                     <div
                                         key={ticket.id}
-                                        className="flex items-center justify-between p-4 bg-white/5 rounded-xl hover:bg-white/10 transition-colors border border-white/10"
+                                        className="flex items-center justify-between p-4 bg-card/5 rounded-xl hover:bg-card/10 transition-colors border border-white/10"
                                     >
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-2">
@@ -354,7 +354,7 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
 
                 {/* Tickets Finalizados */}
                 {ticketsFinalizados.length > 0 && (
-                    <Card className="bg-white/10 border-white/20 shadow-xl">
+                    <Card className="bg-card/10 border-white/20 shadow-xl">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2 text-white">
                                 <CheckCircle className="h-5 w-5 text-green-400" />

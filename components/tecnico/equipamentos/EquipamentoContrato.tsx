@@ -144,11 +144,11 @@ export function EquipamentoContrato({ contratoId, equipamentos, disabled = false
   return (
     <div className="space-y-6">
       {/* Biblioteca de Equipamentos */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Biblioteca de Equipamentos</h3>
         
         {!disabled && (
-          <div className="space-y-4 p-4 border rounded-lg bg-white">
+          <div className="space-y-4 p-4 border rounded-lg bg-card">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Nome do Equipamento</Label>
@@ -177,14 +177,14 @@ export function EquipamentoContrato({ contratoId, equipamentos, disabled = false
         {/* Lista da Biblioteca com Mídia */}
         {bibliotecaEquipamentos.length > 0 && (
           <div className="mt-4 space-y-4">
-            <Label className="text-sm font-medium text-gray-600">Equipamentos da Biblioteca</Label>
+            <Label className="text-sm font-medium text-muted-foreground">Equipamentos da Biblioteca</Label>
             {bibliotecaEquipamentos.map((equipamento) => (
-              <div key={equipamento.id} className="p-4 border rounded-lg bg-white">
+              <div key={equipamento.id} className="p-4 border rounded-lg bg-card">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
                     <h4 className="font-semibold text-lg">{equipamento.nome}</h4>
                     {equipamento.descricao && (
-                      <p className="text-gray-600 text-sm mt-1">{equipamento.descricao}</p>
+                      <p className="text-muted-foreground text-sm mt-1">{equipamento.descricao}</p>
                     )}
                   </div>
                 </div>
@@ -204,7 +204,7 @@ export function EquipamentoContrato({ contratoId, equipamentos, disabled = false
 
                 {/* Fotos da Biblioteca */}
                 <div className="space-y-2 mb-4">
-                  <Label className="text-sm font-medium text-gray-600">Fotos do Equipamento</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">Fotos do Equipamento</Label>
                   <UploadWrapper
                     onComplete={(urls) => {
                       atualizarEquipamentoBiblioteca(equipamento.id, 'fotos', urls);
@@ -219,7 +219,7 @@ export function EquipamentoContrato({ contratoId, equipamentos, disabled = false
 
                 {/* Vídeos da Biblioteca */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-600">Vídeos do Equipamento</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">Vídeos do Equipamento</Label>
                   <UploadVideoWrapper
                     onComplete={(urls) => {
                       atualizarEquipamentoBiblioteca(equipamento.id, 'videos', urls);
@@ -237,16 +237,16 @@ export function EquipamentoContrato({ contratoId, equipamentos, disabled = false
       </div>
 
       {/* Equipamentos do Contrato */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <div className="flex justify-between items-center mb-4">
           <h3 className="text-lg font-semibold">Equipamentos do Contrato</h3>
-          <div className="text-sm text-gray-500 bg-gray-200 px-2 py-1 rounded">
+          <div className="text-sm text-muted-foreground bg-slate-500/15 px-2 py-1 rounded">
             Contrato #{contratoId.slice(-8)}
           </div>
         </div>
         
         {!disabled && (
-          <div className="space-y-4 p-4 border rounded-lg bg-white mb-4">
+          <div className="space-y-4 p-4 border rounded-lg bg-card mb-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Selecionar da Biblioteca</Label>
@@ -285,17 +285,17 @@ export function EquipamentoContrato({ contratoId, equipamentos, disabled = false
         {/* Lista de Equipamentos do Contrato */}
         <div className="space-y-4">
           {equipamentosContrato.length === 0 ? (
-            <div className="text-center text-gray-500 py-8">
+            <div className="text-center text-muted-foreground py-8">
               Nenhum equipamento cadastrado para este contrato
             </div>
           ) : (
             equipamentosContrato.map((equipamento) => (
-              <div key={equipamento.id} className="p-4 border rounded-lg bg-white">
+              <div key={equipamento.id} className="p-4 border rounded-lg bg-card">
                 <div className="flex justify-between items-start mb-4">
                   <div className="flex-1">
                     <h4 className="font-semibold text-lg">{equipamento.nome}</h4>
                     {equipamento.descricao && (
-                      <p className="text-gray-600 text-sm mt-1">{equipamento.descricao}</p>
+                      <p className="text-muted-foreground text-sm mt-1">{equipamento.descricao}</p>
                     )}
                   </div>
                   {!disabled && (
@@ -325,7 +325,7 @@ export function EquipamentoContrato({ contratoId, equipamentos, disabled = false
 
                 {/* Fotos */}
                 <div className="space-y-2 mb-4">
-                  <Label className="text-sm font-medium text-gray-600">Fotos do Equipamento</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">Fotos do Equipamento</Label>
                   {equipamento.fotos && equipamento.fotos.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       {equipamento.fotos.map((foto, index) => (
@@ -355,7 +355,7 @@ export function EquipamentoContrato({ contratoId, equipamentos, disabled = false
 
                 {/* Vídeos */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-gray-600">Vídeos do Equipamento</Label>
+                  <Label className="text-sm font-medium text-muted-foreground">Vídeos do Equipamento</Label>
                   {equipamento.videos && equipamento.videos.length > 0 ? (
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                       {equipamento.videos.map((video, index) => (

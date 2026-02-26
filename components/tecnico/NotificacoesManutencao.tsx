@@ -124,7 +124,7 @@ export function NotificacoesManutencao() {
 
   if (loading) {
     return (
-      <Card className="bg-white/10 border-white/20">
+      <Card className="bg-card/10 border-white/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
             <Bell className="h-5 w-5 text-blue-400" />
@@ -142,7 +142,7 @@ export function NotificacoesManutencao() {
 
   if (!temNotificacoes) {
     return (
-      <Card className="bg-white/10 border-white/20">
+      <Card className="bg-card/10 border-white/20">
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-white">
             <Bell className="h-5 w-5 text-blue-400" />
@@ -159,7 +159,7 @@ export function NotificacoesManutencao() {
   }
 
   return (
-    <Card className="bg-white/10 border-white/20">
+    <Card className="bg-card/10 border-white/20">
       <CardHeader>
         <CardTitle className="flex items-center gap-2 text-white">
           <Bell className="h-5 w-5 text-blue-400" />
@@ -171,7 +171,7 @@ export function NotificacoesManutencao() {
         {notificacoes.map((notificacao) => (
           <div
             key={notificacao.id}
-            className={`p-3 border rounded-lg ${isProxima(notificacao.data_programada) ? 'bg-amber-500/20 border-amber-500/30' : 'bg-white/5 border-white/10'}`}
+            className={`p-3 border rounded-lg ${isProxima(notificacao.data_programada) ? 'bg-amber-500/20 border-amber-500/30' : 'bg-card/5 border-white/10'}`}
           >
             <div className="flex justify-between items-start mb-2">
               <h4 className="font-medium text-white">{notificacao.titulo}</h4>

@@ -27,7 +27,7 @@ export function FormularioSolarBaterias({ dados, onChange, disabled = false }: F
   return (
     <div className="space-y-6">
       {/* Localização dos Painéis */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Localização dos Painéis</h3>
         
         <div className="space-y-4">
@@ -41,7 +41,7 @@ export function FormularioSolarBaterias({ dados, onChange, disabled = false }: F
               rows={3}
             />
             {dados.localizacao_paineis && (
-              <p className="text-xs text-gray-500">Valor atual: {dados.localizacao_paineis}</p>
+              <p className="text-xs text-muted-foreground">Valor atual: {dados.localizacao_paineis}</p>
             )}
           </div>
 
@@ -68,7 +68,7 @@ export function FormularioSolarBaterias({ dados, onChange, disabled = false }: F
       </div>
 
       {/* Localização dos Inversores */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Localização dos Inversores</h3>
         
         <div className="space-y-4">
@@ -106,7 +106,7 @@ export function FormularioSolarBaterias({ dados, onChange, disabled = false }: F
       </div>
 
       {/* Localização das Baterias */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Localização das Baterias</h3>
         
         <div className="space-y-4">
@@ -144,7 +144,7 @@ export function FormularioSolarBaterias({ dados, onChange, disabled = false }: F
       </div>
 
       {/* Quadro Elétrico */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Quadro Elétrico</h3>
         
         <div className="space-y-4">
@@ -182,7 +182,7 @@ export function FormularioSolarBaterias({ dados, onChange, disabled = false }: F
       </div>
 
       {/* Cabos */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Cabos</h3>
         
         <div className="space-y-4">
@@ -220,7 +220,7 @@ export function FormularioSolarBaterias({ dados, onChange, disabled = false }: F
       </div>
 
       {/* Gerador (se existir) */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Gerador (se existir)</h3>
         
         <div className="space-y-4">
@@ -258,7 +258,7 @@ export function FormularioSolarBaterias({ dados, onChange, disabled = false }: F
       </div>
 
       {/* Distâncias entre Equipamentos */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Distâncias entre Equipamentos</h3>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

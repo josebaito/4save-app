@@ -93,7 +93,7 @@ export function EstatisticasManutencao() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <Card className="bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-white/15">
+      <Card className="bg-card/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-card/15">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-200">
             Próximas Manutenções
@@ -108,7 +108,7 @@ export function EstatisticasManutencao() {
         </CardContent>
       </Card>
 
-      <Card className="bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-white/15">
+      <Card className="bg-card/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-card/15">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-200">
             Manutenções Pendentes
@@ -123,7 +123,7 @@ export function EstatisticasManutencao() {
         </CardContent>
       </Card>
 
-      <Card className="bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-white/15">
+      <Card className="bg-card/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-card/15">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-200">
             Manutenções Realizadas
@@ -138,7 +138,7 @@ export function EstatisticasManutencao() {
         </CardContent>
       </Card>
 
-      <Card className="bg-white/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-white/15">
+      <Card className="bg-card/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-card/15">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-sm font-medium text-slate-200">
             Tickets Abertos

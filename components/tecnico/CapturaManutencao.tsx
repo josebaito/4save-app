@@ -48,7 +48,7 @@ export function CapturaManutencao({ dados, onChange, disabled = false }: Captura
               maxFiles={10}
             />
             {dados.fotos_antes && dados.fotos_antes.length > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {dados.fotos_antes.length} foto(s) capturada(s)
               </p>
             )}
@@ -68,7 +68,7 @@ export function CapturaManutencao({ dados, onChange, disabled = false }: Captura
               maxFiles={5}
             />
             {dados.videos_antes && dados.videos_antes.length > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {dados.videos_antes.length} vídeo(s) capturado(s)
               </p>
             )}
@@ -99,7 +99,7 @@ export function CapturaManutencao({ dados, onChange, disabled = false }: Captura
               maxFiles={10}
             />
             {dados.fotos_manutencao && dados.fotos_manutencao.length > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {dados.fotos_manutencao.length} foto(s) do processo
               </p>
             )}
@@ -119,7 +119,7 @@ export function CapturaManutencao({ dados, onChange, disabled = false }: Captura
               maxFiles={5}
             />
             {dados.videos_manutencao && dados.videos_manutencao.length > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {dados.videos_manutencao.length} vídeo(s) do processo
               </p>
             )}
@@ -150,7 +150,7 @@ export function CapturaManutencao({ dados, onChange, disabled = false }: Captura
               maxFiles={10}
             />
             {dados.fotos_depois && dados.fotos_depois.length > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {dados.fotos_depois.length} foto(s) do resultado
               </p>
             )}
@@ -170,7 +170,7 @@ export function CapturaManutencao({ dados, onChange, disabled = false }: Captura
               maxFiles={5}
             />
             {dados.videos_depois && dados.videos_depois.length > 0 && (
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 {dados.videos_depois.length} vídeo(s) do resultado
               </p>
             )}

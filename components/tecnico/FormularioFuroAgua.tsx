@@ -24,7 +24,7 @@ export function FormularioFuroAgua({ dados, onChange, disabled = false }: Formul
   return (
     <div className="space-y-6">
       {/* Zona do Furo */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Zona do Furo</h3>
         
         <div className="space-y-4">
@@ -61,7 +61,7 @@ export function FormularioFuroAgua({ dados, onChange, disabled = false }: Formul
       </div>
 
       {/* Passagem das Máquinas */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Passagem das Máquinas</h3>
         
         <div className="space-y-4">
@@ -98,7 +98,7 @@ export function FormularioFuroAgua({ dados, onChange, disabled = false }: Formul
       </div>
 
       {/* Trabalho das Máquinas */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Trabalho das Máquinas</h3>
         
         <div className="space-y-4">
@@ -135,7 +135,7 @@ export function FormularioFuroAgua({ dados, onChange, disabled = false }: Formul
       </div>
 
       {/* Localização GPS */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Localização GPS</h3>
         
         <div className="space-y-4">
@@ -152,7 +152,7 @@ export function FormularioFuroAgua({ dados, onChange, disabled = false }: Formul
       </div>
 
       {/* Tubagem Instalada */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Tubagem Instalada</h3>
         
         <div className="space-y-4">
@@ -178,7 +178,7 @@ export function FormularioFuroAgua({ dados, onChange, disabled = false }: Formul
       </div>
 
       {/* Qualidade da Água */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Qualidade da Água</h3>
         
         <div className="space-y-4">

@@ -72,7 +72,7 @@ export function FormularioEspecifico({ tipoProduto, dados, onChange, disabled = 
       break;
     default:
       formularioComponente = (
-        <div className="p-4 text-center text-gray-500">
+        <div className="p-4 text-center text-muted-foreground">
           Tipo de produto não reconhecido
         </div>
       );

@@ -112,7 +112,7 @@ export function EquipamentoManutencao({
           <div className="space-y-2 mt-2">
             {equipamentosExistentes.length > 0 ? (
               equipamentosExistentes.map((equip, index) => (
-                <div key={index} className="flex items-center justify-between p-3 border rounded-lg bg-gray-50">
+                <div key={index} className="flex items-center justify-between p-3 border rounded-lg bg-card/50">
                   <span className="text-sm font-medium">{equip}</span>
                   <Badge variant="secondary" className="text-xs">
                     Instalado
@@ -192,7 +192,7 @@ export function EquipamentoManutencao({
         )}
 
         {/* Informações */}
-        <div className="text-xs text-gray-500 space-y-1">
+        <div className="text-xs text-muted-foreground space-y-1">
           <p>• Equipamentos instalados são mostrados para referência</p>
           <p>• Novos equipamentos serão adicionados ao contrato</p>
           <p>• Todos os equipamentos (instalados + novos) serão incluídos na manutenção</p>

@@ -24,7 +24,7 @@ export function FormularioTratamentoAgua({ dados, onChange, disabled = false }: 
   return (
     <div className="space-y-6">
       {/* Depósito */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Depósito</h3>
         
         <div className="space-y-4">
@@ -61,7 +61,7 @@ export function FormularioTratamentoAgua({ dados, onChange, disabled = false }: 
       </div>
 
       {/* Estação de Tratamento */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Estação de Tratamento</h3>
         
         <div className="space-y-4">
@@ -98,7 +98,7 @@ export function FormularioTratamentoAgua({ dados, onChange, disabled = false }: 
       </div>
 
       {/* Equipamento Instalado */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Equipamento Instalado</h3>
         
         <div className="space-y-4">
@@ -135,7 +135,7 @@ export function FormularioTratamentoAgua({ dados, onChange, disabled = false }: 
       </div>
 
       {/* Saída de Água */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Saída de Água</h3>
         
         <div className="space-y-4">
@@ -172,7 +172,7 @@ export function FormularioTratamentoAgua({ dados, onChange, disabled = false }: 
       </div>
 
       {/* Localização GPS */}
-      <div className="p-4 border rounded-lg bg-gray-50">
+      <div className="p-4 border rounded-lg bg-card/50">
         <h3 className="text-lg font-semibold mb-4">Localização GPS</h3>
         
         <div className="space-y-4">

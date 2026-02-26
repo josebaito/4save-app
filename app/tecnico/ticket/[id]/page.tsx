@@ -1136,7 +1136,7 @@ export default function TicketDetailsPage() {
       case "cancelado":
         return "bg-red-100 text-red-800";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-slate-500/15 text-foreground";
     }
   };
 
@@ -1151,7 +1151,7 @@ export default function TicketDetailsPage() {
       case "baixa":
         return "bg-green-100 text-green-800";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "bg-slate-500/15 text-foreground";
     }
   };
 
@@ -1169,7 +1169,7 @@ export default function TicketDetailsPage() {
     return (
       <TecnicoLayout>
         <div className="text-center py-8">
-          <p className="text-gray-500">Ticket não encontrado</p>
+          <p className="text-muted-foreground">Ticket não encontrado</p>
         </div>
       </TecnicoLayout>
     );
@@ -1206,10 +1206,10 @@ export default function TicketDetailsPage() {
             Voltar
           </Button>
           <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-foreground">
               {ticket.titulo}
             </h1>
-            <p className="text-gray-600">
+            <p className="text-muted-foreground">
               {ticket.tipo === "instalacao" ? "Instalação" : "Manutenção"} -{" "}
               {ticket.contrato?.numero}
             </p>
@@ -1276,24 +1276,24 @@ export default function TicketDetailsPage() {
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <User className="h-4 w-4" />
                   <span>Cliente: {ticket.cliente?.nome}</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <MapPin className="h-4 w-4" />
                   <span>Endereço: {ticket.cliente?.endereco}</span>
                 </div>
               </div>
               <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <Calendar className="h-4 w-4" />
                   <span>
                     Criado:{" "}
                     {new Date(ticket.created_at).toLocaleDateString("pt-BR")}
                   </span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
                   <FileText className="h-4 w-4" />
                   <span>Contrato: {ticket.contrato?.numero}</span>
                 </div>
@@ -1303,7 +1303,7 @@ export default function TicketDetailsPage() {
               <Label className="text-sm font-medium">
                 Descrição do Problema:
               </Label>
-              <p className="text-sm text-gray-700 mt-1">{ticket.descricao}</p>
+              <p className="text-sm text-foreground mt-1">{ticket.descricao}</p>
             </div>
           </CardContent>
         </Card>
@@ -1320,7 +1320,7 @@ export default function TicketDetailsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 {ticket.tipo === "instalacao"
                   ? "Clique no botão abaixo para iniciar a instalação dos equipamentos."
                   : "Clique no botão abaixo para iniciar o atendimento de manutenção."}
@@ -1394,7 +1394,7 @@ export default function TicketDetailsPage() {
                 <div className="space-y-2">
                   <Label>Localização GPS</Label>
                   <div className="flex items-center gap-2">
-                    <MapPin className="h-4 w-4 text-gray-500" />
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
                     {localizacaoGPS ? (
                       <span className="text-sm text-green-600">
                         ✓ Capturada: {localizacaoGPS}
@@ -1471,7 +1471,7 @@ export default function TicketDetailsPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Relatório inicial salvo com sucesso! Escolha como deseja
                 prosseguir:
               </p>
@@ -1702,7 +1702,7 @@ export default function TicketDetailsPage() {
                   <p className="text-xs text-slate-400">Assine no campo branco abaixo</p>
                   <div
                     ref={sigTecnicoContainerRef}
-                    className="border-2 border-slate-500 rounded-lg overflow-hidden bg-white"
+                    className="border-2 border-slate-500 rounded-lg overflow-hidden bg-card"
                     style={{ height: "200px" }}
                   >
                     <SignatureCanvas
@@ -1731,7 +1731,7 @@ export default function TicketDetailsPage() {
                   <p className="text-xs text-slate-400">O cliente deve assinar no campo branco abaixo</p>
                   <div
                     ref={sigClienteContainerRef}
-                    className="border-2 border-slate-500 rounded-lg overflow-hidden bg-white"
+                    className="border-2 border-slate-500 rounded-lg overflow-hidden bg-card"
                     style={{ height: "200px" }}
                   >
                     <SignatureCanvas
@@ -1781,10 +1781,10 @@ export default function TicketDetailsPage() {
             <CardContent className="space-y-4">
               <div className="text-center py-8">
                 <CheckCircle className="h-16 w-16 text-green-600 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-lg font-semibold text-foreground mb-2">
                   Atendimento Finalizado com Sucesso!
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-muted-foreground mb-4">
                   O relatório foi salvo e o ticket foi marcado como concluído.
                 </p>
                 <Button onClick={() => router.push("/tecnico/tickets")}>
@@ -1807,10 +1807,10 @@ export default function TicketDetailsPage() {
             <CardContent className="space-y-4">
               <div className="text-center py-8">
                 <X className="h-16 w-16 text-red-600 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                <h3 className="text-lg font-semibold text-foreground mb-2">
                   Serviço Cancelado
                 </h3>
-                <p className="text-gray-600 mb-4">
+                <p className="text-muted-foreground mb-4">
                   O ticket foi cancelado e registado o motivo.
                 </p>
                 {ticket.motivo_cancelamento && (

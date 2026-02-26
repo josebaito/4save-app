@@ -203,7 +203,7 @@ export function DashboardManutencao() {
       case 'cancelado':
         return 'bg-red-100 text-red-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-500/15 text-foreground';
     }
   };
 
@@ -218,7 +218,7 @@ export function DashboardManutencao() {
       case 'urgente':
         return 'bg-red-100 text-red-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-slate-500/15 text-foreground';
     }
   };
 
@@ -251,7 +251,7 @@ export function DashboardManutencao() {
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-2 text-gray-600">Carregando dados de manutenção...</p>
+            <p className="mt-2 text-muted-foreground">Carregando dados de manutenção...</p>
           </div>
         </div>
       </div>
@@ -279,14 +279,14 @@ export function DashboardManutencao() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Próximas Manutenções
             </CardTitle>
             <Calendar className="h-5 w-5 text-blue-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{stats.proximasManutencoes}</div>
-            <p className="text-xs text-gray-600 mt-1">
+            <div className="text-2xl font-bold text-foreground">{stats.proximasManutencoes}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               Agendadas para os próximos 30 dias
             </p>
           </CardContent>
@@ -294,14 +294,14 @@ export function DashboardManutencao() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Manutenções Pendentes
             </CardTitle>
             <AlertTriangle className="h-5 w-5 text-orange-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{stats.manutencoesPendentes}</div>
-            <p className="text-xs text-gray-600 mt-1">
+            <div className="text-2xl font-bold text-foreground">{stats.manutencoesPendentes}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               Manutenções vencidas
             </p>
           </CardContent>
@@ -309,14 +309,14 @@ export function DashboardManutencao() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Manutenções Realizadas
             </CardTitle>
             <CheckCircle className="h-5 w-5 text-green-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{stats.manutencoesRealizadas}</div>
-            <p className="text-xs text-gray-600 mt-1">
+            <div className="text-2xl font-bold text-foreground">{stats.manutencoesRealizadas}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               Total de manutenções concluídas
             </p>
           </CardContent>
@@ -324,14 +324,14 @@ export function DashboardManutencao() {
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Tickets Abertos
             </CardTitle>
             <FileText className="h-5 w-5 text-purple-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-gray-900">{stats.ticketsAbertos}</div>
-            <p className="text-xs text-gray-600 mt-1">
+            <div className="text-2xl font-bold text-foreground">{stats.ticketsAbertos}</div>
+            <p className="text-xs text-muted-foreground mt-1">
               Tickets de manutenção em andamento
             </p>
           </CardContent>
@@ -363,7 +363,7 @@ export function DashboardManutencao() {
             </CardHeader>
             <CardContent>
               {cronogramas.length === 0 ? (
-                <div className="text-center py-4 text-gray-500">
+                <div className="text-center py-4 text-muted-foreground">
                   Nenhum cronograma de manutenção encontrado.
                 </div>
               ) : (
@@ -371,14 +371,14 @@ export function DashboardManutencao() {
                   {cronogramas.map((cronograma) => (
                     <div 
                       key={cronograma.id} 
-                      className={`p-4 rounded-lg border ${isVencida(cronograma.proxima_manutencao) ? 'border-red-200 bg-red-50' : isProxima(cronograma.proxima_manutencao) ? 'border-yellow-200 bg-yellow-50' : 'border-gray-200'}`}
+                      className={`p-4 rounded-lg border ${isVencida(cronograma.proxima_manutencao) ? 'border-red-200 bg-red-50' : isProxima(cronograma.proxima_manutencao) ? 'border-yellow-200 bg-yellow-50' : 'border-border'}`}
                     >
                       <div className="flex justify-between items-start">
                         <div>
                           <h3 className="font-medium">
                             {cronograma.contrato?.descricao || `Contrato #${cronograma.contrato_id.substring(0, 8)}`}
                           </h3>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-muted-foreground">
                             Cliente: {cronograma.contrato?.cliente?.nome || 'N/A'}
                           </p>
                         </div>
@@ -386,21 +386,21 @@ export function DashboardManutencao() {
                           <Badge className={`${cronograma.tipo_manutencao === 'preventiva' ? 'bg-blue-100 text-blue-800' : cronograma.tipo_manutencao === 'corretiva' ? 'bg-red-100 text-red-800' : 'bg-purple-100 text-purple-800'}`}>
                             {cronograma.tipo_manutencao}
                           </Badge>
-                          <Badge className="bg-gray-100 text-gray-800">
+                          <Badge className="bg-slate-500/15 text-foreground">
                             {cronograma.frequencia}
                           </Badge>
                         </div>
                       </div>
                       <div className="mt-2 flex flex-wrap gap-4">
                         <div className="flex items-center gap-1">
-                          <CalendarIcon className="h-4 w-4 text-gray-500" />
+                          <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                           <span className="text-sm">
                             Próxima: <span className={`font-medium ${isVencida(cronograma.proxima_manutencao) ? 'text-red-600' : isProxima(cronograma.proxima_manutencao) ? 'text-yellow-600' : ''}`}>{formatarData(cronograma.proxima_manutencao)}</span>
                           </span>
                         </div>
                         {cronograma.ultima_manutencao && (
                           <div className="flex items-center gap-1">
-                            <Clock className="h-4 w-4 text-gray-500" />
+                            <Clock className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm">
                               Última: {formatarData(cronograma.ultima_manutencao)}
                             </span>
@@ -443,7 +443,7 @@ export function DashboardManutencao() {
             </CardHeader>
             <CardContent>
               {ticketsManutencao.length === 0 ? (
-                <div className="text-center py-4 text-gray-500">
+                <div className="text-center py-4 text-muted-foreground">
                   Nenhum ticket de manutenção encontrado.
                 </div>
               ) : (
@@ -451,12 +451,12 @@ export function DashboardManutencao() {
                   {ticketsManutencao.map((ticket) => (
                     <div 
                       key={ticket.id} 
-                      className="p-4 rounded-lg border border-gray-200"
+                      className="p-4 rounded-lg border border-border"
                     >
                       <div className="flex justify-between items-start">
                         <div>
                           <h3 className="font-medium">{ticket.titulo}</h3>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-muted-foreground">
                             Cliente: {ticket.cliente?.nome || 'N/A'}
                           </p>
                         </div>
@@ -470,10 +470,10 @@ export function DashboardManutencao() {
                         </div>
                       </div>
                       <div className="mt-2">
-                        <p className="text-sm text-gray-600 line-clamp-2">{ticket.descricao}</p>
+                        <p className="text-sm text-muted-foreground line-clamp-2">{ticket.descricao}</p>
                       </div>
                       <div className="mt-2 flex items-center gap-1">
-                        <CalendarIcon className="h-4 w-4 text-gray-500" />
+                        <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                         <span className="text-sm">
                           Criado: {formatarData(ticket.created_at)}
                         </span>
@@ -494,7 +494,7 @@ export function DashboardManutencao() {
             </CardHeader>
             <CardContent>
               {historico.length === 0 ? (
-                <div className="text-center py-4 text-gray-500">
+                <div className="text-center py-4 text-muted-foreground">
                   Nenhum registro de manutenção encontrado.
                 </div>
               ) : (
@@ -502,14 +502,14 @@ export function DashboardManutencao() {
                   {historico.map((registro) => (
                     <div 
                       key={registro.id} 
-                      className="p-4 rounded-lg border border-gray-200"
+                      className="p-4 rounded-lg border border-border"
                     >
                       <div className="flex justify-between items-start">
                         <div>
                           <h3 className="font-medium">
                             {registro.contrato?.descricao || `Contrato #${registro.contrato_id.substring(0, 8)}`}
                           </h3>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-muted-foreground">
                             Cliente: {registro.contrato?.cliente?.nome || 'N/A'}
                           </p>
                         </div>
@@ -528,7 +528,7 @@ export function DashboardManutencao() {
                         )}
                         {registro.data_agendada && (
                           <div className="flex items-center gap-1">
-                            <CalendarIcon className="h-4 w-4 text-gray-500" />
+                            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                             <span className="text-sm">
                               Agendada: {formatarData(registro.data_agendada)}
                             </span>
@@ -537,7 +537,7 @@ export function DashboardManutencao() {
                       </div>
                       {registro.observacoes && (
                         <div className="mt-2">
-                          <p className="text-sm text-gray-600">{registro.observacoes}</p>
+                          <p className="text-sm text-muted-foreground">{registro.observacoes}</p>
                         </div>
                       )}
                     </div>
