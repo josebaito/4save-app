@@ -1,6 +1,3 @@
-import { promises as fs } from 'fs';
-import path from 'path';
-
 export type PdfTemplate = 'classic' | 'modern';
 
 export interface AppConfig {
@@ -17,36 +14,72 @@ const DEFAULT_CONFIG: AppConfig = {
   updatedAt: new Date().toISOString(),
 };
 
-const CONFIG_PATH = path.join(process.cwd(), 'data', 'app-config.json');
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
-async function ensureConfigFile() {
-  await fs.mkdir(path.dirname(CONFIG_PATH), { recursive: true });
+export async function readAppConfig(token?: string): Promise<AppConfig> {
   try {
-    await fs.access(CONFIG_PATH);
-  } catch {
-    await fs.writeFile(CONFIG_PATH, JSON.stringify(DEFAULT_CONFIG, null, 2), 'utf-8');
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
+
+    const res = await fetch(`${API_URL}/config`, { headers });
+
+    if (!res.ok) {
+      console.warn('[AppConfig] Failed to load config from backend, using defaults');
+      return DEFAULT_CONFIG;
+    }
+
+    const data = await res.json();
+    return {
+      appName: data.appName || DEFAULT_CONFIG.appName,
+      reportLogoUrl: data.reportLogoUrl || DEFAULT_CONFIG.reportLogoUrl,
+      pdfTemplate: (data.pdfTemplate || DEFAULT_CONFIG.pdfTemplate) as PdfTemplate,
+      updatedAt: data.updatedAt || DEFAULT_CONFIG.updatedAt,
+    };
+  } catch (error) {
+    console.error('[AppConfig] Error reading config:', error);
+    return DEFAULT_CONFIG;
   }
 }
 
-export async function readAppConfig(): Promise<AppConfig> {
-  await ensureConfigFile();
-  const raw = await fs.readFile(CONFIG_PATH, 'utf-8');
-  const parsed = JSON.parse(raw) as Partial<AppConfig>;
-  return {
-    ...DEFAULT_CONFIG,
-    ...parsed,
-    updatedAt: parsed.updatedAt || DEFAULT_CONFIG.updatedAt,
-  };
-}
+export async function writeAppConfig(
+  update: Partial<AppConfig>,
+  token?: string,
+): Promise<AppConfig> {
+  try {
+    const headers: Record<string, string> = {
+      'Content-Type': 'application/json',
+    };
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
+    }
 
-export async function writeAppConfig(update: Partial<AppConfig>): Promise<AppConfig> {
-  await ensureConfigFile();
-  const current = await readAppConfig();
-  const next: AppConfig = {
-    ...current,
-    ...update,
-    updatedAt: new Date().toISOString(),
-  };
-  await fs.writeFile(CONFIG_PATH, JSON.stringify(next, null, 2), 'utf-8');
-  return next;
-}
+    const res = await fetch(`${API_URL}/config`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({
+        appName: update.appName,
+        reportLogoUrl: update.reportLogoUrl,
+        pdfTemplate: update.pdfTemplate,
+      }),
+    });
+
+    if (!res.ok) {
+      throw new Error(`Failed to update config: ${res.statusText}`);
+    }
+
+    const data = await res.json();
+    return {
+      appName: data.appName || DEFAULT_CONFIG.appName,
+      reportLogoUrl: data.reportLogoUrl || DEFAULT_CONFIG.reportLogoUrl,
+      pdfTemplate: (data.pdfTemplate || DEFAULT_CONFIG.pdfTemplate) as PdfTemplate,
+      updatedAt: data.updatedAt || DEFAULT_CONFIG.updatedAt,
+    };
+  } catch (error) {
+    console.error('[AppConfig] Error writing config:', error);
+    throw error;
+  }
+}

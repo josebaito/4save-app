@@ -3,6 +3,10 @@ import { getServerSession } from 'next-auth';
 import { authOptions } from '@/lib/auth/config';
 import { readAppConfig, writeAppConfig } from '@/lib/app-config';
 
+function getToken(session: any): string | undefined {
+  return session?.accessToken;
+}
+
 function ensureAdmin(session: any) {
   if (!session?.user || session.user.type !== 'admin') {
     return false;
@@ -16,7 +20,7 @@ export async function GET() {
     return NextResponse.json({ error: 'Não autorizado' }, { status: 403 });
   }
 
-  const config = await readAppConfig();
+  const config = await readAppConfig(getToken(session));
   return NextResponse.json(config);
 }
 
@@ -31,6 +35,6 @@ export async function PUT(request: Request) {
     appName: payload.appName,
     reportLogoUrl: payload.reportLogoUrl,
     pdfTemplate: payload.pdfTemplate,
-  });
+  }, getToken(session));
   return NextResponse.json(next);
-}
+}

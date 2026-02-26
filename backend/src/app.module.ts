@@ -7,6 +7,7 @@ import { RelatoriosModule } from './relatorios/relatorios.module';
 import { ClientesModule } from './clientes/clientes.module';
 import { ContratosModule } from './contratos/contratos.module';
 import { ManutencaoModule } from './manutencao/manutencao.module';
+import { ConfigModule } from './config/config.module';
 
 @Module({
   imports: [
@@ -17,7 +18,8 @@ import { ManutencaoModule } from './manutencao/manutencao.module';
     RelatoriosModule,
     ClientesModule,
     ContratosModule,
-    ManutencaoModule
+    ManutencaoModule,
+    ConfigModule,
   ],
   controllers: [],
   providers: [],

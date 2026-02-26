@@ -178,7 +178,7 @@ function drawMultilineText(layout: LayoutManager, text: string, options: { x: nu
 async function embedImageFromUrl(pdfDoc: PDFDocument, imageUrl: string): Promise<PDFImage | null> {
   try {
     console.log(`Debug - embedImageFromUrl chamada para: ${imageUrl?.substring(0, 100)}...`);
-    
+
     if (!imageUrl || imageUrl.trim() === '') {
       console.log(`Debug - URL de imagem vazia ou inválida`);
       return null;
@@ -187,26 +187,26 @@ async function embedImageFromUrl(pdfDoc: PDFDocument, imageUrl: string): Promise
     // Verificar se é base64
     if (imageUrl.startsWith('data:')) {
       console.log(`Debug - Processando imagem base64`);
-      
+
       // Extrair o tipo MIME e os dados
       const matches = imageUrl.match(/^data:([^;]+);base64,(.+)$/);
       if (!matches) {
         console.error(`Debug - Formato base64 inválido`);
         return null;
       }
-      
+
       const [, mimeType, base64Data] = matches;
       console.log(`Debug - Tipo MIME detectado: ${mimeType}`);
-      
+
       if (!base64Data) {
         console.error(`Debug - Dados base64 vazios`);
         return null;
       }
-      
+
       try {
         const imageBytes = Buffer.from(base64Data, 'base64');
         console.log(`Debug - Buffer base64 criado, tamanho: ${imageBytes.length} bytes`);
-        
+
         // Determinar tipo de imagem baseado no MIME type
         if (mimeType.includes('png')) {
           console.log(`Debug - Embedding PNG base64`);
@@ -226,15 +226,15 @@ async function embedImageFromUrl(pdfDoc: PDFDocument, imageUrl: string): Promise
 
     // Se não é base64, tentar como URL
     console.log(`Debug - Fazendo fetch da imagem: ${imageUrl}`);
-    const response = await fetch(imageUrl, { 
+    const response = await fetch(imageUrl, {
       timeout: 10000 // 10 segundos de timeout
     } as RequestInit);
-    
+
     if (!response.ok) {
-        console.error(`Debug - Falha ao buscar imagem: ${response.status} ${response.statusText}`);
-        return null;
+      console.error(`Debug - Falha ao buscar imagem: ${response.status} ${response.statusText}`);
+      return null;
     }
-    
+
     const imageBytes = await response.arrayBuffer();
     console.log(`Debug - Imagem baixada, tamanho: ${imageBytes.byteLength} bytes`);
 
@@ -366,7 +366,7 @@ function drawTicketInfo(layout: LayoutManager, data: ReportData, fonts: { normal
     [`Ticket: ${data.titulo}`, `Status: ${data.status}`],
     [`Prioridade: ${data.prioridade}`, `Data Início: ${data.relatorio.data_inicio ? new Date(data.relatorio.data_inicio).toLocaleString('pt-BR') : 'N/A'}`],
     [`Data Finalização: ${data.relatorio.data_finalizacao ? new Date(data.relatorio.data_finalizacao).toLocaleString('pt-BR') : 'N/A'}`,
-     data.relatorio.tempo_execucao ? `Tempo: ${Math.floor(data.relatorio.tempo_execucao / 3600)}h ${Math.floor((data.relatorio.tempo_execucao % 3600) / 60).toString().padStart(2, '0')}min` : ''],
+    data.relatorio.tempo_execucao ? `Tempo: ${Math.floor(data.relatorio.tempo_execucao / 3600)}h ${Math.floor((data.relatorio.tempo_execucao % 3600) / 60).toString().padStart(2, '0')}min` : ''],
   ];
 
   info.forEach(row => {
@@ -388,31 +388,31 @@ function drawTicketInfo(layout: LayoutManager, data: ReportData, fonts: { normal
  * @param data Os dados do relatório para determinar termos apropriados.
  */
 function drawReportSection(layout: LayoutManager, title: string, content: string | undefined | null, fonts: { normal: PDFFont; bold: PDFFont }, data: ReportData) {
-    if (!content) return;
-    
-    // Adaptar títulos baseado no tipo de relatório
-    const isInstalacao = data.tipo === 'instalacao';
-    let adaptedTitle = title;
-    
-    if (title === 'DESCRIÇÃO DO PROBLEMA') {
-        adaptedTitle = isInstalacao ? 'DESCRIÇÃO DA INSTALAÇÃO' : 'DESCRIÇÃO DO PROBLEMA';
-    } else if (title === 'OBSERVAÇÕES INICIAIS') {
-        adaptedTitle = isInstalacao ? 'OBSERVAÇÕES PRÉ-INSTALAÇÃO' : 'OBSERVAÇÕES INICIAIS';
-    } else if (title === 'DIAGNÓSTICO TÉCNICO') {
-        adaptedTitle = isInstalacao ? 'ANÁLISE TÉCNICA' : 'DIAGNÓSTICO TÉCNICO';
-    } else if (title === 'AÇÕES REALIZADAS') {
-        adaptedTitle = isInstalacao ? 'PROCEDIMENTOS DE INSTALAÇÃO' : 'AÇÕES REALIZADAS';
-    }
-    
-    drawText(layout, adaptedTitle, { x: STYLES.margins.left, font: fonts.bold, size: STYLES.fontSizes.h3 });
-    layout.spaceDown(STYLES.itemGap);
-    drawMultilineText(layout, content, {
-        x: STYLES.margins.left,
-        font: fonts.normal,
-        size: STYLES.fontSizes.body,
-        maxWidth: layout.getWidth() - STYLES.margins.left - STYLES.margins.right,
-    });
-    layout.spaceDown(STYLES.sectionGap / 2);
+  if (!content) return;
+
+  // Adaptar títulos baseado no tipo de relatório
+  const isInstalacao = data.tipo === 'instalacao';
+  let adaptedTitle = title;
+
+  if (title === 'DESCRIÇÃO DO PROBLEMA') {
+    adaptedTitle = isInstalacao ? 'DESCRIÇÃO DA INSTALAÇÃO' : 'DESCRIÇÃO DO PROBLEMA';
+  } else if (title === 'OBSERVAÇÕES INICIAIS') {
+    adaptedTitle = isInstalacao ? 'OBSERVAÇÕES PRÉ-INSTALAÇÃO' : 'OBSERVAÇÕES INICIAIS';
+  } else if (title === 'DIAGNÓSTICO TÉCNICO') {
+    adaptedTitle = isInstalacao ? 'ANÁLISE TÉCNICA' : 'DIAGNÓSTICO TÉCNICO';
+  } else if (title === 'AÇÕES REALIZADAS') {
+    adaptedTitle = isInstalacao ? 'PROCEDIMENTOS DE INSTALAÇÃO' : 'AÇÕES REALIZADAS';
+  }
+
+  drawText(layout, adaptedTitle, { x: STYLES.margins.left, font: fonts.bold, size: STYLES.fontSizes.h3 });
+  layout.spaceDown(STYLES.itemGap);
+  drawMultilineText(layout, content, {
+    x: STYLES.margins.left,
+    font: fonts.normal,
+    size: STYLES.fontSizes.body,
+    maxWidth: layout.getWidth() - STYLES.margins.left - STYLES.margins.right,
+  });
+  layout.spaceDown(STYLES.sectionGap / 2);
 }
 
 /**
@@ -423,150 +423,150 @@ function drawReportSection(layout: LayoutManager, title: string, content: string
  * @param fonts As fontes carregadas.
  */
 async function drawAttachmentsPage(layout: LayoutManager, data: ReportData, pdfDoc: PDFDocument, fonts: { normal: PDFFont; bold: PDFFont }) {
-    layout.addPage();
-    
-    // Adaptar título baseado no tipo de relatório
-    const isInstalacao = data.tipo === 'instalacao';
-    const tituloAnexos = isInstalacao ? 'ANEXOS - FOTOS DA INSTALAÇÃO E ASSINATURAS' : 'ANEXOS - FOTOS E ASSINATURAS';
-    
-    drawText(layout, tituloAnexos, { x: STYLES.margins.left, font: fonts.bold, size: STYLES.fontSizes.h2 });
-    layout.spaceDown(STYLES.sectionGap);
+  layout.addPage();
 
-    const drawImageGroup = async (title: string, imageUrls: string[] | undefined) => {
-        console.log(`Debug - Tentando desenhar ${title}:`, imageUrls);
-        if (!imageUrls || imageUrls.length === 0) {
-            console.log(`Debug - ${title} está vazio ou undefined`);
-            return;
-        }
-        
-        // Adaptar títulos das fotos baseado no tipo de relatório
-        let adaptedTitle = title;
-        if (title === 'Fotos - Antes') {
-            adaptedTitle = isInstalacao ? 'Fotos - Antes da Instalação' : 'Fotos - Antes da Manutenção';
-        } else if (title === 'Fotos - Depois') {
-            adaptedTitle = isInstalacao ? 'Fotos - Após a Instalação' : 'Fotos - Após a Manutenção';
-        }
-        
-        console.log(`Debug - Desenhando ${adaptedTitle} com ${imageUrls.length} imagens`);
-        drawText(layout, adaptedTitle, { x: STYLES.margins.left, font: fonts.bold, size: STYLES.fontSizes.h3 });
-        layout.spaceDown(STYLES.itemGap);
-        
-        const imgWidth = 150;
-        const imgHeight = 100;
-        let currentX = STYLES.margins.left;
+  // Adaptar título baseado no tipo de relatório
+  const isInstalacao = data.tipo === 'instalacao';
+  const tituloAnexos = isInstalacao ? 'ANEXOS - FOTOS DA INSTALAÇÃO E ASSINATURAS' : 'ANEXOS - FOTOS E ASSINATURAS';
 
-        // Filtrar URLs válidas e limitar a 3 imagens por linha
-        const validUrls = imageUrls.filter(url => url && url.trim() !== '').slice(0, 3);
-        console.log(`Debug - URLs válidas para ${title}:`, validUrls);
+  drawText(layout, tituloAnexos, { x: STYLES.margins.left, font: fonts.bold, size: STYLES.fontSizes.h2 });
+  layout.spaceDown(STYLES.sectionGap);
 
-        for (const url of validUrls) {
-            try {
-                console.log(`Debug - Tentando carregar imagem: ${url}`);
-                const img = await embedImageFromUrl(pdfDoc, url);
-                if (img) {
-                    const scaled = img.scaleToFit(imgWidth, imgHeight);
-                    if (layout.getY() < STYLES.margins.bottom + scaled.height) {
-                        layout.addPage();
-                    }
-                    layout.getPage().drawImage(img, {
-                        x: currentX,
-                        y: layout.getY() - scaled.height,
-                        width: scaled.width,
-                        height: scaled.height,
-                    });
-                    currentX += imgWidth + 15;
-                    if (currentX + imgWidth > layout.getWidth() - STYLES.margins.right) {
-                        currentX = STYLES.margins.left;
-                        layout.spaceDown(imgHeight + 15);
-                    }
-                    console.log(`Debug - Imagem ${url} adicionada com sucesso`);
-                } else {
-                    console.log(`Debug - Falha ao carregar imagem: ${url}`);
-                }
-            } catch (imgError) {
-                console.error(`Debug - Erro ao processar imagem ${url}:`, imgError);
-                // Continuar com a próxima imagem
-            }
-        }
-        layout.spaceDown(imgHeight + STYLES.sectionGap);
-    };
-    
-    await drawImageGroup('Fotos - Antes', data.relatorio.fotos_antes);
-    await drawImageGroup('Fotos - Depois', data.relatorio.fotos_depois);
-
-    // Adicionar imagens dos dados específicos se existirem
-    if (data.relatorio.dados_especificos) {
-      const dados = data.relatorio.dados_especificos as unknown as Record<string, unknown>;
-      
-      if (dados.fotos_paineis && Array.isArray(dados.fotos_paineis) && dados.fotos_paineis.length > 0) {
-        await drawImageGroup('Fotos dos Painéis', dados.fotos_paineis as string[]);
-      }
-      
-      if (dados.fotos_inversores && Array.isArray(dados.fotos_inversores) && dados.fotos_inversores.length > 0) {
-        await drawImageGroup('Fotos dos Inversores', dados.fotos_inversores as string[]);
-      }
-      
-      if (dados.fotos_baterias && Array.isArray(dados.fotos_baterias) && dados.fotos_baterias.length > 0) {
-        await drawImageGroup('Fotos das Baterias', dados.fotos_baterias as string[]);
-      }
-      
-      if (dados.fotos_cabos && Array.isArray(dados.fotos_cabos) && dados.fotos_cabos.length > 0) {
-        await drawImageGroup('Fotos dos Cabos', dados.fotos_cabos as string[]);
-      }
-      
-      if (dados.fotos_trabalho_maquinas && Array.isArray(dados.fotos_trabalho_maquinas) && dados.fotos_trabalho_maquinas.length > 0) {
-        await drawImageGroup('Fotos do Trabalho com Máquinas', dados.fotos_trabalho_maquinas as string[]);
-      }
+  const drawImageGroup = async (title: string, imageUrls: string[] | undefined) => {
+    console.log(`Debug - Tentando desenhar ${title}:`, imageUrls);
+    if (!imageUrls || imageUrls.length === 0) {
+      console.log(`Debug - ${title} está vazio ou undefined`);
+      return;
     }
 
-    // Desenha assinaturas
-    const drawSignature = async (label: string, signatureUrl: string | undefined) => {
-        if (!signatureUrl) return;
-        
-        try {
-            console.log(`Debug - Tentando carregar assinatura: ${signatureUrl}`);
-            const img = await embedImageFromUrl(pdfDoc, signatureUrl);
-            if (img) {
-                const scaled = img.scaleToFit(200, 80);
-                if (layout.getY() < STYLES.margins.bottom + scaled.height + 50) {
-                    layout.addPage();
-                }
-                const yPos = layout.getY() - scaled.height;
-                layout.getPage().drawImage(img, {
-                    x: STYLES.margins.left,
-                    y: yPos,
-                    width: scaled.width,
-                    height: scaled.height,
-                });
-                layout.getPage().drawLine({
-                    start: { x: STYLES.margins.left, y: yPos - 5 },
-                    end: { x: STYLES.margins.left + 250, y: yPos - 5 },
-                    thickness: 0.5,
-                    color: STYLES.colors.darkGray,
-                });
-                drawText(layout, label, { x: STYLES.margins.left, font: fonts.normal, size: STYLES.fontSizes.small });
-                layout.spaceDown(scaled.height + STYLES.sectionGap);
-                console.log(`Debug - Assinatura ${label} adicionada com sucesso`);
-            } else {
-                console.log(`Debug - Falha ao carregar assinatura: ${signatureUrl}`);
-            }
-        } catch (sigError) {
-            console.error(`Debug - Erro ao processar assinatura ${label}:`, sigError);
-            // Mostrar nota explicativa
-            drawText(layout, label, { x: STYLES.margins.left, font: fonts.bold, size: STYLES.fontSizes.h3 });
-            layout.spaceDown(STYLES.itemGap);
-            drawText(layout, 'Erro ao carregar assinatura', { 
-              x: STYLES.margins.left, 
-              font: fonts.normal, 
-              size: STYLES.fontSizes.body,
-              color: STYLES.colors.lightGray
-            });
-            layout.spaceDown(STYLES.sectionGap);
-        }
-    };
+    // Adaptar títulos das fotos baseado no tipo de relatório
+    let adaptedTitle = title;
+    if (title === 'Fotos - Antes') {
+      adaptedTitle = isInstalacao ? 'Fotos - Antes da Instalação' : 'Fotos - Antes da Manutenção';
+    } else if (title === 'Fotos - Depois') {
+      adaptedTitle = isInstalacao ? 'Fotos - Após a Instalação' : 'Fotos - Após a Manutenção';
+    }
 
-    await drawSignature(`Assinatura do Técnico: ${data.tecnico?.name || 'N/A'}`, data.relatorio.assinatura_tecnico);
-    await drawSignature(`Assinatura do Cliente: ${data.cliente?.nome || 'N/A'}`, data.relatorio.assinatura_cliente);
+    console.log(`Debug - Desenhando ${adaptedTitle} com ${imageUrls.length} imagens`);
+    drawText(layout, adaptedTitle, { x: STYLES.margins.left, font: fonts.bold, size: STYLES.fontSizes.h3 });
+    layout.spaceDown(STYLES.itemGap);
+
+    const imgWidth = 150;
+    const imgHeight = 100;
+    let currentX = STYLES.margins.left;
+
+    // Filtrar URLs válidas e limitar a 3 imagens por linha
+    const validUrls = imageUrls.filter(url => url && url.trim() !== '').slice(0, 3);
+    console.log(`Debug - URLs válidas para ${title}:`, validUrls);
+
+    for (const url of validUrls) {
+      try {
+        console.log(`Debug - Tentando carregar imagem: ${url}`);
+        const img = await embedImageFromUrl(pdfDoc, url);
+        if (img) {
+          const scaled = img.scaleToFit(imgWidth, imgHeight);
+          if (layout.getY() < STYLES.margins.bottom + scaled.height) {
+            layout.addPage();
+          }
+          layout.getPage().drawImage(img, {
+            x: currentX,
+            y: layout.getY() - scaled.height,
+            width: scaled.width,
+            height: scaled.height,
+          });
+          currentX += imgWidth + 15;
+          if (currentX + imgWidth > layout.getWidth() - STYLES.margins.right) {
+            currentX = STYLES.margins.left;
+            layout.spaceDown(imgHeight + 15);
+          }
+          console.log(`Debug - Imagem ${url} adicionada com sucesso`);
+        } else {
+          console.log(`Debug - Falha ao carregar imagem: ${url}`);
+        }
+      } catch (imgError) {
+        console.error(`Debug - Erro ao processar imagem ${url}:`, imgError);
+        // Continuar com a próxima imagem
+      }
+    }
+    layout.spaceDown(imgHeight + STYLES.sectionGap);
+  };
+
+  await drawImageGroup('Fotos - Antes', data.relatorio.fotos_antes);
+  await drawImageGroup('Fotos - Depois', data.relatorio.fotos_depois);
+
+  // Adicionar imagens dos dados específicos se existirem
+  if (data.relatorio.dados_especificos) {
+    const dados = data.relatorio.dados_especificos as unknown as Record<string, unknown>;
+
+    if (dados.fotos_paineis && Array.isArray(dados.fotos_paineis) && dados.fotos_paineis.length > 0) {
+      await drawImageGroup('Fotos dos Painéis', dados.fotos_paineis as string[]);
+    }
+
+    if (dados.fotos_inversores && Array.isArray(dados.fotos_inversores) && dados.fotos_inversores.length > 0) {
+      await drawImageGroup('Fotos dos Inversores', dados.fotos_inversores as string[]);
+    }
+
+    if (dados.fotos_baterias && Array.isArray(dados.fotos_baterias) && dados.fotos_baterias.length > 0) {
+      await drawImageGroup('Fotos das Baterias', dados.fotos_baterias as string[]);
+    }
+
+    if (dados.fotos_cabos && Array.isArray(dados.fotos_cabos) && dados.fotos_cabos.length > 0) {
+      await drawImageGroup('Fotos dos Cabos', dados.fotos_cabos as string[]);
+    }
+
+    if (dados.fotos_trabalho_maquinas && Array.isArray(dados.fotos_trabalho_maquinas) && dados.fotos_trabalho_maquinas.length > 0) {
+      await drawImageGroup('Fotos do Trabalho com Máquinas', dados.fotos_trabalho_maquinas as string[]);
+    }
+  }
+
+  // Desenha assinaturas
+  const drawSignature = async (label: string, signatureUrl: string | undefined) => {
+    if (!signatureUrl) return;
+
+    try {
+      console.log(`Debug - Tentando carregar assinatura: ${signatureUrl}`);
+      const img = await embedImageFromUrl(pdfDoc, signatureUrl);
+      if (img) {
+        const scaled = img.scaleToFit(200, 80);
+        if (layout.getY() < STYLES.margins.bottom + scaled.height + 50) {
+          layout.addPage();
+        }
+        const yPos = layout.getY() - scaled.height;
+        layout.getPage().drawImage(img, {
+          x: STYLES.margins.left,
+          y: yPos,
+          width: scaled.width,
+          height: scaled.height,
+        });
+        layout.getPage().drawLine({
+          start: { x: STYLES.margins.left, y: yPos - 5 },
+          end: { x: STYLES.margins.left + 250, y: yPos - 5 },
+          thickness: 0.5,
+          color: STYLES.colors.darkGray,
+        });
+        drawText(layout, label, { x: STYLES.margins.left, font: fonts.normal, size: STYLES.fontSizes.small });
+        layout.spaceDown(scaled.height + STYLES.sectionGap);
+        console.log(`Debug - Assinatura ${label} adicionada com sucesso`);
+      } else {
+        console.log(`Debug - Falha ao carregar assinatura: ${signatureUrl}`);
+      }
+    } catch (sigError) {
+      console.error(`Debug - Erro ao processar assinatura ${label}:`, sigError);
+      // Mostrar nota explicativa
+      drawText(layout, label, { x: STYLES.margins.left, font: fonts.bold, size: STYLES.fontSizes.h3 });
+      layout.spaceDown(STYLES.itemGap);
+      drawText(layout, 'Erro ao carregar assinatura', {
+        x: STYLES.margins.left,
+        font: fonts.normal,
+        size: STYLES.fontSizes.body,
+        color: STYLES.colors.lightGray
+      });
+      layout.spaceDown(STYLES.sectionGap);
+    }
+  };
+
+  await drawSignature(`Assinatura do Técnico: ${data.tecnico?.name || 'N/A'}`, data.relatorio.assinatura_tecnico);
+  await drawSignature(`Assinatura do Cliente: ${data.cliente?.nome || 'N/A'}`, data.relatorio.assinatura_cliente);
 }
 
 /**
@@ -575,19 +575,19 @@ async function drawAttachmentsPage(layout: LayoutManager, data: ReportData, pdfD
  * @param fonts As fontes carregadas.
  */
 function drawFooter(pdfDoc: PDFDocument, fonts: { normal: PDFFont }) {
-    const pages = pdfDoc.getPages();
-    for (let i = 0; i < pages.length; i++) {
-        const page = pages[i];
-        const { width } = page.getSize();
-        const pageNumText = `Página ${i + 1} de ${pages.length}`;
-        page.drawText(pageNumText, {
-            x: width / 2 - fonts.normal.widthOfTextAtSize(pageNumText, STYLES.fontSizes.small) / 2,
-            y: STYLES.margins.bottom / 2,
-            font: fonts.normal,
-            size: STYLES.fontSizes.small,
-            color: STYLES.colors.lightGray,
-        });
-    }
+  const pages = pdfDoc.getPages();
+  for (let i = 0; i < pages.length; i++) {
+    const page = pages[i];
+    const { width } = page.getSize();
+    const pageNumText = `Página ${i + 1} de ${pages.length}`;
+    page.drawText(pageNumText, {
+      x: width / 2 - fonts.normal.widthOfTextAtSize(pageNumText, STYLES.fontSizes.small) / 2,
+      y: STYLES.margins.bottom / 2,
+      font: fonts.normal,
+      size: STYLES.fontSizes.small,
+      color: STYLES.colors.lightGray,
+    });
+  }
 }
 
 
@@ -634,7 +634,7 @@ export async function POST(request: NextRequest) {
     if (userRole === 'tecnico' && ticket.tecnico_id && ticket.tecnico_id !== userId) {
       return NextResponse.json({ error: 'Acesso negado ao ticket' }, { status: 403 });
     }
-    
+
     console.log('Debug PDF - Ticket encontrado:', ticket);
     console.log('Debug PDF - Status do ticket:', ticket.status);
 
@@ -643,7 +643,7 @@ export async function POST(request: NextRequest) {
       console.log('Debug PDF - Relatório não encontrado para ticket:', ticketId);
       return NextResponse.json({ error: 'Relatório não encontrado' }, { status: 404 });
     }
-    
+
     console.log('Debug PDF - Relatório encontrado:', relatorio);
     console.log('Debug PDF - Localização GPS do relatório:', relatorio.localizacao_gps);
 
@@ -661,17 +661,17 @@ export async function POST(request: NextRequest) {
       console.error('Debug PDF - Dados do ticket inválidos:', { id: ticket.id, titulo: ticket.titulo });
       return NextResponse.json({ error: 'Dados do ticket inválidos' }, { status: 400 });
     }
-    
+
     if (!relatorio.id) {
       console.error('Debug PDF - Dados do relatório inválidos:', { id: relatorio.id });
       return NextResponse.json({ error: 'Dados do relatório inválidos' }, { status: 400 });
     }
-    
+
     console.log('Debug PDF - Dados básicos validados com sucesso');
 
     // Corrige o tipo de dados para garantir compatibilidade com ReportData
-    const reportData: ReportData = { 
-      ...ticket, 
+    const reportData: ReportData = {
+      ...ticket,
       relatorio: {
         ...relatorio,
         dados_especificos: relatorio.dados_especificos as unknown as Record<string, unknown>
@@ -684,7 +684,7 @@ export async function POST(request: NextRequest) {
     console.log('Debug - Assinatura técnico:', reportData.relatorio.assinatura_tecnico);
     console.log('Debug - Assinatura cliente:', reportData.relatorio.assinatura_cliente);
     console.log('Debug - Dados específicos:', reportData.relatorio.dados_especificos);
-    
+
     // Verificar se há dados específicos com imagens
     if (reportData.relatorio.dados_especificos) {
       const dados = reportData.relatorio.dados_especificos as Record<string, unknown>;
@@ -703,10 +703,10 @@ export async function POST(request: NextRequest) {
     const boldFont = await pdfDoc.embedFont(STYLES.boldFont);
     const fonts = { normal: normalFont, bold: boldFont };
 
-    const appConfig = await readAppConfig();
+    const appConfig = await readAppConfig(token);
     const logoImage = appConfig.reportLogoUrl ? await embedImageFromUrl(pdfDoc, appConfig.reportLogoUrl) : null;
 
-        // 3. Construção do conteúdo do PDF por seções
+    // 3. Construção do conteúdo do PDF por seções
     drawHeader(layout, fonts, reportData, appConfig, logoImage);
     drawTicketInfo(layout, reportData, fonts);
 
@@ -714,34 +714,34 @@ export async function POST(request: NextRequest) {
     drawReportSection(layout, 'OBSERVAÇÕES INICIAIS', reportData.relatorio.observacoes_iniciais, fonts, reportData);
     drawReportSection(layout, 'DIAGNÓSTICO TÉCNICO', reportData.relatorio.diagnostico, fonts, reportData);
     drawReportSection(layout, 'AÇÕES REALIZADAS', reportData.relatorio.acoes_realizadas, fonts, reportData);
-    
+
     if (reportData.relatorio.localizacao_gps) {
       drawReportSection(layout, 'LOCALIZAÇÃO GPS', reportData.relatorio.localizacao_gps, fonts, reportData);
     }
-    
+
     console.log('Debug PDF - Seções do relatório adicionadas, passando para anexos...');
 
     // Seção de detalhes específicos (se houver)
     if (reportData.relatorio.dados_especificos) {
       console.log('Debug PDF - Processando dados específicos...');
       const dados = reportData.relatorio.dados_especificos as Record<string, unknown>;
-      
+
       // Adicionar seções específicas baseadas no tipo de produto
       if (dados.localizacao_paineis) {
         drawReportSection(layout, 'LOCALIZAÇÃO DOS PAINÉIS', dados.localizacao_paineis as string, fonts, reportData);
       }
-      
+
       if (dados.localizacao_inversores) {
         drawReportSection(layout, 'LOCALIZAÇÃO DOS INVERSORES', dados.localizacao_inversores as string, fonts, reportData);
       }
-      
+
       if (dados.localizacao_baterias) {
         drawReportSection(layout, 'LOCALIZAÇÃO DAS BATERIAS', dados.localizacao_baterias as string, fonts, reportData);
       }
-      
+
       console.log('Debug PDF - Dados específicos processados');
     }
-    
+
     // 4. Adicionar página de anexos
     try {
       console.log('Debug PDF - Iniciando página de anexos...');
@@ -752,7 +752,7 @@ export async function POST(request: NextRequest) {
       // Continuar sem anexos se houver erro
       console.log('Debug PDF - Continuando sem anexos devido ao erro');
     }
-    
+
     // 5. Adicionar rodapé com número de página
     try {
       console.log('Debug PDF - Adicionando rodapé...');
@@ -767,7 +767,7 @@ export async function POST(request: NextRequest) {
       console.log('Debug PDF - Salvando PDF...');
       const pdfBytes = await pdfDoc.save();
       console.log('Debug PDF - PDF salvo com sucesso, bytes:', pdfBytes.length);
-      
+
       return new NextResponse(pdfBytes, {
         status: 200,
         headers: {
@@ -782,14 +782,14 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Erro ao gerar relatório PDF:', error);
-    
+
     // Log mais detalhado do erro
     if (error instanceof Error) {
       console.error('Mensagem de erro:', error.message);
       console.error('Stack trace:', error.stack);
     }
-    
-    return NextResponse.json({ 
+
+    return NextResponse.json({
       error: 'Erro interno do servidor ao gerar o PDF.',
       details: error instanceof Error ? error.message : 'Erro desconhecido'
     }, { status: 500 });

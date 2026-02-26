@@ -204,3 +204,13 @@ model HistoricoManutencao {
 
   @@map("historico_manutencao")
 }
+
+model AppConfig {
+  id              String   @id @default("singleton")
+  app_name        String   @default("4Save")
+  report_logo_url String   @default("")
+  pdf_template    String   @default("classic")
+  updated_at      DateTime @default(now()) @updatedAt
+
+  @@map("app_config")
+}
