@@ -104,8 +104,8 @@ export function DashboardClient({
             <AdminLayout>
                 <div className="flex items-center justify-center h-64">
                     <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
-                        <p className="mt-2 text-slate-400">Carregando dashboard...</p>
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                        <p className="mt-2 text-muted-foreground">Carregando dashboard...</p>
                     </div>
                 </div>
             </AdminLayout>
@@ -150,7 +150,7 @@ export function DashboardClient({
                 {/* KPIs (Same as before but wrapped for layout) */}
                 {stats && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-                        <MotionCard delay={0.1} className="bg-card dark:bg-slate-700/50 border-border shadow-sm hover:shadow-md transition-all group">
+                        <MotionCard delay={0.1} className="bg-card border-border shadow-sm hover:shadow-md transition-all group">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
                                     Total de Clientes
@@ -165,7 +165,7 @@ export function DashboardClient({
                             </CardContent>
                         </MotionCard>
                         {/* ... (Repeat for other KPIs with updated styles) */}
-                        <MotionCard delay={0.2} className="bg-card dark:bg-slate-700/50 border-border shadow-sm hover:shadow-md transition-all group">
+                        <MotionCard delay={0.2} className="bg-card border-border shadow-sm hover:shadow-md transition-all group">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
                                     Tickets Pendentes
@@ -180,7 +180,7 @@ export function DashboardClient({
                             </CardContent>
                         </MotionCard>
 
-                        <MotionCard delay={0.3} className="bg-card dark:bg-slate-700/50 border-border shadow-sm hover:shadow-md transition-all group">
+                        <MotionCard delay={0.3} className="bg-card border-border shadow-sm hover:shadow-md transition-all group">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
                                     Técnicos Ativos
@@ -195,7 +195,7 @@ export function DashboardClient({
                             </CardContent>
                         </MotionCard>
 
-                        <MotionCard delay={0.4} className="bg-card dark:bg-slate-700/50 border-border shadow-sm hover:shadow-md transition-all group">
+                        <MotionCard delay={0.4} className="bg-card border-border shadow-sm hover:shadow-md transition-all group">
                             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                                 <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider group-hover:text-foreground transition-colors">
                                     Finalizados (Mês)
@@ -214,19 +214,19 @@ export function DashboardClient({
 
                 {/* Charts Area */}
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-                    <div className="lg:col-span-2 bg-card dark:bg-slate-700/50 border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow p-1">
+                    <div className="lg:col-span-2 bg-card border border-border rounded-xl shadow-sm hover:shadow-md transition-shadow p-1">
                         <TicketsTrendChart tickets={recentTickets} />
                     </div>
 
                     {/* Live Technicians */}
-                    <MotionCard delay={0.5} className="bg-card dark:bg-slate-700/50 border-border shadow-sm flex flex-col h-full">
+                    <MotionCard delay={0.5} className="bg-card border-border shadow-sm flex flex-col h-full">
                         <CardHeader className="pb-3 border-b border-border/50 bg-secondary/20">
                             <CardTitle className="flex items-center justify-between text-sm font-medium">
                                 <span className="flex items-center gap-2">
                                     <Users className="h-4 w-4 text-muted-foreground" />
-                                    Live Technicians
+                                    Técnicos Online
                                 </span>
-                                <Badge variant="outline" className="font-mono text-[10px] bg-green-500/10 text-green-600 border-green-500/20">
+                                <Badge variant="outline" className="font-mono text-[10px] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20">
                                     {tecnicosOnline.length} ONLINE
                                 </Badge>
                             </CardTitle>
@@ -235,7 +235,7 @@ export function DashboardClient({
                             {tecnicosOnline.length > 0 ? (
                                 <div className="divide-y divide-border/50">
                                     {tecnicosOnline.map((tecnico) => (
-                                        <div key={tecnico.id} className="flex items-center justify-between p-3 hover:bg-muted/50 transition-colors">
+                                        <div key={tecnico.id} className="flex items-center justify-between p-3 hover:bg-secondary/60 transition-colors">
                                             <div className="flex items-center gap-3">
                                                 <div className="relative">
                                                     <div className="w-8 h-8 rounded-full bg-secondary flex items-center justify-center text-xs font-bold ring-2 ring-background">
@@ -260,7 +260,7 @@ export function DashboardClient({
                             ) : (
                                 <div className="flex flex-col items-center justify-center h-full text-muted-foreground py-8">
                                     <Users className="h-8 w-8 mb-2 opacity-20" />
-                                    <p className="text-xs">Offline Network</p>
+                                    <p className="text-xs">Sem Técnicos Online</p>
                                 </div>
                             )}
                         </CardContent>
@@ -272,7 +272,7 @@ export function DashboardClient({
                     <div className="flex items-center justify-between px-1">
                         <h3 className="text-lg font-heading font-semibold flex items-center gap-2">
                             <FileText className="h-4 w-4 text-primary" />
-                            Recent Activity Log
+                            Actividade Recente
                         </h3>
                         <Button variant="ghost" size="sm" className="h-8 text-xs font-mono text-muted-foreground hover:text-foreground" asChild>
                             <Link href="/admin/tickets">
@@ -281,23 +281,23 @@ export function DashboardClient({
                         </Button>
                     </div>
 
-                    <div className="border border-border rounded-xl bg-card dark:bg-slate-700/50 shadow-sm overflow-hidden">
+                    <div className="border border-border rounded-xl bg-card shadow-sm overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
                                     <tr className="border-b border-border bg-muted/40 text-left">
                                         <th className="py-3 px-4 font-mono text-xs font-medium text-muted-foreground uppercase tracking-wider w-[100px]">ID</th>
-                                        <th className="py-3 px-4 font-mono text-xs font-medium text-muted-foreground uppercase tracking-wider">Subject</th>
-                                        <th className="py-3 px-4 font-mono text-xs font-medium text-muted-foreground uppercase tracking-wider">Client</th>
-                                        <th className="py-3 px-4 font-mono text-xs font-medium text-muted-foreground uppercase tracking-wider w-[140px]">Date</th>
-                                        <th className="py-3 px-4 font-mono text-xs font-medium text-muted-foreground uppercase tracking-wider w-[120px]">Priority</th>
-                                        <th className="py-3 px-4 font-mono text-xs font-medium text-muted-foreground uppercase tracking-wider w-[140px]">Status</th>
+                                        <th className="py-3 px-4 font-mono text-xs font-medium text-muted-foreground uppercase tracking-wider">Assunto</th>
+                                        <th className="py-3 px-4 font-mono text-xs font-medium text-muted-foreground uppercase tracking-wider">Cliente</th>
+                                        <th className="py-3 px-4 font-mono text-xs font-medium text-muted-foreground uppercase tracking-wider w-[140px]">Data</th>
+                                        <th className="py-3 px-4 font-mono text-xs font-medium text-muted-foreground uppercase tracking-wider w-[120px]">Prioridade</th>
+                                        <th className="py-3 px-4 font-mono text-xs font-medium text-muted-foreground uppercase tracking-wider w-[140px]">Estado</th>
                                     </tr>
                                 </thead>
                                 <tbody className="divide-y divide-border/50">
                                     {latestActivityTickets.length > 0 ? (
                                         latestActivityTickets.map((ticket) => (
-                                            <tr key={ticket.id} className="hover:bg-muted/30 transition-colors group">
+                                            <tr key={ticket.id} className="hover:bg-secondary/40 transition-colors group">
                                                 <td className="py-3 px-4 font-mono text-xs text-muted-foreground group-hover:text-foreground transition-colors">
                                                     #{ticket.id.toString().slice(0, 6)}
                                                 </td>
@@ -311,20 +311,16 @@ export function DashboardClient({
                                                     {new Date(ticket.created_at).toLocaleDateString('pt-BR')}
                                                 </td>
                                                 <td className="py-3 px-4">
-                                                    <Badge className={`
-                                                        font-mono text-[10px] uppercase tracking-wider border-0
-                                                        ${ticket.prioridade === 'alta' ? 'bg-red-500/10 text-red-600 hover:bg-red-500/20' :
-                                                            ticket.prioridade === 'media' ? 'bg-yellow-500/10 text-yellow-600 hover:bg-yellow-500/20' :
-                                                                'bg-blue-500/10 text-blue-600 hover:bg-blue-500/20'}
-                                                    `}>
+                                                    <Badge variant={ticket.prioridade as 'alta' | 'media' | 'baixa'} className="font-mono text-[10px] uppercase tracking-wider">
                                                         {ticket.prioridade}
                                                     </Badge>
                                                 </td>
                                                 <td className="py-3 px-4">
                                                     <div className="flex items-center gap-2">
-                                                        <span className={`h-1.5 w-1.5 rounded-full ${ticket.status === 'pendente' ? 'bg-yellow-500' :
+                                                        <span className={`h-1.5 w-1.5 rounded-full ${ticket.status === 'pendente' ? 'bg-amber-500' :
                                                             ticket.status === 'em_curso' ? 'bg-blue-500' :
-                                                                'bg-green-500'
+                                                            ticket.status === 'cancelado' ? 'bg-red-500' :
+                                                                'bg-emerald-500'
                                                             }`} />
                                                         <span className="text-xs font-medium text-muted-foreground capitalize">
                                                             {ticket.status.replace('_', ' ')}
@@ -337,7 +333,7 @@ export function DashboardClient({
                                         <tr>
                                             <td colSpan={6} className="py-12 text-center text-muted-foreground">
                                                 <FileText className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                                                <p>No activity records found</p>
+                                                <p>Nenhum registo de actividade</p>
                                             </td>
                                         </tr>
                                     )}

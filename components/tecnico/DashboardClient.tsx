@@ -96,20 +96,20 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
 
     const getStatusColor = (status: string) => {
         switch (status) {
-            case 'pendente': return 'bg-yellow-100 text-yellow-800';
-            case 'em_curso': return 'bg-blue-100 text-blue-800';
-            case 'finalizado': return 'bg-green-100 text-green-800';
-            default: return 'bg-slate-500/15 text-foreground';
+            case 'pendente': return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20';
+            case 'em_curso': return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20';
+            case 'finalizado': return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20';
+            default: return 'bg-muted text-muted-foreground border border-border';
         }
     };
 
     const getPriorityColor = (priority: string) => {
         switch (priority) {
-            case 'urgente': return 'bg-red-100 text-red-800';
-            case 'alta': return 'bg-orange-100 text-orange-800';
-            case 'media': return 'bg-yellow-100 text-yellow-800';
-            case 'baixa': return 'bg-green-100 text-green-800';
-            default: return 'bg-slate-500/15 text-foreground';
+            case 'urgente': return 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20';
+            case 'alta': return 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20';
+            case 'media': return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20';
+            case 'baixa': return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20';
+            default: return 'bg-muted text-muted-foreground border border-border';
         }
     };
 
@@ -128,8 +128,8 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
             <TecnicoLayout>
                 <div className="flex items-center justify-center h-64">
                     <div className="text-center">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
-                        <p className="mt-2 text-slate-400">Carregando tickets...</p>
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+                        <p className="mt-2 text-muted-foreground">A carregar tickets...</p>
                     </div>
                 </div>
             </TecnicoLayout>
@@ -146,54 +146,54 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
             <div className="space-y-6">
                 {/* Header */}
                 <div>
-                    <h1 className="text-3xl font-bold text-white">Meus Tickets</h1>
-                    <p className="text-slate-400">Gerencie seus atendimentos técnicos</p>
+                    <h1 className="text-2xl font-heading font-bold text-foreground">Os Meus Tickets</h1>
+                    <p className="text-muted-foreground text-sm">Gerir os seus atendimentos técnicos</p>
                 </div>
 
                 <NotificacoesManutencao />
 
                 {/* Stats */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <Card className="bg-card/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-card/15">
+                    <Card className="border-border shadow-sm hover:shadow-md transition-all">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-slate-200">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
                                 Pendentes
                             </CardTitle>
                             <Clock className="h-5 w-5 text-yellow-400" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-white">{ticketsPendentes.length}</div>
-                            <p className="text-xs text-slate-300 mt-1">
+                            <div className="text-2xl font-bold text-foreground">{ticketsPendentes.length}</div>
+                            <p className="text-xs text-muted-foreground mt-1">
                                 Aguardando início
                             </p>
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-card/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-card/15">
+                    <Card className="border-border shadow-sm hover:shadow-md transition-all">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-slate-200">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
                                 Em Curso
                             </CardTitle>
                             <PlayCircle className="h-5 w-5 text-blue-400" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-white">{ticketsEmCurso.length}</div>
-                            <p className="text-xs text-slate-300 mt-1">
+                            <div className="text-2xl font-bold text-foreground">{ticketsEmCurso.length}</div>
+                            <p className="text-xs text-muted-foreground mt-1">
                                 Em atendimento
                             </p>
                         </CardContent>
                     </Card>
 
-                    <Card className="bg-card/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-card/15">
+                    <Card className="border-border shadow-sm hover:shadow-md transition-all">
                         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-slate-200">
+                            <CardTitle className="text-sm font-medium text-muted-foreground">
                                 Finalizados
                             </CardTitle>
                             <CheckCircle className="h-5 w-5 text-green-400" />
                         </CardHeader>
                         <CardContent>
-                            <div className="text-2xl font-bold text-white">{ticketsFinalizados.length}</div>
-                            <p className="text-xs text-slate-300 mt-1">
+                            <div className="text-2xl font-bold text-foreground">{ticketsFinalizados.length}</div>
+                            <p className="text-xs text-muted-foreground mt-1">
                                 Concluídos
                             </p>
                         </CardContent>
@@ -202,9 +202,9 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
 
                 {/* Tickets Em Curso */}
                 {ticketsEmCurso.length > 0 && (
-                    <Card className="bg-card/10 border-white/20 shadow-xl">
+                    <Card className="border-border shadow-sm">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-white">
+                            <CardTitle className="flex items-center gap-2 text-foreground">
                                 <PlayCircle className="h-5 w-5 text-blue-400" />
                                 Tickets em Andamento
                             </CardTitle>
@@ -214,17 +214,17 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
                                 {ticketsEmCurso.map((ticket) => (
                                     <div
                                         key={ticket.id}
-                                        className="flex items-center justify-between p-4 bg-blue-500/20 rounded-xl border border-blue-500/30"
+                                        className="flex items-center justify-between p-4 bg-blue-500/8 rounded-lg border border-blue-500/20"
                                     >
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-2">
                                                 {getPriorityIcon(ticket.prioridade)}
-                                                <h4 className="font-semibold text-white">{ticket.titulo}</h4>
+                                                <h4 className="font-semibold text-foreground">{ticket.titulo}</h4>
                                             </div>
-                                            <p className="text-sm text-slate-300 mb-1">
+                                            <p className="text-sm text-muted-foreground mb-1">
                                                 Cliente: {ticket.cliente?.nome}
                                             </p>
-                                            <p className="text-xs text-slate-400">
+                                            <p className="text-xs text-muted-foreground">
                                                 {new Date(ticket.created_at).toLocaleDateString('pt-BR')}
                                             </p>
                                         </div>
@@ -234,7 +234,7 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
                                             </Badge>
                                             <Button
                                                 onClick={() => router.push(`/tecnico/ticket/${ticket.id}`)}
-                                                className="bg-blue-600 hover:bg-blue-700"
+                                                className="bg-primary hover:bg-primary/90 text-primary-foreground"
                                             >
                                                 Continuar
                                             </Button>
@@ -248,9 +248,9 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
 
                 {/* Tickets Cancelados */}
                 {ticketsCancelados.length > 0 && (
-                    <Card className="bg-card/10 border-white/20 shadow-xl">
+                    <Card className="border-border shadow-sm">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-white">
+                            <CardTitle className="flex items-center gap-2 text-foreground">
                                 <AlertCircle className="h-5 w-5 text-red-400" />
                                 Tickets Cancelados
                             </CardTitle>
@@ -260,26 +260,26 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
                                 {ticketsCancelados.map((ticket) => (
                                     <div
                                         key={ticket.id}
-                                        className="flex items-center justify-between p-4 bg-red-500/20 rounded-xl border border-red-500/30"
+                                        className="flex items-center justify-between p-4 bg-red-500/8 rounded-lg border border-red-500/20"
                                     >
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-2">
-                                                <h4 className="font-semibold text-white">{ticket.titulo}</h4>
-                                                <Badge className="bg-red-100 text-red-800">
+                                                <h4 className="font-semibold text-foreground">{ticket.titulo}</h4>
+                                                <Badge variant="cancelado">
                                                     Cancelado
                                                 </Badge>
                                             </div>
-                                            <p className="text-sm text-slate-300 mb-1">
+                                            <p className="text-sm text-muted-foreground mb-1">
                                                 Cliente: {ticket.cliente?.nome}
                                             </p>
                                             {ticket.motivo_cancelamento && (
-                                                <p className="text-xs text-red-300">
+                                                <p className="text-xs text-red-400 dark:text-red-400">
                                                     Motivo: {ticket.motivo_cancelamento}
                                                 </p>
                                             )}
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Badge className="bg-yellow-100 text-yellow-800">
+                                            <Badge variant="warning">
                                                 Aguardando reativação pelo admin
                                             </Badge>
                                         </div>
@@ -291,10 +291,10 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
                 )}
 
                 {/* Tickets Pendentes */}
-                <Card className="bg-card/10 border-white/20 shadow-xl">
+                <Card className="border-border shadow-sm">
                     <CardHeader>
-                        <CardTitle className="flex items-center gap-2 text-white">
-                            <FileText className="h-5 w-5 text-slate-300" />
+                        <CardTitle className="flex items-center gap-2 text-foreground">
+                            <FileText className="h-5 w-5 text-muted-foreground" />
                             Tickets Disponíveis ({ticketsPendentes.length})
                         </CardTitle>
                     </CardHeader>
@@ -304,20 +304,20 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
                                 {ticketsPendentes.map((ticket) => (
                                     <div
                                         key={ticket.id}
-                                        className="flex items-center justify-between p-4 bg-card/5 rounded-xl hover:bg-card/10 transition-colors border border-white/10"
+                                        className="flex items-center justify-between p-4 bg-muted/40 rounded-lg hover:bg-muted/60 transition-colors border border-border"
                                     >
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2 mb-2">
                                                 {getPriorityIcon(ticket.prioridade)}
-                                                <h4 className="font-semibold text-white">{ticket.titulo}</h4>
+                                                <h4 className="font-semibold text-foreground">{ticket.titulo}</h4>
                                             </div>
-                                            <p className="text-sm text-slate-300 mb-1">
+                                            <p className="text-sm text-muted-foreground mb-1">
                                                 Cliente: {ticket.cliente?.nome}
                                             </p>
-                                            <p className="text-sm text-slate-400 mb-1">
+                                            <p className="text-sm text-muted-foreground/80 mb-1">
                                                 {ticket.descricao}
                                             </p>
-                                            <p className="text-xs text-slate-400">
+                                            <p className="text-xs text-muted-foreground">
                                                 Criado em: {new Date(ticket.created_at).toLocaleDateString('pt-BR')}
                                             </p>
                                         </div>
@@ -331,7 +331,7 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
                                             <Button
                                                 onClick={() => handleStartTicket(ticket.id)}
                                                 variant="outline"
-                                                className="flex items-center gap-2 text-slate-200 border-slate-400 hover:bg-slate-600"
+                                                className="flex items-center gap-2"
                                             >
                                                 <PlayCircle className="h-4 w-4" />
                                                 Iniciar
@@ -341,10 +341,10 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
                                 ))}
                             </div>
                         ) : (
-                            <div className="text-center py-8 text-slate-400">
-                                <FileText className="h-12 w-12 mx-auto mb-3 text-slate-500" />
-                                <p className="text-slate-300">Nenhum ticket pendente</p>
-                                <p className="text-sm mt-1 text-slate-400">
+                            <div className="text-center py-8 text-muted-foreground">
+                                <FileText className="h-12 w-12 mx-auto mb-3 text-muted-foreground/60" />
+                                <p className="text-foreground/70">Nenhum ticket pendente</p>
+                                <p className="text-sm mt-1 text-muted-foreground">
                                     Todos os tickets foram atendidos
                                 </p>
                             </div>
@@ -354,9 +354,9 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
 
                 {/* Tickets Finalizados */}
                 {ticketsFinalizados.length > 0 && (
-                    <Card className="bg-card/10 border-white/20 shadow-xl">
+                    <Card className="border-border shadow-sm">
                         <CardHeader>
-                            <CardTitle className="flex items-center gap-2 text-white">
+                            <CardTitle className="flex items-center gap-2 text-foreground">
                                 <CheckCircle className="h-5 w-5 text-green-400" />
                                 Tickets Finalizados Recentes
                             </CardTitle>
@@ -366,24 +366,24 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
                                 {ticketsFinalizados.slice(0, 3).map((ticket) => (
                                     <div
                                         key={ticket.id}
-                                        className="flex items-center justify-between p-4 bg-green-500/20 rounded-xl border border-green-500/30"
+                                        className="flex items-center justify-between p-4 bg-emerald-500/8 rounded-lg border border-emerald-500/20"
                                     >
                                         <div className="flex-1">
-                                            <h4 className="font-semibold text-white">{ticket.titulo}</h4>
-                                            <p className="text-sm text-slate-300">
+                                            <h4 className="font-semibold text-foreground">{ticket.titulo}</h4>
+                                            <p className="text-sm text-muted-foreground">
                                                 Cliente: {ticket.cliente?.nome}
                                             </p>
-                                            <p className="text-xs text-slate-400">
+                                            <p className="text-xs text-muted-foreground">
                                                 Finalizado em: {new Date(ticket.updated_at).toLocaleDateString('pt-BR')}
                                             </p>
                                         </div>
                                         <div className="flex items-center gap-2">
-                                            <Badge className="bg-green-500/30 text-green-200 border-green-500/40">
+                                            <Badge variant="finalizado">
                                                 Finalizado
                                             </Badge>
                                             <Button
                                                 onClick={() => router.push(`/tecnico/ticket/${ticket.id}/view`)}
-                                                className="bg-slate-600 text-white hover:bg-slate-500"
+                                                variant="outline"
                                             >
                                                 <FileText className="mr-2 h-4 w-4" />
                                                 Ver Relatório

@@ -327,12 +327,12 @@ export function ModernDashboardManutencao() {
     return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-white">Dashboard de Manutenção</h1>
+          <h1 className="text-3xl font-bold text-foreground">Dashboard de Manutenção</h1>
         </div>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
-            <p className="mt-2 text-slate-400">Carregando dados de manutenção...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-2 text-muted-foreground">Carregando dados de manutenção...</p>
           </div>
         </div>
       </div>
@@ -341,27 +341,27 @@ export function ModernDashboardManutencao() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-bold text-white">Dashboard de Manutenção</h1>
-          <p className="text-slate-400 mt-2">
+          <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Dashboard de Manutenção</h1>
+          <p className="text-muted-foreground mt-1 text-sm sm:text-base">
             Gerencie cronogramas, tickets e acompanhe o progresso das manutenções
           </p>
         </div>
-        <div className="flex gap-2">
-          <Button onClick={loadData} variant="outline" className="border-slate-600 text-slate-300 hover:bg-slate-700">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Atualizar
+        <div className="flex flex-wrap gap-2">
+          <Button onClick={loadData} variant="outline" className="h-10 border-border text-muted-foreground hover:bg-accent">
+            <RefreshCw className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Atualizar</span>
           </Button>
           <Button
             onClick={handleCriarTicketsManuais}
             variant="outline"
-            className="text-green-300 border-green-600 hover:bg-green-700/20"
+            className="h-10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10"
           >
-            <Settings className="h-4 w-4 mr-2" />
-            Criar Tickets
+            <Settings className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">Criar Tickets</span>
           </Button>
-          <Button onClick={() => openCronogramaDialog()} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={() => openCronogramaDialog()} className="h-10 bg-primary hover:bg-primary/90 text-primary-foreground">
             <Plus className="h-4 w-4 mr-2" />
             Novo Cronograma
           </Button>
@@ -370,61 +370,61 @@ export function ModernDashboardManutencao() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="bg-slate-800/50 border-slate-700/50 hover:bg-slate-800/70 transition-all">
+        <Card className="bg-card border-border hover:bg-card/80 transition-all">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Próximas Manutenções
             </CardTitle>
             <Calendar className="h-5 w-5 text-blue-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.proximasManutencoes}</div>
-            <p className="text-xs text-slate-500 mt-1">
+            <div className="text-2xl font-bold text-foreground">{stats.proximasManutencoes}</div>
+            <p className="text-xs text-muted-foreground/70 mt-1">
               Agendadas para os próximos 30 dias
             </p>
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-800/50 border-slate-700/50 hover:bg-slate-800/70 transition-all">
+        <Card className="bg-card border-border hover:bg-card/80 transition-all">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Manutenções Pendentes
             </CardTitle>
             <AlertTriangle className="h-5 w-5 text-orange-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.manutencoesPendentes}</div>
-            <p className="text-xs text-slate-500 mt-1">
+            <div className="text-2xl font-bold text-foreground">{stats.manutencoesPendentes}</div>
+            <p className="text-xs text-muted-foreground/70 mt-1">
               Manutenções vencidas
             </p>
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-800/50 border-slate-700/50 hover:bg-slate-800/70 transition-all">
+        <Card className="bg-card border-border hover:bg-card/80 transition-all">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Manutenções Realizadas
             </CardTitle>
             <CheckCircle className="h-5 w-5 text-green-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.manutencoesRealizadas}</div>
-            <p className="text-xs text-slate-500 mt-1">
+            <div className="text-2xl font-bold text-foreground">{stats.manutencoesRealizadas}</div>
+            <p className="text-xs text-muted-foreground/70 mt-1">
               Total de manutenções concluídas
             </p>
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-800/50 border-slate-700/50 hover:bg-slate-800/70 transition-all">
+        <Card className="bg-card border-border hover:bg-card/80 transition-all">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-400">
+            <CardTitle className="text-sm font-medium text-muted-foreground">
               Tickets Abertos
             </CardTitle>
             <FileText className="h-5 w-5 text-purple-400" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-white">{stats.ticketsAbertos}</div>
-            <p className="text-xs text-slate-500 mt-1">
+            <div className="text-2xl font-bold text-foreground">{stats.ticketsAbertos}</div>
+            <p className="text-xs text-muted-foreground/70 mt-1">
               Tickets de manutenção em andamento
             </p>
           </CardContent>
@@ -432,23 +432,23 @@ export function ModernDashboardManutencao() {
       </div>
 
       {/* Filtros */}
-      <Card className="bg-slate-800/50 border-slate-700/50">
+      <Card className="bg-card border-border">
         <CardContent className="pt-6">
           <div className="flex flex-col md:flex-row gap-4">
             <div className="relative flex-1">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar por contrato ou cliente..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                className="pl-10 bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
               />
             </div>
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="w-full md:w-48 bg-slate-700/50 border-slate-600/50 text-white">
+              <SelectTrigger className="w-full md:w-48 bg-secondary/60 border-input text-foreground">
                 <SelectValue placeholder="Filtrar por status" />
               </SelectTrigger>
-              <SelectContent className="bg-slate-800 border-slate-700">
+              <SelectContent>
                 <SelectItem value="all">Todas as manutenções</SelectItem>
                 <SelectItem value="vencida">Vencidas</SelectItem>
                 <SelectItem value="proxima">Próximas (7 dias)</SelectItem>
@@ -461,29 +461,29 @@ export function ModernDashboardManutencao() {
 
       {/* Tabs */}
       <Tabs defaultValue="cronogramas" className="w-full">
-        <TabsList className="grid w-full grid-cols-4 bg-slate-800/50 border-slate-700/50">
-          <TabsTrigger value="cronogramas" className="data-[state=active]:bg-slate-700 data-[state=active]:text-white">
-            <Settings className="h-4 w-4 mr-2" />
-            Cronogramas
+        <TabsList className="grid w-full grid-cols-4 bg-card border-border h-auto">
+          <TabsTrigger value="cronogramas" className="data-[state=active]:bg-card data-[state=active]:text-foreground flex-col sm:flex-row gap-1 py-2">
+            <Settings className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm">Cronogramas</span>
           </TabsTrigger>
-          <TabsTrigger value="tickets" className="data-[state=active]:bg-slate-700 data-[state=active]:text-white">
-            <FileText className="h-4 w-4 mr-2" />
-            Tickets
+          <TabsTrigger value="tickets" className="data-[state=active]:bg-card data-[state=active]:text-foreground flex-col sm:flex-row gap-1 py-2">
+            <FileText className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm">Tickets</span>
           </TabsTrigger>
-          <TabsTrigger value="historico" className="data-[state=active]:bg-slate-700 data-[state=active]:text-white">
-            <Activity className="h-4 w-4 mr-2" />
-            Histórico
+          <TabsTrigger value="historico" className="data-[state=active]:bg-card data-[state=active]:text-foreground flex-col sm:flex-row gap-1 py-2">
+            <Activity className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm">Histórico</span>
           </TabsTrigger>
-          <TabsTrigger value="relatorios" className="data-[state=active]:bg-slate-700 data-[state=active]:text-white">
-            <TrendingUp className="h-4 w-4 mr-2" />
-            Relatórios
+          <TabsTrigger value="relatorios" className="data-[state=active]:bg-card data-[state=active]:text-foreground flex-col sm:flex-row gap-1 py-2">
+            <TrendingUp className="h-4 w-4 shrink-0" />
+            <span className="text-xs sm:text-sm">Relatórios</span>
           </TabsTrigger>
         </TabsList>
         {/* Tab de Cronogramas */}
         <TabsContent value="cronogramas" className="space-y-4">
-          <Card className="bg-slate-800/50 border-slate-700/50">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-foreground flex items-center gap-2">
                 <Settings className="h-5 w-5 text-blue-400" />
                 Cronogramas de Manutenção ({filteredCronogramas.length})
               </CardTitle>
@@ -491,12 +491,12 @@ export function ModernDashboardManutencao() {
             <CardContent>
               {filteredCronogramas.length === 0 ? (
                 <div className="text-center py-12">
-                  <Settings className="h-16 w-16 mx-auto mb-4 text-slate-600" />
-                  <p className="text-slate-400 text-lg font-medium">Nenhum cronograma encontrado</p>
-                  <p className="text-slate-500 text-sm mt-2">
+                  <Settings className="h-16 w-16 mx-auto mb-4 text-muted-foreground/40" />
+                  <p className="text-muted-foreground text-lg font-medium">Nenhum cronograma encontrado</p>
+                  <p className="text-muted-foreground/70 text-sm mt-2">
                     {searchTerm || filterStatus !== 'all' ? 'Ajuste os filtros ou' : ''} Crie um novo cronograma para começar
                   </p>
-                  <Button onClick={() => openCronogramaDialog()} className="mt-4 bg-blue-600 hover:bg-blue-700">
+                  <Button onClick={() => openCronogramaDialog()} className="mt-4 bg-primary hover:bg-primary/90 text-primary-foreground">
                     <Plus className="h-4 w-4 mr-2" />
                     Criar Primeiro Cronograma
                   </Button>
@@ -507,33 +507,30 @@ export function ModernDashboardManutencao() {
                     {paginatedCronogramas.map((cronograma) => (
                     <div
                       key={cronograma.id}
-                      className={`p-6 rounded-xl border transition-all hover:bg-slate-700/30 ${isVencida(cronograma.proxima_manutencao)
+                      className={`p-6 rounded-xl border transition-all hover:bg-secondary/40 ${isVencida(cronograma.proxima_manutencao)
                         ? 'border-red-500/30 bg-red-500/10'
                         : isProxima(cronograma.proxima_manutencao)
-                          ? 'border-yellow-500/30 bg-yellow-500/10'
-                          : 'border-slate-600/30 bg-slate-700/20'
+                          ? 'border-amber-500/30 bg-amber-500/10'
+                          : 'border-border bg-secondary/30'
                         }`}
                     >
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-white text-lg">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-4">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-foreground text-base sm:text-lg">
                             {cronograma.contrato?.descricao || `Contrato #${cronograma.contrato_id.substring(0, 8)}`}
                           </h3>
                           <div className="flex items-center gap-2 mt-2">
-                            <User className="h-4 w-4 text-slate-400" />
-                            <span className="text-slate-300">
+                            <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <span className="text-foreground/80 truncate">
                               {cronograma.contrato?.cliente?.nome || 'Cliente não informado'}
                             </span>
                           </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Badge className={`${cronograma.tipo_manutencao === 'preventiva' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
-                            cronograma.tipo_manutencao === 'corretiva' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
-                              'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                            }`}>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="em_curso" className={cronograma.tipo_manutencao === 'corretiva' ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/25' : cronograma.tipo_manutencao === 'preditiva' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/25' : undefined}>
                             {cronograma.tipo_manutencao}
                           </Badge>
-                          <Badge className="bg-slate-600/50 text-slate-300 border-slate-500/50">
+                          <Badge variant="muted">
                             {cronograma.frequencia}
                           </Badge>
                         </div>
@@ -541,12 +538,12 @@ export function ModernDashboardManutencao() {
 
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                         <div className="flex items-center gap-2">
-                          <CalendarIcon className="h-4 w-4 text-slate-400" />
-                          <span className="text-sm text-slate-300">
+                          <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm text-foreground/80">
                             Próxima:
-                            <span className={`font-medium ml-1 ${isVencida(cronograma.proxima_manutencao) ? 'text-red-400' :
-                              isProxima(cronograma.proxima_manutencao) ? 'text-yellow-400' :
-                                'text-slate-300'
+                            <span className={`font-medium ml-1 ${isVencida(cronograma.proxima_manutencao) ? 'text-red-500 dark:text-red-400' :
+                              isProxima(cronograma.proxima_manutencao) ? 'text-amber-500 dark:text-amber-400' :
+                                'text-foreground/80'
                               }`}>
                               {formatarData(cronograma.proxima_manutencao)}
                             </span>
@@ -554,23 +551,23 @@ export function ModernDashboardManutencao() {
                         </div>
                         {cronograma.ultima_manutencao && (
                           <div className="flex items-center gap-2">
-                            <Clock className="h-4 w-4 text-slate-400" />
-                            <span className="text-sm text-slate-300">
+                            <Clock className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm text-foreground/80">
                               Última: {formatarData(cronograma.ultima_manutencao)}
                             </span>
                           </div>
                         )}
                       </div>
 
-                      <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-2">
+                      <div className="flex flex-wrap justify-between items-center gap-2">
+                        <div className="flex flex-wrap items-center gap-2">
                           {isVencida(cronograma.proxima_manutencao) && (
-                            <Badge className="bg-red-500/20 text-red-300 border-red-500/30 text-xs">
+                            <Badge variant="cancelado" className="text-xs">
                               Vencida
                             </Badge>
                           )}
                           {isProxima(cronograma.proxima_manutencao) && (
-                            <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30 text-xs">
+                            <Badge variant="pendente" className="text-xs">
                               Próxima
                             </Badge>
                           )}
@@ -580,7 +577,7 @@ export function ModernDashboardManutencao() {
                             variant="outline"
                             size="sm"
                             onClick={() => openCronogramaDialog(cronograma)}
-                            className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                            className="h-9 border-border text-muted-foreground hover:bg-accent hover:text-foreground"
                           >
                             <Edit className="h-3 w-3 mr-1" />
                             Editar
@@ -589,7 +586,7 @@ export function ModernDashboardManutencao() {
                             variant="outline"
                             size="sm"
                             onClick={() => handleDeleteCronograma(cronograma.id)}
-                            className="border-red-500/30 text-red-400 hover:bg-red-500/20 hover:text-red-300"
+                            className="h-9 border-red-500/30 text-red-500 dark:text-red-400 hover:bg-red-500/10"
                           >
                             <Trash2 className="h-3 w-3 mr-1" />
                             Deletar
@@ -616,9 +613,9 @@ export function ModernDashboardManutencao() {
         </TabsContent>
         {/* Tab de Tickets */}
         <TabsContent value="tickets" className="space-y-4">
-          <Card className="bg-slate-800/50 border-slate-700/50">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-foreground flex items-center gap-2">
                 <FileText className="h-5 w-5 text-purple-400" />
                 Tickets de Manutenção ({ticketsManutencao.length})
               </CardTitle>
@@ -626,9 +623,9 @@ export function ModernDashboardManutencao() {
             <CardContent>
               {ticketsManutencao.length === 0 ? (
                 <div className="text-center py-12">
-                  <FileText className="h-16 w-16 mx-auto mb-4 text-slate-600" />
-                  <p className="text-slate-400 text-lg font-medium">Nenhum ticket de manutenção</p>
-                  <p className="text-slate-500 text-sm mt-2">
+                  <FileText className="h-16 w-16 mx-auto mb-4 text-muted-foreground/40" />
+                  <p className="text-muted-foreground text-lg font-medium">Nenhum ticket de manutenção</p>
+                  <p className="text-muted-foreground/70 text-sm mt-2">
                     Os tickets de manutenção aparecerão aqui quando forem criados
                   </p>
                 </div>
@@ -638,51 +635,41 @@ export function ModernDashboardManutencao() {
                     {paginatedTicketsManutencao.map((ticket) => (
                     <div
                       key={ticket.id}
-                      className="p-6 rounded-xl border border-slate-600/30 bg-slate-700/20 hover:bg-slate-700/30 transition-all"
+                      className="p-6 rounded-xl border border-border bg-secondary/30 hover:bg-secondary/40 transition-all"
                     >
-                      <div className="flex justify-between items-start mb-4">
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-white text-lg">{ticket.titulo}</h3>
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2 mb-4">
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-foreground text-base sm:text-lg">{ticket.titulo}</h3>
                           <div className="flex items-center gap-2 mt-2">
-                            <User className="h-4 w-4 text-slate-400" />
-                            <span className="text-slate-300">
+                            <User className="h-4 w-4 text-muted-foreground shrink-0" />
+                            <span className="text-foreground/80 truncate">
                               {ticket.cliente?.nome || 'Cliente não informado'}
                             </span>
                           </div>
                         </div>
-                        <div className="flex gap-2">
-                          <Badge className={
-                            ticket.prioridade === 'urgente' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
-                              ticket.prioridade === 'alta' ? 'bg-orange-500/20 text-orange-300 border-orange-500/30' :
-                                ticket.prioridade === 'media' ? 'bg-yellow-500/20 text-yellow-300 border-yellow-500/30' :
-                                  'bg-green-500/20 text-green-300 border-green-500/30'
-                          }>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant={ticket.prioridade as 'urgente' | 'alta' | 'media' | 'baixa'}>
                             {ticket.prioridade}
                           </Badge>
-                          <Badge className={
-                            ticket.status === 'finalizado' ? 'bg-green-500/20 text-green-300 border-green-500/30' :
-                              ticket.status === 'em_curso' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
-                                ticket.status === 'cancelado' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
-                                  'bg-yellow-500/20 text-yellow-300 border-yellow-500/30'
-                          }>
+                          <Badge variant={ticket.status as 'pendente' | 'em_curso' | 'finalizado' | 'cancelado'}>
                             {ticket.status.replace('_', ' ')}
                           </Badge>
                         </div>
                       </div>
 
-                      <p className="text-slate-400 text-sm mb-4 line-clamp-2">{ticket.descricao}</p>
+                      <p className="text-muted-foreground text-sm mb-4 line-clamp-2">{ticket.descricao}</p>
 
                       <div className="flex items-center gap-4 text-sm">
                         <div className="flex items-center gap-1">
-                          <CalendarIcon className="h-4 w-4 text-slate-500" />
-                          <span className="text-slate-400">
+                          <CalendarIcon className="h-4 w-4 text-muted-foreground/70" />
+                          <span className="text-muted-foreground">
                             Criado: {formatarData(ticket.created_at)}
                           </span>
                         </div>
                         {ticket.tecnico && (
                           <div className="flex items-center gap-1">
-                            <Wrench className="h-4 w-4 text-slate-500" />
-                            <span className="text-slate-400">
+                            <Wrench className="h-4 w-4 text-muted-foreground/70" />
+                            <span className="text-muted-foreground">
                               Técnico: {ticket.tecnico.name}
                             </span>
                           </div>
@@ -709,9 +696,9 @@ export function ModernDashboardManutencao() {
 
         {/* Tab de Histórico */}
         <TabsContent value="historico" className="space-y-4">
-          <Card className="bg-slate-800/50 border-slate-700/50">
+          <Card className="bg-card border-border">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="text-foreground flex items-center gap-2">
                 <Activity className="h-5 w-5 text-green-400" />
                 Histórico de Manutenção ({historico.length})
               </CardTitle>
@@ -719,9 +706,9 @@ export function ModernDashboardManutencao() {
             <CardContent>
               {historico.length === 0 ? (
                 <div className="text-center py-12">
-                  <Activity className="h-16 w-16 mx-auto mb-4 text-slate-600" />
-                  <p className="text-slate-400 text-lg font-medium">Nenhum histórico encontrado</p>
-                  <p className="text-slate-500 text-sm mt-2">
+                  <Activity className="h-16 w-16 mx-auto mb-4 text-muted-foreground/40" />
+                  <p className="text-muted-foreground text-lg font-medium">Nenhum histórico encontrado</p>
+                  <p className="text-muted-foreground/70 text-sm mt-2">
                     O histórico de manutenções aparecerá aqui quando forem realizadas
                   </p>
                 </div>
@@ -730,24 +717,21 @@ export function ModernDashboardManutencao() {
                   {historico.map((registro) => (
                     <div
                       key={registro.id}
-                      className="p-6 rounded-xl border border-slate-600/30 bg-slate-700/20"
+                      className="p-6 rounded-xl border border-border bg-secondary/30"
                     >
                       <div className="flex justify-between items-start mb-4">
                         <div className="flex-1">
-                          <h3 className="font-semibold text-white text-lg">
+                          <h3 className="font-semibold text-foreground text-lg">
                             {registro.contrato?.descricao || `Contrato #${registro.contrato_id.substring(0, 8)}`}
                           </h3>
                           <div className="flex items-center gap-2 mt-2">
-                            <User className="h-4 w-4 text-slate-400" />
-                            <span className="text-slate-300">
+                            <User className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-foreground/80">
                               {registro.contrato?.cliente?.nome || 'Cliente não informado'}
                             </span>
                           </div>
                         </div>
-                        <Badge className={`${registro.tipo_manutencao === 'preventiva' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' :
-                          registro.tipo_manutencao === 'corretiva' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
-                            'bg-purple-500/20 text-purple-300 border-purple-500/30'
-                          }`}>
+                        <Badge variant="em_curso" className={registro.tipo_manutencao === 'corretiva' ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/25' : registro.tipo_manutencao === 'preditiva' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/25' : undefined}>
                           {registro.tipo_manutencao}
                         </Badge>
                       </div>
@@ -756,15 +740,15 @@ export function ModernDashboardManutencao() {
                         {registro.data_realizada && (
                           <div className="flex items-center gap-2">
                             <CheckCircle className="h-4 w-4 text-green-400" />
-                            <span className="text-sm text-slate-300">
+                            <span className="text-sm text-foreground/80">
                               Realizada: {formatarData(registro.data_realizada)}
                             </span>
                           </div>
                         )}
                         {registro.data_agendada && (
                           <div className="flex items-center gap-2">
-                            <CalendarIcon className="h-4 w-4 text-slate-400" />
-                            <span className="text-sm text-slate-300">
+                            <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                            <span className="text-sm text-foreground/80">
                               Agendada: {formatarData(registro.data_agendada)}
                             </span>
                           </div>
@@ -772,8 +756,8 @@ export function ModernDashboardManutencao() {
                       </div>
 
                       {registro.observacoes && (
-                        <div className="mt-4 p-3 bg-slate-800/50 rounded-lg border border-slate-600/30">
-                          <p className="text-sm text-slate-400">{registro.observacoes}</p>
+                        <div className="mt-4 p-3 bg-secondary/40 rounded-lg border border-border">
+                          <p className="text-sm text-muted-foreground">{registro.observacoes}</p>
                         </div>
                       )}
                     </div>
@@ -786,31 +770,31 @@ export function ModernDashboardManutencao() {
 
         {/* Tab de Relatórios */}
         <TabsContent value="relatorios" className="space-y-4">
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-lg p-6">
+          <div className="bg-secondary/40 rounded-lg border border-border p-6">
             <RelatorioManutencao />
           </div>
         </TabsContent>
       </Tabs>
       {/* Modal de Cronograma */}
       <Dialog open={isCronogramaDialogOpen} onOpenChange={setIsCronogramaDialogOpen}>
-        <DialogContent className="sm:max-w-[600px] bg-slate-800 border-slate-700">
+        <DialogContent className="sm:max-w-[600px] max-h-[85dvh] overflow-y-auto pb-6">
           <DialogHeader>
-            <DialogTitle className="text-white">
+            <DialogTitle className="text-foreground">
               {isEditingCronograma ? 'Editar Cronograma' : 'Criar Novo Cronograma'}
             </DialogTitle>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="contrato_id" className="text-slate-200">Contrato</Label>
+              <Label htmlFor="contrato_id" className="text-foreground/80">Contrato</Label>
               <Select
                 value={cronogramaFormData.contrato_id}
                 onValueChange={(value) => setCronogramaFormData({ ...cronogramaFormData, contrato_id: value })}
                 disabled={isEditingCronograma}
               >
-                <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                   <SelectValue placeholder="Selecione um contrato" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectContent>
                   {contratos.map((contrato) => (
                     <SelectItem key={contrato.id} value={contrato.id}>
                       {contrato.numero} - {contrato.descricao} ({contrato.cliente?.nome})
@@ -820,19 +804,19 @@ export function ModernDashboardManutencao() {
               </Select>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="tipo_manutencao" className="text-slate-200">Tipo de Manutenção</Label>
+                <Label htmlFor="tipo_manutencao" className="text-foreground/80">Tipo de Manutenção</Label>
                 <Select
                   value={cronogramaFormData.tipo_manutencao}
                   onValueChange={(value: 'preventiva' | 'corretiva' | 'preditiva') =>
                     setCronogramaFormData({ ...cronogramaFormData, tipo_manutencao: value })
                   }
                 >
-                  <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                  <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectContent>
                     <SelectItem value="preventiva">Preventiva</SelectItem>
                     <SelectItem value="corretiva">Corretiva</SelectItem>
                     <SelectItem value="preditiva">Preditiva</SelectItem>
@@ -841,17 +825,17 @@ export function ModernDashboardManutencao() {
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="frequencia" className="text-slate-200">Frequência</Label>
+                <Label htmlFor="frequencia" className="text-foreground/80">Frequência</Label>
                 <Select
                   value={cronogramaFormData.frequencia}
                   onValueChange={(value: 'mensal' | 'trimestral' | 'semestral' | 'anual') =>
                     setCronogramaFormData({ ...cronogramaFormData, frequencia: value })
                   }
                 >
-                  <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                  <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-800 border-slate-700">
+                  <SelectContent>
                     <SelectItem value="mensal">Mensal</SelectItem>
                     <SelectItem value="trimestral">Trimestral</SelectItem>
                     <SelectItem value="semestral">Semestral</SelectItem>
@@ -862,37 +846,37 @@ export function ModernDashboardManutencao() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="proxima_manutencao" className="text-slate-200">Próxima Manutenção</Label>
+              <Label htmlFor="proxima_manutencao" className="text-foreground/80">Próxima Manutenção</Label>
               <Input
                 id="proxima_manutencao"
                 type="date"
                 value={cronogramaFormData.proxima_manutencao}
                 onChange={(e) => setCronogramaFormData({ ...cronogramaFormData, proxima_manutencao: e.target.value })}
-                className="bg-slate-700/50 border-slate-600/50 text-white"
+                className="bg-secondary/60 border-input text-foreground"
               />
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="observacoes" className="text-slate-200">Observações</Label>
+              <Label htmlFor="observacoes" className="text-foreground/80">Observações</Label>
               <Textarea
                 id="observacoes"
                 placeholder="Observações sobre o cronograma..."
                 value={cronogramaFormData.observacoes}
                 onChange={(e) => setCronogramaFormData({ ...cronogramaFormData, observacoes: e.target.value })}
                 rows={3}
-                className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
               />
             </div>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-1">
               <Button
                 variant="outline"
+                className="h-11 sm:h-10"
                 onClick={() => setIsCronogramaDialogOpen(false)}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
               >
                 Cancelar
               </Button>
-              <Button onClick={handleSaveCronograma} className="bg-blue-600 hover:bg-blue-700">
+              <Button onClick={handleSaveCronograma} className="h-11 sm:h-10 bg-primary hover:bg-primary/90 text-primary-foreground">
                 {isEditingCronograma ? 'Atualizar' : 'Criar'}
               </Button>
             </div>

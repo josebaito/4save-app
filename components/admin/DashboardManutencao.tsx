@@ -192,33 +192,23 @@ export function DashboardManutencao() {
     }
   };
 
-  const getStatusColor = (status: string) => {
+  const getStatusVariant = (status: string): 'pendente' | 'em_curso' | 'finalizado' | 'cancelado' | 'muted' => {
     switch (status) {
-      case 'pendente':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'em_curso':
-        return 'bg-blue-100 text-blue-800';
-      case 'finalizado':
-        return 'bg-green-100 text-green-800';
-      case 'cancelado':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-slate-500/15 text-foreground';
+      case 'pendente': return 'pendente';
+      case 'em_curso': return 'em_curso';
+      case 'finalizado': return 'finalizado';
+      case 'cancelado': return 'cancelado';
+      default: return 'muted';
     }
   };
 
-  const getPrioridadeColor = (prioridade: string) => {
+  const getPrioridadeVariant = (prioridade: string): 'urgente' | 'alta' | 'media' | 'baixa' | 'muted' => {
     switch (prioridade) {
-      case 'baixa':
-        return 'bg-green-100 text-green-800';
-      case 'media':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'alta':
-        return 'bg-orange-100 text-orange-800';
-      case 'urgente':
-        return 'bg-red-100 text-red-800';
-      default:
-        return 'bg-slate-500/15 text-foreground';
+      case 'urgente': return 'urgente';
+      case 'alta': return 'alta';
+      case 'media': return 'media';
+      case 'baixa': return 'baixa';
+      default: return 'muted';
     }
   };
 
@@ -250,7 +240,7 @@ export function DashboardManutencao() {
         </div>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
             <p className="mt-2 text-muted-foreground">Carregando dados de manutenção...</p>
           </div>
         </div>
@@ -282,7 +272,7 @@ export function DashboardManutencao() {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Próximas Manutenções
             </CardTitle>
-            <Calendar className="h-5 w-5 text-blue-600" />
+            <Calendar className="h-5 w-5 text-blue-500 dark:text-blue-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">{stats.proximasManutencoes}</div>
@@ -297,7 +287,7 @@ export function DashboardManutencao() {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Manutenções Pendentes
             </CardTitle>
-            <AlertTriangle className="h-5 w-5 text-orange-600" />
+            <AlertTriangle className="h-5 w-5 text-orange-500 dark:text-orange-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">{stats.manutencoesPendentes}</div>
@@ -312,7 +302,7 @@ export function DashboardManutencao() {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Manutenções Realizadas
             </CardTitle>
-            <CheckCircle className="h-5 w-5 text-green-600" />
+            <CheckCircle className="h-5 w-5 text-emerald-500 dark:text-emerald-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">{stats.manutencoesRealizadas}</div>
@@ -327,7 +317,7 @@ export function DashboardManutencao() {
             <CardTitle className="text-sm font-medium text-muted-foreground">
               Tickets Abertos
             </CardTitle>
-            <FileText className="h-5 w-5 text-purple-600" />
+            <FileText className="h-5 w-5 text-purple-500 dark:text-purple-400" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold text-foreground">{stats.ticketsAbertos}</div>
@@ -371,7 +361,7 @@ export function DashboardManutencao() {
                   {cronogramas.map((cronograma) => (
                     <div 
                       key={cronograma.id} 
-                      className={`p-4 rounded-lg border ${isVencida(cronograma.proxima_manutencao) ? 'border-red-200 bg-red-50' : isProxima(cronograma.proxima_manutencao) ? 'border-yellow-200 bg-yellow-50' : 'border-border'}`}
+                      className={`p-4 rounded-lg border ${isVencida(cronograma.proxima_manutencao) ? 'border-red-500/30 bg-red-500/10' : isProxima(cronograma.proxima_manutencao) ? 'border-amber-500/30 bg-amber-500/10' : 'border-border'}`}
                     >
                       <div className="flex justify-between items-start">
                         <div>
@@ -383,10 +373,10 @@ export function DashboardManutencao() {
                           </p>
                         </div>
                         <div className="flex gap-2">
-                          <Badge className={`${cronograma.tipo_manutencao === 'preventiva' ? 'bg-blue-100 text-blue-800' : cronograma.tipo_manutencao === 'corretiva' ? 'bg-red-100 text-red-800' : 'bg-purple-100 text-purple-800'}`}>
+                          <Badge variant="em_curso" className={cronograma.tipo_manutencao === 'corretiva' ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/25' : cronograma.tipo_manutencao === 'preditiva' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/25' : undefined}>
                             {cronograma.tipo_manutencao}
                           </Badge>
-                          <Badge className="bg-slate-500/15 text-foreground">
+                          <Badge variant="muted">
                             {cronograma.frequencia}
                           </Badge>
                         </div>
@@ -395,7 +385,7 @@ export function DashboardManutencao() {
                         <div className="flex items-center gap-1">
                           <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                           <span className="text-sm">
-                            Próxima: <span className={`font-medium ${isVencida(cronograma.proxima_manutencao) ? 'text-red-600' : isProxima(cronograma.proxima_manutencao) ? 'text-yellow-600' : ''}`}>{formatarData(cronograma.proxima_manutencao)}</span>
+                            Próxima: <span className={`font-medium ${isVencida(cronograma.proxima_manutencao) ? 'text-red-600 dark:text-red-400' : isProxima(cronograma.proxima_manutencao) ? 'text-amber-600 dark:text-amber-400' : 'text-foreground'}`}>{formatarData(cronograma.proxima_manutencao)}</span>
                           </span>
                         </div>
                         {cronograma.ultima_manutencao && (
@@ -461,10 +451,10 @@ export function DashboardManutencao() {
                           </p>
                         </div>
                         <div className="flex gap-2">
-                          <Badge className={getPrioridadeColor(ticket.prioridade)}>
+                          <Badge variant={getPrioridadeVariant(ticket.prioridade)}>
                             {ticket.prioridade}
                           </Badge>
-                          <Badge className={getStatusColor(ticket.status)}>
+                          <Badge variant={getStatusVariant(ticket.status)}>
                             {ticket.status}
                           </Badge>
                         </div>
@@ -513,14 +503,14 @@ export function DashboardManutencao() {
                             Cliente: {registro.contrato?.cliente?.nome || 'N/A'}
                           </p>
                         </div>
-                        <Badge className={`${registro.tipo_manutencao === 'preventiva' ? 'bg-blue-100 text-blue-800' : registro.tipo_manutencao === 'corretiva' ? 'bg-red-100 text-red-800' : 'bg-purple-100 text-purple-800'}`}>
+                        <Badge variant="em_curso" className={registro.tipo_manutencao === 'corretiva' ? 'bg-red-500/10 text-red-600 dark:text-red-400 border-red-500/25' : registro.tipo_manutencao === 'preditiva' ? 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/25' : undefined}>
                           {registro.tipo_manutencao}
                         </Badge>
                       </div>
                       <div className="mt-2 flex flex-wrap gap-4">
                         {registro.data_realizada && (
                           <div className="flex items-center gap-1">
-                            <CheckCircle className="h-4 w-4 text-green-500" />
+                            <CheckCircle className="h-4 w-4 text-emerald-500 dark:text-emerald-400" />
                             <span className="text-sm">
                               Realizada: {formatarData(registro.data_realizada)}
                             </span>

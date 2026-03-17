@@ -137,14 +137,14 @@ export function LocationTracker({ enabled = true, interval = 120000, debug = fal
   };
 
   return (
-    <div className="flex items-center gap-2 mt-2 p-3 bg-slate-800/50 rounded-md border border-slate-700/50">
+    <div className="flex items-center gap-2 mt-2 p-3 bg-card rounded-md border border-border">
       <div className="flex flex-col flex-1">
         <div className="flex items-center gap-2">
           <div
             className={`w-3 h-3 rounded-full ${isTracking ? 'bg-green-500 animate-pulse' : 'bg-red-500'}`}
             title={isTracking ? 'Rastreamento ativo' : 'Rastreamento inativo'}
           />
-          <span className="text-sm font-medium text-white">
+          <span className="text-sm font-medium text-foreground">
             {isTracking ? 'Localização ativa' : 'Localização desativada'}
           </span>
           {lastUpdate && (
@@ -176,14 +176,14 @@ export function LocationTracker({ enabled = true, interval = 120000, debug = fal
       <div className="flex gap-1">
         <button
           onClick={forceUpdate}
-          className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded"
+          className="text-xs bg-blue-600 hover:bg-blue-700 text-foreground px-2 py-1 rounded"
           title="Forçar atualização"
         >
           🔄
         </button>
         <button
           onClick={() => setIsTracking(!isTracking)}
-          className="text-xs bg-slate-600 hover:bg-slate-700 text-white px-2 py-1 rounded"
+          className="text-xs bg-slate-600 hover:bg-secondary/60 text-foreground px-2 py-1 rounded"
           title={isTracking ? 'Desativar rastreamento' : 'Ativar rastreamento'}
         >
           {isTracking ? '⏸️' : '▶️'}

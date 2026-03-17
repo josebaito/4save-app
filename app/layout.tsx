@@ -35,7 +35,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="pt-BR" suppressHydrationWarning>
-      <body className={`${outfit.variable} ${manrope.variable} ${jetbrainsMono.variable} font-body antialiased bg-background text-foreground relative overflow-x-hidden`}>
+      <body suppressHydrationWarning className={`${outfit.variable} ${manrope.variable} ${jetbrainsMono.variable} font-body antialiased bg-background text-foreground relative overflow-x-hidden`}>
         <ThemeProvider>
           <SessionProvider>
             {children}

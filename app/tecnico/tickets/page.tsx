@@ -139,30 +139,30 @@ export default function TecnicoTicketsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pendente':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20';
       case 'em_curso':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20';
       case 'finalizado':
-        return 'bg-green-100 text-green-800';
+        return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20';
       case 'cancelado':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20';
       default:
-        return 'bg-slate-500/15 text-foreground';
+        return 'bg-muted text-muted-foreground border border-border';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgente':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/20';
       case 'alta':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/20';
       case 'media':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20';
       case 'baixa':
-        return 'bg-green-100 text-green-800';
+        return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20';
       default:
-        return 'bg-slate-500/15 text-foreground';
+        return 'bg-muted text-muted-foreground border border-border';
     }
   };
 
@@ -215,19 +215,19 @@ export default function TecnicoTicketsPage() {
   return (
     <TecnicoLayout>
       <div className="p-4 md:p-6 space-y-6">
-        <div className="flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-white">Meus Tickets</h1>
-          <Button onClick={loadTickets} variant="outline" className="gap-2">
+        <div className="flex justify-between items-center gap-3">
+          <h1 className="text-xl sm:text-2xl font-bold text-foreground">Meus Tickets</h1>
+          <Button onClick={loadTickets} variant="outline" className="gap-2 h-10 shrink-0">
             <RefreshCw className="h-4 w-4" />
-            Atualizar
+            <span className="hidden sm:inline">Atualizar</span>
           </Button>
         </div>
 
         {/* Filtros */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="flex flex-col gap-3 sm:grid sm:grid-cols-3">
           <div>
             <div className="relative">
-              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
               <Input
                 type="text"
                 placeholder="Buscar por título ou cliente..."
@@ -276,24 +276,24 @@ export default function TecnicoTicketsPage() {
         {/* Lista de Tickets */}
         {loading ? (
           <div className="text-center py-8">
-            <p className="text-slate-300">Carregando tickets...</p>
+            <p className="text-muted-foreground">Carregando tickets...</p>
           </div>
         ) : filteredTickets.length === 0 ? (
           <Card>
             <CardContent className="pt-6 text-center py-8">
-              <p className="text-slate-300">Nenhum ticket encontrado.</p>
+              <p className="text-muted-foreground">Nenhum ticket encontrado.</p>
             </CardContent>
           </Card>
         ) : (
           <div className="grid gap-4">
             {filteredTickets.map((ticket) => (
-              <Card key={ticket.id} className="overflow-hidden bg-slate-800 border-slate-700">
+              <Card key={ticket.id} className="overflow-hidden border-border">
                 <CardContent className="p-0">
-                  <div className="p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="p-4 flex flex-col gap-4">
                     <div className="flex-grow space-y-2">
-                      <div className="flex flex-col md:flex-row md:items-center gap-2 md:gap-4">
-                        <h3 className="font-semibold text-lg text-white">{ticket.titulo}</h3>
-                        <div className="flex gap-2">
+                      <div className="flex flex-col gap-2">
+                        <h3 className="font-semibold text-base sm:text-lg text-foreground">{ticket.titulo}</h3>
+                        <div className="flex flex-wrap gap-2">
                           <Badge className={getStatusColor(ticket.status)}>
                             <span className="flex items-center gap-1">
                               {getStatusIcon(ticket.status)}
@@ -311,32 +311,33 @@ export default function TecnicoTicketsPage() {
                         </div>
                       </div>
 
-                      <div className="text-sm text-slate-300">
-                        Cliente: <span className="font-medium text-slate-200">{ticket.cliente?.nome}</span>
+                      <div className="text-sm text-muted-foreground">
+                        Cliente: <span className="font-medium text-foreground/80">{ticket.cliente?.nome}</span>
                       </div>
 
-                      <div className="text-sm text-slate-300 flex items-center gap-1">
+                      <div className="text-sm text-muted-foreground flex items-center gap-1">
                         <CalendarClock className="h-3.5 w-3.5" />
                         Criado em: {formatDate(ticket.created_at)}
                       </div>
 
                       {/* Motivo do cancelamento */}
                       {ticket.status === 'cancelado' && ticket.motivo_cancelamento && (
-                        <div className="flex items-start gap-2 p-3 bg-red-900/20 border border-red-500/30 rounded-lg">
-                          <AlertTriangle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
+                        <div className="flex items-start gap-2 p-3 bg-red-500/8 border border-red-500/20 rounded-lg">
+                          <AlertTriangle className="h-4 w-4 text-red-500 dark:text-red-400 mt-0.5 flex-shrink-0" />
                           <div className="text-sm">
-                            <p className="font-medium text-red-300">Motivo do cancelamento:</p>
-                            <p className="text-red-200 mt-1">{ticket.motivo_cancelamento}</p>
+                            <p className="font-medium text-red-500 dark:text-red-400">Motivo do cancelamento:</p>
+                            <p className="text-red-500/80 dark:text-red-300 mt-1">{ticket.motivo_cancelamento}</p>
                           </div>
                         </div>
                       )}
                     </div>
 
-                    <div className="flex gap-2 justify-end">
+                    <div className="flex flex-wrap gap-2 justify-end">
                       {ticket.status === 'pendente' && (
                         <Button
                           variant="outline"
                           size="sm"
+                          className="h-10 min-w-[80px]"
                           onClick={() => handleStartTicket(ticket.id)}
                         >
                           <PlayCircle className="mr-1.5 h-4 w-4" />
@@ -348,6 +349,7 @@ export default function TecnicoTicketsPage() {
                         <Button
                           variant="destructive"
                           size="sm"
+                          className="h-10 min-w-[90px]"
                           onClick={() => {
                             setSelectedTicket(ticket);
                             setShowCancelDialog(true);
@@ -359,8 +361,8 @@ export default function TecnicoTicketsPage() {
                       )}
 
                       {ticket.status === 'cancelado' && (
-                        <div className="flex items-center gap-2 text-sm text-slate-300">
-                          <Info className="h-4 w-4" />
+                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                          <Info className="h-4 w-4 shrink-0" />
                           <span>Aguardando reativação pelo admin</span>
                         </div>
                       )}
@@ -369,6 +371,7 @@ export default function TecnicoTicketsPage() {
                         <Button
                           variant="default"
                           size="sm"
+                          className="h-10 min-w-[110px]"
                           onClick={() => router.push(`/tecnico/ticket/${ticket.id}/view`)}
                         >
                           <FileText className="mr-1.5 h-4 w-4" />
@@ -378,6 +381,7 @@ export default function TecnicoTicketsPage() {
                         <Button
                           variant="default"
                           size="sm"
+                          className="h-10 min-w-[100px]"
                           onClick={() => router.push(`/tecnico/ticket/${ticket.id}`)}
                         >
                           <FileText className="mr-1.5 h-4 w-4" />
@@ -394,7 +398,7 @@ export default function TecnicoTicketsPage() {
 
         {/* Dialog de Cancelamento */}
         <Dialog open={showCancelDialog} onOpenChange={setShowCancelDialog}>
-          <DialogContent className="sm:max-w-[500px]">
+          <DialogContent className="sm:max-w-[500px] max-h-[85dvh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <XCircle className="h-5 w-5 text-red-600" />
@@ -402,12 +406,12 @@ export default function TecnicoTicketsPage() {
               </DialogTitle>
             </DialogHeader>
             <div className="space-y-4">
-              <div className="p-4 bg-yellow-900/20 border border-yellow-500/30 rounded-lg">
+              <div className="p-4 bg-amber-500/8 border border-amber-500/20 rounded-lg">
                 <div className="flex items-start gap-2">
-                  <AlertTriangle className="h-4 w-4 text-yellow-400 mt-0.5 flex-shrink-0" />
+                  <AlertTriangle className="h-4 w-4 text-amber-600 dark:text-amber-400 mt-0.5 flex-shrink-0" />
                   <div className="text-sm">
-                    <p className="font-medium text-yellow-300">Atenção!</p>
-                    <p className="text-yellow-200 mt-1">
+                    <p className="font-medium text-amber-600 dark:text-amber-400">Atenção!</p>
+                    <p className="text-amber-600/80 dark:text-amber-300 mt-1">
                       Ao cancelar este ticket, ele será enviado para revisão do administrador.
                       O ticket só poderá ser reativado após aprovação.
                     </p>
@@ -427,9 +431,10 @@ export default function TecnicoTicketsPage() {
                 />
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="flex-col-reverse sm:flex-row gap-2 pb-1">
               <Button
                 variant="outline"
+                className="h-11 w-full sm:w-auto"
                 onClick={() => {
                   setShowCancelDialog(false);
                   setSelectedTicket(null);
@@ -440,6 +445,7 @@ export default function TecnicoTicketsPage() {
               </Button>
               <Button
                 variant="destructive"
+                className="h-11 w-full sm:w-auto"
                 onClick={handleCancelTicket}
                 disabled={!cancelReason.trim()}
               >

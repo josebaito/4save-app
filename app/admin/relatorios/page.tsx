@@ -182,35 +182,41 @@ export default function RelatoriosPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'finalizado':
-        return 'bg-emerald-500/15 text-emerald-400';
+        return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30';
+      case 'em_curso':
+        return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30';
+      case 'pendente':
+        return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30';
+      case 'cancelado':
+        return 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30';
       default:
-        return 'bg-slate-500/15 text-slate-300';
+        return 'bg-muted text-muted-foreground border border-border';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgente':
-        return 'bg-rose-500/15 text-rose-400';
+        return 'bg-red-500/10 text-red-600 dark:text-red-400 border border-red-500/30';
       case 'alta':
-        return 'bg-orange-500/15 text-orange-300';
+        return 'bg-orange-500/10 text-orange-600 dark:text-orange-400 border border-orange-500/30';
       case 'media':
-        return 'bg-amber-500/15 text-amber-300';
+        return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/30';
       case 'baixa':
-        return 'bg-emerald-500/15 text-emerald-300';
+        return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30';
       default:
-        return 'bg-slate-500/15 text-slate-300';
+        return 'bg-muted text-muted-foreground border border-border';
     }
   };
 
   const getTipoColor = (tipo: string) => {
     switch (tipo) {
       case 'instalacao':
-        return 'bg-blue-500/15 text-blue-300';
+        return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/30';
       case 'manutencao':
-        return 'bg-purple-500/15 text-purple-300';
+        return 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/30';
       default:
-        return 'bg-slate-500/15 text-slate-300';
+        return 'bg-muted text-muted-foreground border border-border';
     }
   };
 
@@ -361,7 +367,7 @@ export default function RelatoriosPage() {
                     <h4 className="font-semibold text-foreground">Data Início</h4>
                     <p className="text-sm text-muted-foreground">
                       {selectedRelatorio.data_inicio ?
-                        new Date(selectedRelatorio.data_inicio).toLocaleString('pt-BR') :
+                        new Date(selectedRelatorio.data_inicio).toLocaleString('pt-PT') :
                         'N/A'
                       }
                     </p>
@@ -370,7 +376,7 @@ export default function RelatoriosPage() {
                     <h4 className="font-semibold text-foreground">Data Finalização</h4>
                     <p className="text-sm text-muted-foreground">
                       {selectedRelatorio.data_finalizacao ?
-                        new Date(selectedRelatorio.data_finalizacao).toLocaleString('pt-BR') :
+                        new Date(selectedRelatorio.data_finalizacao).toLocaleString('pt-PT') :
                         'N/A'
                       }
                     </p>
@@ -445,17 +451,16 @@ export default function RelatoriosPage() {
                 {selectedRelatorio.fotos_antes && selectedRelatorio.fotos_antes.length > 0 && (
                   <div>
                     <h4 className="font-semibold text-foreground mb-2">Fotos ANTES do Serviço</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                       {selectedRelatorio.fotos_antes.map((foto, index) => (
-                        <Image
-                          key={index}
-                          src={foto}
-                          alt={`Antes ${index + 1}`}
-                          width={200}
-                          height={128}
-                          className="w-full h-24 sm:h-32 object-cover rounded-lg cursor-pointer hover:opacity-80"
-                          onClick={() => window.open(foto, '_blank')}
-                        />
+                        <div key={index} className="relative aspect-video rounded-lg overflow-hidden cursor-pointer hover:opacity-80 bg-muted" onClick={() => window.open(foto, '_blank')}>
+                          <Image
+                            src={foto}
+                            alt={`Antes ${index + 1}`}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -473,17 +478,16 @@ export default function RelatoriosPage() {
                 {selectedRelatorio.fotos_depois && selectedRelatorio.fotos_depois.length > 0 && (
                   <div>
                     <h4 className="font-semibold text-foreground mb-2">Fotos DEPOIS do Serviço</h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+                    <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 sm:gap-4">
                       {selectedRelatorio.fotos_depois.map((foto, index) => (
-                        <Image
-                          key={index}
-                          src={foto}
-                          alt={`Depois ${index + 1}`}
-                          width={200}
-                          height={128}
-                          className="w-full h-24 sm:h-32 object-cover rounded-lg cursor-pointer hover:opacity-80"
-                          onClick={() => window.open(foto, '_blank')}
-                        />
+                        <div key={index} className="relative aspect-video rounded-lg overflow-hidden cursor-pointer hover:opacity-80 bg-muted" onClick={() => window.open(foto, '_blank')}>
+                          <Image
+                            src={foto}
+                            alt={`Depois ${index + 1}`}
+                            fill
+                            className="object-cover"
+                          />
+                        </div>
                       ))}
                     </div>
                   </div>
@@ -581,8 +585,8 @@ export default function RelatoriosPage() {
 
                         {qualidadeRelatorio.observacoes_qualidade.length > 0 && (
                           <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3">
-                            <h5 className="text-sm font-medium text-amber-300 mb-2">Observações:</h5>
-                            <ul className="text-xs text-amber-200 space-y-1">
+                            <h5 className="text-sm font-medium text-amber-600 dark:text-amber-400 mb-2">Observações:</h5>
+                            <ul className="text-xs text-amber-600 dark:text-amber-400 space-y-1">
                               {qualidadeRelatorio.observacoes_qualidade.map((obs: string, index: number) => (
                                 <li key={index}> {obs}</li>
                               ))}
@@ -594,7 +598,7 @@ export default function RelatoriosPage() {
                           <div className="flex flex-col sm:flex-row gap-2 pt-3 border-t border-border">
                             <Button
                               onClick={() => handleAprovarRelatorio(selectedRelatorio)}
-                              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 w-full sm:w-auto"
+                              className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-600 w-full sm:w-auto"
                             >
                               <CheckCircle className="h-4 w-4" />
                               Qualidade OK

@@ -101,11 +101,11 @@ export function NotificacoesManutencao() {
   const getCorPrioridade = (prioridade: string) => {
     switch (prioridade) {
       case 'alta':
-        return 'bg-red-900/30 text-red-300 border-red-500/50';
+        return 'bg-red-500/10 text-red-500 dark:text-red-400 border-red-500/20';
       case 'media':
-        return 'bg-amber-900/30 text-amber-300 border-amber-500/50';
+        return 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/20';
       default:
-        return 'bg-blue-900/30 text-blue-300 border-blue-500/50';
+        return 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20';
     }
   };
 
@@ -124,15 +124,15 @@ export function NotificacoesManutencao() {
 
   if (loading) {
     return (
-      <Card className="bg-card/10 border-white/20">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
-            <Bell className="h-5 w-5 text-blue-400" />
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <Bell className="h-5 w-5 text-blue-500 dark:text-blue-400" />
             Notificações de Manutenção
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-4 text-slate-400">
+          <div className="text-center py-4 text-muted-foreground">
             Carregando notificações...
           </div>
         </CardContent>
@@ -142,15 +142,15 @@ export function NotificacoesManutencao() {
 
   if (!temNotificacoes) {
     return (
-      <Card className="bg-card/10 border-white/20">
+      <Card className="bg-card border-border">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
-            <Bell className="h-5 w-5 text-blue-400" />
+          <CardTitle className="flex items-center gap-2 text-foreground">
+            <Bell className="h-5 w-5 text-blue-500 dark:text-blue-400" />
             Notificações de Manutenção
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-4 text-slate-400">
+          <div className="text-center py-4 text-muted-foreground">
             Não há notificações de manutenção pendentes.
           </div>
         </CardContent>
@@ -159,10 +159,10 @@ export function NotificacoesManutencao() {
   }
 
   return (
-    <Card className="bg-card/10 border-white/20">
+    <Card className="bg-card border-border">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-white">
-          <Bell className="h-5 w-5 text-blue-400" />
+        <CardTitle className="flex items-center gap-2 text-foreground">
+          <Bell className="h-5 w-5 text-blue-500 dark:text-blue-400" />
           Notificações de Manutenção
         </CardTitle>
       </CardHeader>
@@ -171,23 +171,23 @@ export function NotificacoesManutencao() {
         {notificacoes.map((notificacao) => (
           <div
             key={notificacao.id}
-            className={`p-3 border rounded-lg ${isProxima(notificacao.data_programada) ? 'bg-amber-500/20 border-amber-500/30' : 'bg-card/5 border-white/10'}`}
+            className={`p-3 border rounded-lg ${isProxima(notificacao.data_programada) ? 'bg-amber-500/10 border-amber-500/20' : 'bg-secondary/30 border-border'}`}
           >
             <div className="flex justify-between items-start mb-2">
-              <h4 className="font-medium text-white">{notificacao.titulo}</h4>
+              <h4 className="font-medium text-foreground">{notificacao.titulo}</h4>
               <Badge className={getCorPrioridade(notificacao.prioridade)}>
                 {notificacao.prioridade}
               </Badge>
             </div>
-            <p className="text-sm text-slate-300 mb-2">{notificacao.mensagem}</p>
-            <div className="flex justify-between items-center text-xs text-slate-400">
+            <p className="text-sm text-muted-foreground mb-2">{notificacao.mensagem}</p>
+            <div className="flex justify-between items-center text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Calendar className="h-3 w-3" />
                 {formatarData(notificacao.data_programada)}
               </div>
               <button
                 onClick={() => marcarComoLida()}
-                className="flex items-center gap-1 text-green-400 hover:text-green-300"
+                className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:text-emerald-500"
               >
                 <CheckCircle className="h-3 w-3" />
                 Marcar como lida
@@ -200,23 +200,23 @@ export function NotificacoesManutencao() {
         {ticketsNotificacao.map((ticket) => (
           <div
             key={ticket.id}
-            className="p-3 border rounded-lg bg-blue-500/20 border-blue-500/30"
+            className="p-3 border rounded-lg bg-blue-500/10 border-blue-500/20"
           >
             <div className="flex justify-between items-start mb-2">
-              <h4 className="font-medium text-white">{ticket.titulo}</h4>
+              <h4 className="font-medium text-foreground">{ticket.titulo}</h4>
               <Badge className={getCorPrioridade(ticket.prioridade)}>
                 {ticket.prioridade}
               </Badge>
             </div>
-            <p className="text-sm text-slate-300 mb-2">{ticket.descricao}</p>
-            <div className="flex justify-between items-center text-xs text-slate-400">
+            <p className="text-sm text-muted-foreground mb-2">{ticket.descricao}</p>
+            <div className="flex justify-between items-center text-xs text-muted-foreground">
               <div className="flex items-center gap-1">
                 <Clock className="h-3 w-3" />
                 {ticket.cliente?.nome || 'Cliente'} - {ticket.contrato?.numero || 'Contrato'}
               </div>
               <button
                 onClick={() => marcarTicketComoLido(ticket.id)}
-                className="flex items-center gap-1 text-green-400 hover:text-green-300"
+                className="flex items-center gap-1 text-emerald-600 dark:text-emerald-400 hover:text-emerald-500"
               >
                 <CheckCircle className="h-3 w-3" />
                 Marcar como lido

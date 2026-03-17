@@ -175,7 +175,7 @@ export default function ModernMapComponent({ locations }: ModernMapComponentProp
                         className={`w-3 h-3 rounded-full ${status.status === 'online' ? 'animate-pulse' : ''}`}
                         style={{ backgroundColor: status.color }}
                       ></div>
-                      <h3 className="font-bold text-slate-800">{location.name}</h3>
+                      <h3 className="font-bold text-foreground">{location.name}</h3>
                     </div>
                     <div 
                       className="px-2 py-1 rounded-full text-xs font-medium text-white"
@@ -187,7 +187,7 @@ export default function ModernMapComponent({ locations }: ModernMapComponentProp
                   
                   {/* Informações */}
                   <div className="space-y-2 text-sm">
-                    <div className="flex items-center gap-2 text-slate-600">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
                       </svg>
@@ -196,7 +196,7 @@ export default function ModernMapComponent({ locations }: ModernMapComponentProp
                     
                     
                     {location.especialidade && (
-                      <div className="flex items-center gap-2 text-slate-600">
+                      <div className="flex items-center gap-2 text-muted-foreground">
                         <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M13 2.05v3.03c3.39.49 6 3.39 6 6.92 0 .9-.18 1.75-.48 2.54l2.6 1.53c.56-1.24.88-2.62.88-4.07 0-5.18-3.95-9.45-9-9.95zM12 19c-3.87 0-7-3.13-7-7 0-3.53 2.61-6.43 6-6.92V2.05c-5.06.5-9 4.76-9 9.95 0 5.52 4.47 10 9.99 10 3.31 0 6.24-1.61 8.06-4.09l-2.6-1.53C16.17 17.98 14.21 19 12 19z"/>
                         </svg>
@@ -204,7 +204,7 @@ export default function ModernMapComponent({ locations }: ModernMapComponentProp
                       </div>
                     )}
                     
-                    <div className="flex items-center gap-2 text-slate-600">
+                    <div className="flex items-center gap-2 text-muted-foreground">
                       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M11.99 2C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/>
                         <path d="M12.5 7H11v6l5.25 3.15.75-1.23-4.5-2.67z"/>
@@ -212,7 +212,7 @@ export default function ModernMapComponent({ locations }: ModernMapComponentProp
                       <span>{formatTimeAgo(location.timestamp, currentTime)}</span>
                     </div>
                     
-                    <div className="flex items-center gap-2 text-slate-500 text-xs">
+                    <div className="flex items-center gap-2 text-muted-foreground/70 text-xs">
                       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                         <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
                       </svg>
@@ -220,7 +220,7 @@ export default function ModernMapComponent({ locations }: ModernMapComponentProp
                     </div>
                     
                     {location.accuracy && (
-                      <div className="flex items-center gap-2 text-slate-500 text-xs">
+                      <div className="flex items-center gap-2 text-muted-foreground/70 text-xs">
                         <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 24 24">
                           <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
                         </svg>
@@ -237,16 +237,16 @@ export default function ModernMapComponent({ locations }: ModernMapComponentProp
       
       {/* Overlay com informações quando não há técnicos */}
       {locations.length === 0 && (
-        <div className="absolute inset-0 flex items-center justify-center bg-slate-700/80 backdrop-blur-sm rounded-lg z-20">
+        <div className="absolute inset-0 flex items-center justify-center bg-card/80 backdrop-blur-sm rounded-lg z-20">
           <div className="text-center">
             <div className="relative mb-6">
-              <svg className="h-16 w-16 mx-auto text-slate-400" fill="currentColor" viewBox="0 0 24 24">
+              <svg className="h-16 w-16 mx-auto text-muted-foreground" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/>
               </svg>
               <div className="absolute inset-0 bg-blue-500/20 rounded-full animate-pulse"></div>
             </div>
-            <p className="text-slate-300 text-lg font-medium">Aguardando Técnicos</p>
-            <p className="text-slate-400 text-sm mt-2 max-w-xs">
+            <p className="text-foreground/80 text-lg font-medium">Aguardando Técnicos</p>
+            <p className="text-muted-foreground text-sm mt-2 max-w-xs">
               Os técnicos aparecerão no mapa quando ativarem o rastreamento GPS
             </p>
           </div>

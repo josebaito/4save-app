@@ -77,17 +77,17 @@ export function OnlineStatusCard({ refreshInterval = 30000 }: OnlineStatusCardPr
 
   if (loading) {
     return (
-      <Card className="bg-slate-800/50 border-slate-700/50 shadow-xl">
+      <Card className="bg-card border-border shadow-xl">
         <CardHeader>
-          <CardTitle className="flex items-center gap-2 text-white">
+          <CardTitle className="flex items-center gap-2 text-foreground">
             <Wifi className="h-5 w-5 text-green-400" />
             Status Online
           </CardTitle>
         </CardHeader>
         <CardContent>
           <div className="animate-pulse">
-            <div className="h-4 bg-slate-700 rounded mb-2"></div>
-            <div className="h-4 bg-slate-700 rounded w-3/4"></div>
+            <div className="h-4 bg-secondary/60 rounded mb-2"></div>
+            <div className="h-4 bg-secondary/60 rounded w-3/4"></div>
           </div>
         </CardContent>
       </Card>
@@ -95,9 +95,9 @@ export function OnlineStatusCard({ refreshInterval = 30000 }: OnlineStatusCardPr
   }
 
   return (
-    <Card className="bg-slate-800/50 border-slate-700/50 shadow-xl">
+    <Card className="bg-card border-border shadow-xl">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2 text-white">
+        <CardTitle className="flex items-center gap-2 text-foreground">
           <Wifi className="h-5 w-5 text-green-400" />
           Status Online
         </CardTitle>
@@ -121,9 +121,9 @@ export function OnlineStatusCard({ refreshInterval = 30000 }: OnlineStatusCardPr
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
             <span className="text-slate-400">Taxa de Online</span>
-            <span className="font-medium text-white">{getOnlinePercentage()}%</span>
+            <span className="font-medium text-foreground">{getOnlinePercentage()}%</span>
           </div>
-          <div className="w-full bg-slate-700 rounded-full h-2">
+          <div className="w-full bg-secondary/60 rounded-full h-2">
             <div 
               className="bg-green-400 h-2 rounded-full transition-all duration-300"
               style={{ width: `${getOnlinePercentage()}%` }}

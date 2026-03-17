@@ -107,28 +107,28 @@ export default function TicketViewPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pendente':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-amber-500/15 text-amber-400';
       case 'em_curso':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-500/15 text-blue-400';
       case 'finalizado':
-        return 'bg-green-100 text-green-800';
+        return 'bg-emerald-500/15 text-emerald-400';
       default:
-        return 'bg-slate-500/15 text-foreground';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case 'urgente':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-500/15 text-red-400';
       case 'alta':
-        return 'bg-orange-100 text-orange-800';
+        return 'bg-orange-500/15 text-orange-400';
       case 'media':
-        return 'bg-yellow-100 text-yellow-800';
+        return 'bg-amber-500/15 text-amber-400';
       case 'baixa':
-        return 'bg-green-100 text-green-800';
+        return 'bg-emerald-500/15 text-emerald-400';
       default:
-        return 'bg-slate-500/15 text-foreground';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -190,16 +190,16 @@ export default function TicketViewPage() {
           <span>{items.length}</span>
         </div>
         {type === 'image' ? (
-          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             {items.map((item, index) => (
-              <Image
-                key={`${label}-${index}`}
-                src={item}
-                alt={`${label} ${index + 1}`}
-                width={240}
-                height={180}
-                className="w-full h-28 md:h-32 object-cover rounded-lg border"
-              />
+              <div key={`${label}-${index}`} className="relative aspect-[4/3] overflow-hidden rounded-lg border border-border">
+                <Image
+                  src={item}
+                  alt={`${label} ${index + 1}`}
+                  fill
+                  className="object-cover"
+                />
+              </div>
             ))}
           </div>
         ) : (
@@ -209,7 +209,7 @@ export default function TicketViewPage() {
                 key={`${label}-${index}`}
                 controls
                 preload="metadata"
-                className="w-full h-40 md:h-44 rounded-lg border bg-black/5"
+                className="w-full aspect-video rounded-lg border border-border bg-secondary/30"
               >
                 <source src={item} type="video/mp4" />
                 Seu navegador não suporta vídeos.
@@ -380,7 +380,7 @@ export default function TicketViewPage() {
       <TecnicoLayout>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
             <p className="mt-2 text-muted-foreground">Carregando dados do ticket...</p>
           </div>
         </div>
@@ -400,21 +400,22 @@ export default function TicketViewPage() {
 
   return (
     <TecnicoLayout>
-      <div className="space-y-6">
+      <div className="space-y-6 p-4 md:p-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="flex items-center gap-3">
             <Button
               variant="outline"
+              size="sm"
               onClick={() => router.back()}
-              className="flex items-center gap-2"
+              className="flex items-center gap-2 h-10 shrink-0"
             >
               <ArrowLeft className="h-4 w-4" />
               Voltar
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-foreground">Visualização do Ticket</h1>
-              <p className="text-muted-foreground">Detalhes completos do serviço finalizado</p>
+              <h1 className="text-xl sm:text-2xl font-bold text-foreground">Visualização do Ticket</h1>
+              <p className="text-sm text-muted-foreground">Detalhes completos do serviço finalizado</p>
             </div>
           </div>
           <Button
@@ -437,7 +438,7 @@ export default function TicketViewPage() {
                 toast.error('Erro ao gerar PDF');
               }
             }}
-            className="bg-blue-600 hover:bg-blue-700 text-white"
+            className="h-10 bg-blue-600 hover:bg-blue-700 text-primary-foreground shrink-0 self-start sm:self-auto"
           >
             <FileText className="mr-2 h-4 w-4" />
             Gerar PDF

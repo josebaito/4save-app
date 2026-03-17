@@ -56,11 +56,11 @@ export function ThemeToggle({ collapsed, className }: ThemeToggleProps) {
       title={collapsed ? label : undefined}
     >
       {isDark ? (
-        <Sun className={cn('h-4 w-4 text-amber-300', !collapsed && 'mr-2')} />
+        <Sun className={cn('h-4 w-4 text-amber-500', !collapsed && 'mr-2')} />
       ) : (
-        <Moon className={cn('h-4 w-4 text-slate-200', !collapsed && 'mr-2')} />
+        <Moon className={cn('h-4 w-4 text-foreground/70', !collapsed && 'mr-2')} />
       )}
       {!collapsed && label}
     </Button>
   );
-}
+}

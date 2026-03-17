@@ -9,7 +9,7 @@ interface DashboardHeaderProps {
 
 export function DashboardHeader({ onRefresh, onSync, loading }: DashboardHeaderProps) {
     return (
-        <div className="sticky top-0 z-50 w-full mb-6 pt-4 pb-4 bg-card/90 dark:bg-slate-700/50 backdrop-blur-md border-b border-border/50 transition-all duration-200">
+        <div className="sticky top-0 z-50 w-full mb-6 pt-4 pb-4 bg-card/90 backdrop-blur-md border-b border-border/50 transition-all duration-200">
             <div className="flex justify-between items-center">
                 <div className="flex flex-col">
                     <h1 className="text-3xl font-heading font-bold text-foreground tracking-tight flex items-center gap-3">
@@ -20,7 +20,7 @@ export function DashboardHeader({ onRefresh, onSync, loading }: DashboardHeaderP
                         </span>
                     </h1>
                     <p className="text-sm font-body text-muted-foreground uppercase tracking-widest mt-1">
-                        Command Center &bull; Live Monitor
+                        Centro de Controlo · Monitor em Tempo Real
                     </p>
                 </div>
 
@@ -33,7 +33,7 @@ export function DashboardHeader({ onRefresh, onSync, loading }: DashboardHeaderP
                         className="font-mono text-xs uppercase tracking-wider border-border hover:bg-primary hover:text-primary-foreground transition-colors group"
                     >
                         <RefreshCw className={`w-3.5 h-3.5 mr-2 ${loading ? 'animate-spin' : 'group-hover:rotate-180 transition-transform duration-500'}`} />
-                        refresh_data
+                        Actualizar
                     </Button>
                     <Button
                         variant="outline"
@@ -43,7 +43,7 @@ export function DashboardHeader({ onRefresh, onSync, loading }: DashboardHeaderP
                         className="font-mono text-xs uppercase tracking-wider border-border hover:bg-secondary transition-colors"
                     >
                         <Radio className="w-3.5 h-3.5 mr-2" />
-                        sync_network
+                        Sincronizar
                     </Button>
                 </div>
             </div>

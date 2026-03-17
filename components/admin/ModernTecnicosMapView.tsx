@@ -32,10 +32,10 @@ import { toast } from 'sonner';
 const ModernMapWithNoSSR = dynamic(() => import('./ModernMapComponent'), {
   ssr: false,
   loading: () => (
-    <div className="h-full w-full flex items-center justify-center bg-slate-700/30 border border-slate-600/30 rounded-lg">
+    <div className="h-full w-full flex items-center justify-center bg-secondary/40 border border-border/30 rounded-lg">
       <div className="text-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400 mx-auto mb-4"></div>
-        <p className="text-slate-400">Carregando mapa...</p>
+        <p className="text-muted-foreground">Carregando mapa...</p>
       </div>
     </div>
   ),
@@ -208,23 +208,23 @@ export function ModernTecnicosMapView() {
     <div className="space-y-6">
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-        <Card className="bg-slate-800/50 border-slate-700/50">
+        <Card className="bg-card border-border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400">Total Técnicos</p>
-                <p className="text-2xl font-bold text-white">{locations.length}</p>
+                <p className="text-sm text-muted-foreground">Total Técnicos</p>
+                <p className="text-2xl font-bold text-foreground">{locations.length}</p>
               </div>
               <User className="h-8 w-8 text-blue-400" />
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-800/50 border-slate-700/50">
+        <Card className="bg-card border-border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400">Online</p>
+                <p className="text-sm text-muted-foreground">Online</p>
                 <p className="text-2xl font-bold text-green-400">{onlineCount}</p>
               </div>
               <div className="w-3 h-3 bg-green-400 rounded-full animate-pulse"></div>
@@ -232,12 +232,12 @@ export function ModernTecnicosMapView() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-800/50 border-slate-700/50">
+        <Card className="bg-card border-border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400">Ativos</p>
-                <p className="text-xs text-slate-500">atividade nos últimos 30 min</p>
+                <p className="text-sm text-muted-foreground">Ativos</p>
+                <p className="text-xs text-muted-foreground/70">atividade nos últimos 30 min</p>
                 <p className="text-2xl font-bold text-yellow-400">{activeCount}</p>
               </div>
               <Activity className="h-8 w-8 text-yellow-400" />
@@ -245,12 +245,12 @@ export function ModernTecnicosMapView() {
           </CardContent>
         </Card>
 
-        <Card className="bg-slate-800/50 border-slate-700/50">
+        <Card className="bg-card border-border">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-slate-400">Inativos</p>
-                <p className="text-xs text-slate-500">sem atividade há mais de 30 min</p>
+                <p className="text-sm text-muted-foreground">Inativos</p>
+                <p className="text-xs text-muted-foreground/70">sem atividade há mais de 30 min</p>
                 <p className="text-2xl font-bold text-red-400">{staleCount}</p>
               </div>
               <AlertCircle className="h-8 w-8 text-red-400" />
@@ -261,9 +261,9 @@ export function ModernTecnicosMapView() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Mapa */}
-        <Card className={`bg-slate-800/50 border-slate-700/50 ${isFullscreen ? 'lg:col-span-3' : 'lg:col-span-2'}`}>
+        <Card className={`bg-card border-border ${isFullscreen ? 'lg:col-span-3' : 'lg:col-span-2'}`}>
           <CardHeader className="flex flex-row items-center justify-between pb-4">
-            <CardTitle className="flex items-center gap-2 text-white">
+            <CardTitle className="flex items-center gap-2 text-foreground">
               <MapPin className="h-5 w-5 text-blue-400" />
               Mapa de Localização
               {selectedTecnico && (
@@ -277,7 +277,7 @@ export function ModernTecnicosMapView() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setShowSatellite(!showSatellite)}
-                className="text-slate-400 hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
               >
                 {showSatellite ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
               </Button>
@@ -285,7 +285,7 @@ export function ModernTecnicosMapView() {
                 variant="ghost"
                 size="sm"
                 onClick={() => setIsFullscreen(!isFullscreen)}
-                className="text-slate-400 hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <Maximize2 className="h-4 w-4" />
               </Button>
@@ -293,7 +293,7 @@ export function ModernTecnicosMapView() {
                 variant="ghost"
                 size="sm"
                 onClick={resetMapView}
-                className="text-slate-400 hover:text-white"
+                className="text-muted-foreground hover:text-foreground"
               >
                 <Navigation className="h-4 w-4" />
               </Button>
@@ -316,34 +316,34 @@ export function ModernTecnicosMapView() {
                 </div>
               </div>
             ) : (
-              <div className="h-[500px] w-full rounded-lg overflow-hidden bg-slate-700/30 border border-slate-600/30">
+              <div className="h-[500px] w-full rounded-lg overflow-hidden bg-secondary/40 border border-border/30">
                 {/* Mapa Real Interativo Moderno */}
                 <div className="relative h-full w-full">
                   <ModernMapWithNoSSR locations={filteredLocations} />
 
                   {/* Overlay com informações */}
-                  <div className="absolute top-4 left-4 bg-slate-800/90 backdrop-blur-sm rounded-lg p-3 border border-slate-600/50">
+                  <div className="absolute top-4 left-4 bg-card/90 backdrop-blur-sm rounded-lg p-3 border border-border/50">
                     <div className="flex items-center gap-3 text-sm">
                       <div className="flex items-center gap-1">
                         <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                        <span className="text-slate-300 font-medium">{onlineCount}</span>
-                        <span className="text-slate-400">Online</span>
+                        <span className="text-foreground/80 font-medium">{onlineCount}</span>
+                        <span className="text-muted-foreground">Online</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <div className="w-2 h-2 bg-yellow-400 rounded-full"></div>
-                        <span className="text-slate-300 font-medium">{activeCount}</span>
-                        <span className="text-slate-400">Ativo</span>
+                        <span className="text-foreground/80 font-medium">{activeCount}</span>
+                        <span className="text-muted-foreground">Ativo</span>
                       </div>
                       <div className="flex items-center gap-1">
                         <div className="w-2 h-2 bg-red-400 rounded-full"></div>
-                        <span className="text-slate-300 font-medium">{staleCount}</span>
-                        <span className="text-slate-400">Inativo</span>
+                        <span className="text-foreground/80 font-medium">{staleCount}</span>
+                        <span className="text-muted-foreground">Inativo</span>
                       </div>
                     </div>
 
                     {/* Modo de visualização */}
-                    <div className="mt-2 pt-2 border-t border-slate-600/50">
-                      <div className="flex items-center gap-2 text-xs text-slate-400">
+                    <div className="mt-2 pt-2 border-t border-border/50">
+                      <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <div className={`w-2 h-2 rounded-full ${showSatellite ? 'bg-blue-400' : 'bg-slate-500'}`}></div>
                         <span>{showSatellite ? 'Vista Satélite' : 'Vista Mapa'}</span>
                       </div>
@@ -356,7 +356,7 @@ export function ModernTecnicosMapView() {
                       variant="secondary"
                       size="sm"
                       onClick={() => setAutoRefresh(!autoRefresh)}
-                      className={`${autoRefresh ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-600 hover:bg-slate-700'} text-white shadow-lg`}
+                      className={`${autoRefresh ? 'bg-green-600 hover:bg-green-700' : 'bg-slate-600 hover:bg-secondary/70'} text-foreground shadow-lg`}
                     >
                       <Clock className="h-4 w-4 mr-1" />
                       {autoRefresh ? 'Auto' : 'Manual'}
@@ -366,7 +366,7 @@ export function ModernTecnicosMapView() {
                       size="sm"
                       onClick={fetchLocations}
                       disabled={isLoading}
-                      className="bg-slate-600 hover:bg-slate-700 text-white shadow-lg"
+                      className="bg-slate-600 hover:bg-secondary/70 text-foreground shadow-lg"
                     >
                       <RefreshCw className={`h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
                     </Button>
@@ -374,54 +374,54 @@ export function ModernTecnicosMapView() {
 
                   {/* Painel de detalhes do técnico selecionado */}
                   {selectedTecnico && (
-                    <div className="absolute bottom-4 right-4 bg-slate-800/95 backdrop-blur-sm rounded-lg p-4 border border-slate-600/50 max-w-xs">
+                    <div className="absolute bottom-4 right-4 bg-card/95 backdrop-blur-sm rounded-lg p-4 border border-border/50 max-w-xs">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-2">
                           <div className={`w-3 h-3 rounded-full ${getLocationStatus(selectedTecnico.timestamp).color} ${getLocationStatus(selectedTecnico.timestamp).status === 'online' ? 'animate-pulse' : ''}`}></div>
-                          <h4 className="font-semibold text-white">{selectedTecnico.name}</h4>
+                          <h4 className="font-semibold text-foreground">{selectedTecnico.name}</h4>
                         </div>
                         <Button
                           variant="ghost"
                           size="sm"
                           onClick={() => setSelectedTecnico(null)}
-                          className="text-slate-400 hover:text-white p-1 h-auto"
+                          className="text-muted-foreground hover:text-foreground p-1 h-auto"
                         >
                           ×
                         </Button>
                       </div>
 
                       <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2 text-slate-300">
-                          <Mail className="h-3 w-3 text-slate-400" />
+                        <div className="flex items-center gap-2 text-foreground/80">
+                          <Mail className="h-3 w-3 text-muted-foreground" />
                           <span className="truncate">{selectedTecnico.email}</span>
                         </div>
 
                         {selectedTecnico.especialidade && (
-                          <div className="flex items-center gap-2 text-slate-300">
-                            <Zap className="h-3 w-3 text-slate-400" />
+                          <div className="flex items-center gap-2 text-foreground/80">
+                            <Zap className="h-3 w-3 text-muted-foreground" />
                             <span>{selectedTecnico.especialidade}</span>
                           </div>
                         )}
 
-                        <div className="flex items-center gap-2 text-slate-300">
-                          <Clock className="h-3 w-3 text-slate-400" />
+                        <div className="flex items-center gap-2 text-foreground/80">
+                          <Clock className="h-3 w-3 text-muted-foreground" />
                           <span>{formatTimeAgo(selectedTecnico.timestamp)}</span>
                         </div>
 
-                        <div className="flex items-center gap-2 text-slate-300">
-                          <Navigation className="h-3 w-3 text-slate-400" />
+                        <div className="flex items-center gap-2 text-foreground/80">
+                          <Navigation className="h-3 w-3 text-muted-foreground" />
                           <span>{selectedTecnico.latitude.toFixed(6)}, {selectedTecnico.longitude.toFixed(6)}</span>
                         </div>
 
                         {selectedTecnico.accuracy && (
-                          <div className="flex items-center gap-2 text-slate-400">
+                          <div className="flex items-center gap-2 text-muted-foreground">
                             <Settings className="h-3 w-3" />
                             <span>Precisão: ±{Math.round(selectedTecnico.accuracy)}m</span>
                           </div>
                         )}
                       </div>
 
-                      <div className="mt-3 pt-3 border-t border-slate-600/50">
+                      <div className="mt-3 pt-3 border-t border-border/50">
                         <Badge className={`${getLocationStatus(selectedTecnico.timestamp).status === 'online' ? 'bg-green-500/20 text-green-300' :
                           getLocationStatus(selectedTecnico.timestamp).status === 'active' ? 'bg-yellow-500/20 text-yellow-300' :
                             'bg-red-500/20 text-red-300'
@@ -439,9 +439,9 @@ export function ModernTecnicosMapView() {
 
         {/* Lista de Técnicos */}
         {!isFullscreen && (
-          <Card className="bg-slate-800/50 border-slate-700/50">
+          <Card className="bg-card border-border">
             <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-white">
+              <CardTitle className="flex items-center gap-2 text-foreground">
                 <User className="h-5 w-5 text-green-400" />
                 Técnicos em Campo
               </CardTitle>
@@ -449,17 +449,17 @@ export function ModernTecnicosMapView() {
               {/* Filtros */}
               <div className="space-y-3">
                 <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Buscar técnico..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                    className="pl-10 bg-secondary/60 border-border/50 text-foreground placeholder:text-muted-foreground"
                   />
                 </div>
 
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                  <SelectTrigger className="bg-secondary/60 border-border/50 text-foreground">
                     <SelectValue placeholder="Filtrar por status" />
                   </SelectTrigger>
                   <SelectContent>
@@ -480,9 +480,9 @@ export function ModernTecnicosMapView() {
                     return (
                       <div
                         key={location.tecnico_id}
-                        className={`p-4 rounded-lg border transition-all cursor-pointer hover:bg-slate-700/50 ${selectedTecnico?.tecnico_id === location.tecnico_id
+                        className={`p-4 rounded-lg border transition-all cursor-pointer hover:bg-secondary/60 ${selectedTecnico?.tecnico_id === location.tecnico_id
                           ? 'bg-blue-500/20 border-blue-500/50'
-                          : 'bg-slate-700/30 border-slate-600/30'
+                          : 'bg-secondary/40 border-border/30'
                           }`}
                         onClick={() => centerOnTecnico(location)}
                       >
@@ -490,7 +490,7 @@ export function ModernTecnicosMapView() {
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <div className={`w-3 h-3 rounded-full ${status.color} ${status.status === 'online' ? 'animate-pulse' : ''}`}></div>
-                              <h4 className="font-semibold text-white">{location.name}</h4>
+                              <h4 className="font-semibold text-foreground">{location.name}</h4>
                               <Badge className={`text-xs ${status.status === 'online' ? 'bg-green-500/20 text-green-300' :
                                 status.status === 'active' ? 'bg-yellow-500/20 text-yellow-300' :
                                   'bg-red-500/20 text-red-300'
@@ -501,24 +501,24 @@ export function ModernTecnicosMapView() {
 
                             <div className="space-y-1 text-sm">
                               {location.especialidade && (
-                                <div className="flex items-center gap-1 text-slate-400">
+                                <div className="flex items-center gap-1 text-muted-foreground">
                                   <Zap className="h-3 w-3" />
                                   <span>{location.especialidade}</span>
                                 </div>
                               )}
 
-                              <div className="flex items-center gap-1 text-slate-400">
+                              <div className="flex items-center gap-1 text-muted-foreground">
                                 <Mail className="h-3 w-3" />
                                 <span className="truncate">{location.email}</span>
                               </div>
 
-                              <div className="flex items-center gap-1 text-slate-400">
+                              <div className="flex items-center gap-1 text-muted-foreground">
                                 <Calendar className="h-3 w-3" />
                                 <span>{formatTimeAgo(location.timestamp)}</span>
                               </div>
 
                               {location.accuracy && (
-                                <div className="flex items-center gap-1 text-slate-500">
+                                <div className="flex items-center gap-1 text-muted-foreground/70">
                                   <Navigation className="h-3 w-3" />
                                   <span>±{Math.round(location.accuracy)}m</span>
                                 </div>
@@ -533,7 +533,7 @@ export function ModernTecnicosMapView() {
                               e.stopPropagation();
                               centerOnTecnico(location);
                             }}
-                            className="text-slate-400 hover:text-white"
+                            className="text-muted-foreground hover:text-foreground"
                           >
                             <MapPin className="h-4 w-4" />
                           </Button>
@@ -543,9 +543,9 @@ export function ModernTecnicosMapView() {
                   })
                 ) : (
                   <div className="text-center py-8">
-                    <User className="h-12 w-12 mx-auto mb-3 text-slate-600" />
-                    <p className="text-slate-400">Nenhum técnico encontrado</p>
-                    <p className="text-slate-500 text-sm mt-1">
+                    <User className="h-12 w-12 mx-auto mb-3 text-muted-foreground" />
+                    <p className="text-muted-foreground">Nenhum técnico encontrado</p>
+                    <p className="text-muted-foreground/70 text-sm mt-1">
                       Ajuste os filtros ou aguarde atualizações
                     </p>
                   </div>
@@ -553,8 +553,8 @@ export function ModernTecnicosMapView() {
               </div>
 
               {lastUpdate && (
-                <div className="mt-4 pt-4 border-t border-slate-700/50">
-                  <p className="text-xs text-slate-500 text-center">
+                <div className="mt-4 pt-4 border-t border-border">
+                  <p className="text-xs text-muted-foreground/70 text-center">
                     Última atualização: {lastUpdate.toLocaleTimeString('pt-BR')}
                   </p>
                 </div>

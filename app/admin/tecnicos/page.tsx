@@ -194,27 +194,27 @@ export default function TecnicosPage() {
     <AdminLayout>
       <div className="space-y-4 max-w-full overflow-hidden">
         <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
-          <h1 className="text-2xl font-bold text-white">Gestão de Técnicos</h1>
-          <Button onClick={() => abrirFormulario()} className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
+          <h1 className="text-2xl font-bold text-foreground">Gestão de Técnicos</h1>
+          <Button onClick={() => abrirFormulario()} className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto">
             <UserPlus className="mr-2 h-4 w-4" />
             Novo Técnico
           </Button>
         </div>
 
         {/* Filtros */}
-        <Card className="bg-slate-800/50 border-slate-700/50">
+        <Card className="bg-card border-border">
           <CardContent className="pt-6">
             <div className="space-y-4">
               {/* Barra de pesquisa - sempre em linha separada no mobile */}
               <div className="w-full">
-                <Label htmlFor="pesquisa" className="text-slate-200">Pesquisar</Label>
+                <Label htmlFor="pesquisa" className="text-foreground/80">Pesquisar</Label>
                 <div className="relative">
-                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-slate-400" />
+                  <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="pesquisa"
                     type="text"
                     placeholder="Nome ou email do técnico..."
-                    className="pl-8 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400 w-full"
+                    className="pl-8 bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60 w-full"
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                   />
@@ -224,15 +224,15 @@ export default function TecnicosPage() {
               {/* Filtros em grid responsivo */}
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
                 <div>
-                  <Label htmlFor="especialidade" className="text-slate-200">Especialidade</Label>
+                  <Label htmlFor="especialidade" className="text-foreground/80">Especialidade</Label>
                   <Select
                     value={filtroEspecialidade}
                     onValueChange={setFiltroEspecialidade}
                   >
-                    <SelectTrigger id="especialidade" className="bg-slate-700/50 border-slate-600/50 text-white">
+                    <SelectTrigger id="especialidade" className="bg-secondary/60 border-input text-foreground">
                       <SelectValue placeholder="Todas as especialidades" />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectContent className="border-border">
                       <SelectItem value="all">Todas as especialidades</SelectItem>
                       {especialidades.filter(esp => esp).map(esp => (
                         <SelectItem key={esp!} value={esp!}>{esp!}</SelectItem>
@@ -242,15 +242,15 @@ export default function TecnicosPage() {
                 </div>
 
                 <div>
-                  <Label htmlFor="status" className="text-slate-200">Status</Label>
+                  <Label htmlFor="status" className="text-foreground/80">Status</Label>
                   <Select
                     value={filtroStatus}
                     onValueChange={setFiltroStatus}
                   >
-                    <SelectTrigger id="status" className="bg-slate-700/50 border-slate-600/50 text-white">
+                    <SelectTrigger id="status" className="bg-secondary/60 border-input text-foreground">
                       <SelectValue placeholder="Todos os status" />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectContent className="border-border">
                       <SelectItem value="all">Todos os status</SelectItem>
                       <SelectItem value="ativo">Ativo</SelectItem>
                       <SelectItem value="inativo">Inativo</SelectItem>
@@ -258,16 +258,16 @@ export default function TecnicosPage() {
                   </Select>
                 </div>
 
-                <div className="sm:col-span-2 lg:col-span-1">
-                  <Label htmlFor="disponibilidade" className="text-slate-200">Disponibilidade</Label>
+                <div className="sm:col-span-2 xl:col-span-1">
+                  <Label htmlFor="disponibilidade" className="text-foreground/80">Disponibilidade</Label>
                   <Select
                     value={filtroDisponibilidade}
                     onValueChange={setFiltroDisponibilidade}
                   >
-                    <SelectTrigger id="disponibilidade" className="bg-slate-700/50 border-slate-600/50 text-white">
+                    <SelectTrigger id="disponibilidade" className="bg-secondary/60 border-input text-foreground">
                       <SelectValue placeholder="Todas as disponibilidades" />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectContent className="border-border">
                       <SelectItem value="all">Todas as disponibilidades</SelectItem>
                       <SelectItem value="true">Disponível</SelectItem>
                       <SelectItem value="false">Indisponível</SelectItem>
@@ -281,15 +281,15 @@ export default function TecnicosPage() {
         </Card>
 
         {/* Lista de Técnicos */}
-        <Card className="bg-slate-800/50 border-slate-700/50">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">Técnicos ({tecnicosFiltrados.length})</CardTitle>
+            <CardTitle className="text-foreground">Técnicos ({tecnicosFiltrados.length})</CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
-              <div className="text-center py-4 text-slate-400">Carregando técnicos...</div>
+              <div className="text-center py-4 text-muted-foreground">Carregando técnicos...</div>
             ) : tecnicosFiltrados.length === 0 ? (
-              <div className="text-center py-4 text-slate-500">
+              <div className="text-center py-4 text-muted-foreground/70">
                 Nenhum técnico encontrado com os filtros selecionados.
               </div>
             ) : (
@@ -299,44 +299,44 @@ export default function TecnicosPage() {
                   <div className="min-w-full">
                     <table className="w-full table-auto">
                       <thead>
-                        <tr className="border-b border-slate-700">
-                          <th className="text-left py-3 px-2 font-medium text-slate-300 min-w-[120px]">Nome</th>
-                          <th className="text-left py-3 px-2 font-medium text-slate-300 min-w-[150px]">Email</th>
-                          <th className="text-left py-3 px-2 font-medium text-slate-300 min-w-[100px]">Telefone</th>
-                          <th className="text-left py-3 px-2 font-medium text-slate-300 min-w-[120px]">Especialidade</th>
-                          <th className="text-left py-3 px-2 font-medium text-slate-300 min-w-[80px]">Status</th>
-                          <th className="text-left py-3 px-2 font-medium text-slate-300 min-w-[100px]" title="Aceita novos tickets (pode estar offline)">Disponibilidade</th>
-                          <th className="text-left py-3 px-2 font-medium text-slate-300 min-w-[80px]" title="Ligado à aplicação neste momento">Online</th>
-                          <th className="text-left py-3 px-2 font-medium text-slate-300 min-w-[80px]">Avaliação</th>
-                          <th className="text-left py-3 px-2 font-medium text-slate-300 min-w-[120px]">Ações</th>
+                        <tr className="border-b border-border">
+                          <th className="text-left py-3 px-2 font-medium text-muted-foreground min-w-[120px]">Nome</th>
+                          <th className="text-left py-3 px-2 font-medium text-muted-foreground min-w-[150px]">Email</th>
+                          <th className="text-left py-3 px-2 font-medium text-muted-foreground min-w-[100px]">Telefone</th>
+                          <th className="text-left py-3 px-2 font-medium text-muted-foreground min-w-[120px]">Especialidade</th>
+                          <th className="text-left py-3 px-2 font-medium text-muted-foreground min-w-[80px]">Status</th>
+                          <th className="text-left py-3 px-2 font-medium text-muted-foreground min-w-[100px]" title="Aceita novos tickets (pode estar offline)">Disponibilidade</th>
+                          <th className="text-left py-3 px-2 font-medium text-muted-foreground min-w-[80px]" title="Ligado à aplicação neste momento">Online</th>
+                          <th className="text-left py-3 px-2 font-medium text-muted-foreground min-w-[80px]">Avaliação</th>
+                          <th className="text-left py-3 px-2 font-medium text-muted-foreground min-w-[120px]">Ações</th>
                         </tr>
                       </thead>
                       <tbody>
                         {paginatedTecnicos.map((tecnico) => (
-                          <tr key={tecnico.id} className="border-b border-slate-700/50 hover:bg-slate-700/30">
-                            <td className="py-3 px-2 text-white truncate max-w-[120px]" title={tecnico.name}>{tecnico.name}</td>
-                            <td className="py-3 px-2 text-slate-300 truncate max-w-[150px]" title={tecnico.email}>{tecnico.email}</td>
-                            <td className="py-3 px-2 text-slate-300 truncate max-w-[100px]">{tecnico.telefone || '-'}</td>
-                            <td className="py-3 px-2 text-slate-300 truncate max-w-[120px]" title={tecnico.especialidade || 'Geral'}>{tecnico.especialidade || 'Geral'}</td>
+                          <tr key={tecnico.id} className="border-b border-border hover:bg-muted/40">
+                            <td className="py-3 px-2 text-foreground truncate max-w-[120px]" title={tecnico.name}>{tecnico.name}</td>
+                            <td className="py-3 px-2 text-muted-foreground truncate max-w-[150px]" title={tecnico.email}>{tecnico.email}</td>
+                            <td className="py-3 px-2 text-muted-foreground truncate max-w-[100px]">{tecnico.telefone || '-'}</td>
+                            <td className="py-3 px-2 text-muted-foreground truncate max-w-[120px]" title={tecnico.especialidade || 'Geral'}>{tecnico.especialidade || 'Geral'}</td>
                             <td className="py-3 px-2">
                               <Badge
-                                className={`${tecnico.status === 'ativo' ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-slate-600/50 text-slate-300 border-slate-500/50'} text-xs`}
+                                className={`${tecnico.status === 'ativo' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 'bg-muted text-muted-foreground border-border'} text-xs`}
                               >
                                 {tecnico.status === 'ativo' ? 'Ativo' : 'Inativo'}
                               </Badge>
                             </td>
                             <td className="py-3 px-2" title={tecnico.disponibilidade ? 'Aceita novos tickets' : 'Não aceita novos tickets'}>
                               <Badge
-                                className={`${tecnico.disponibilidade ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-slate-600/50 text-slate-300 border-slate-500/50'} text-xs`}
+                                className={`${tecnico.disponibilidade ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' : 'bg-muted text-muted-foreground border-border'} text-xs`}
                               >
                                 {tecnico.disponibilidade ? 'Disponível' : 'Indisponível'}
                               </Badge>
                             </td>
                             <td className="py-3 px-2" title={tecnico.is_online ? 'Ligado à app agora' : 'Não está ligado à aplicação'}>
                               <div className="flex items-center gap-1">
-                                <div className={`w-2 h-2 rounded-full ${tecnico.is_online ? 'bg-green-400 animate-pulse' : 'bg-slate-600'
+                                <div className={`w-2 h-2 rounded-full ${tecnico.is_online ? 'bg-green-400 animate-pulse' : 'bg-muted-foreground/40'
                                   }`}></div>
-                                <span className="text-xs text-slate-400">
+                                <span className="text-xs text-muted-foreground">
                                   {tecnico.is_online ? 'Online' : 'Offline'}
                                 </span>
                               </div>
@@ -344,11 +344,11 @@ export default function TecnicosPage() {
                             <td className="py-3 px-2">
                               {tecnico.avaliacao != null ? (
                                 <div className="flex items-center gap-1">
-                                  <span className="text-sm font-medium text-white">{Number(tecnico.avaliacao).toFixed(1)}</span>
-                                  <span className="text-xs text-slate-500">/5</span>
+                                  <span className="text-sm font-medium text-foreground">{Number(tecnico.avaliacao).toFixed(1)}</span>
+                                  <span className="text-xs text-muted-foreground/70">/5</span>
                                 </div>
                               ) : (
-                                <span className="text-xs text-slate-500">-</span>
+                                <span className="text-xs text-muted-foreground/70">-</span>
                               )}
                             </td>
                             <td className="py-3 px-2">
@@ -358,7 +358,7 @@ export default function TecnicosPage() {
                                   size="sm"
                                   onClick={() => abrirFormulario(tecnico, true)}
                                   title="Visualizar"
-                                  className="text-slate-400 hover:text-white hover:bg-slate-600 h-8 w-8 p-0"
+                                  className="text-muted-foreground hover:text-foreground hover:bg-accent h-8 w-8 p-0"
                                 >
                                   <Eye className="h-3 w-3" />
                                 </Button>
@@ -367,7 +367,7 @@ export default function TecnicosPage() {
                                   size="sm"
                                   onClick={() => abrirFormulario(tecnico)}
                                   title="Editar"
-                                  className="text-slate-400 hover:text-white hover:bg-slate-600 h-8 w-8 p-0"
+                                  className="text-muted-foreground hover:text-foreground hover:bg-accent h-8 w-8 p-0"
                                 >
                                   <Edit className="h-3 w-3" />
                                 </Button>
@@ -376,7 +376,7 @@ export default function TecnicosPage() {
                                   size="sm"
                                   onClick={() => excluirTecnico(tecnico.id)}
                                   title="Excluir"
-                                  className="text-slate-400 hover:text-red-400 hover:bg-slate-600 h-8 w-8 p-0"
+                                  className="text-muted-foreground hover:text-red-400 hover:bg-accent h-8 w-8 p-0"
                                 >
                                   <Trash2 className="h-3 w-3" />
                                 </Button>
@@ -392,22 +392,22 @@ export default function TecnicosPage() {
                 {/* Cards para mobile e tablet */}
                 <div className="xl:hidden space-y-4">
                   {paginatedTecnicos.map((tecnico) => (
-                    <Card key={tecnico.id} className="bg-slate-700/30 border-slate-600/30">
+                    <Card key={tecnico.id} className="bg-secondary/40 border-border">
                       <CardContent className="p-4">
                         <div className="space-y-4">
                           {/* Header com nome e status online */}
                           <div className="flex items-start justify-between">
                             <div className="flex-1 min-w-0">
-                              <h3 className="font-semibold text-white text-lg truncate" title={tecnico.name}>{tecnico.name}</h3>
-                              <p className="text-slate-300 text-sm truncate" title={tecnico.email}>{tecnico.email}</p>
+                              <h3 className="font-semibold text-foreground text-lg truncate" title={tecnico.name}>{tecnico.name}</h3>
+                              <p className="text-muted-foreground text-sm truncate" title={tecnico.email}>{tecnico.email}</p>
                               {tecnico.telefone && (
-                                <p className="text-slate-400 text-sm">{tecnico.telefone}</p>
+                                <p className="text-muted-foreground text-sm">{tecnico.telefone}</p>
                               )}
                             </div>
                             <div className="flex items-center gap-2 ml-2">
-                              <div className={`w-3 h-3 rounded-full ${tecnico.is_online ? 'bg-green-400 animate-pulse' : 'bg-slate-600'
+                              <div className={`w-3 h-3 rounded-full ${tecnico.is_online ? 'bg-green-400 animate-pulse' : 'bg-muted-foreground/40'
                                 }`}></div>
-                              <span className="text-xs text-slate-400 whitespace-nowrap">
+                              <span className="text-xs text-muted-foreground whitespace-nowrap">
                                 {tecnico.is_online ? 'Online' : 'Offline'}
                               </span>
                             </div>
@@ -416,17 +416,17 @@ export default function TecnicosPage() {
                           {/* Badges e informações */}
                           <div className="flex flex-wrap gap-2">
                             <Badge
-                              className={`${tecnico.status === 'ativo' ? 'bg-green-500/20 text-green-300 border-green-500/30' : 'bg-slate-600/50 text-slate-300 border-slate-500/50'} text-xs`}
+                              className={`${tecnico.status === 'ativo' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/20' : 'bg-muted text-muted-foreground border-border'} text-xs`}
                             >
                               {tecnico.status === 'ativo' ? 'Ativo' : 'Inativo'}
                             </Badge>
                             <Badge
-                              className={`${tecnico.disponibilidade ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : 'bg-slate-600/50 text-slate-300 border-slate-500/50'} text-xs`}
+                              className={`${tecnico.disponibilidade ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border-blue-500/20' : 'bg-muted text-muted-foreground border-border'} text-xs`}
                             >
                               {tecnico.disponibilidade ? 'Disponível' : 'Indisponível'}
                             </Badge>
                             {tecnico.especialidade && (
-                              <Badge className="bg-purple-500/20 text-purple-300 border-purple-500/30 text-xs">
+                              <Badge className="bg-purple-500/10 text-purple-600 dark:text-purple-400 border-purple-500/20 text-xs">
                                 {tecnico.especialidade}
                               </Badge>
                             )}
@@ -436,29 +436,29 @@ export default function TecnicosPage() {
                           <div className="space-y-2 text-sm">
                             {tecnico.avaliacao ? (
                               <div className="flex items-center gap-1">
-                                <span className="text-slate-400">Avaliação:</span>
-                                <span className="font-medium text-white">{Number(tecnico.avaliacao).toFixed(1)}</span>
-                                <span className="text-slate-500">/5</span>
+                                <span className="text-muted-foreground">Avaliação:</span>
+                                <span className="font-medium text-foreground">{Number(tecnico.avaliacao).toFixed(1)}</span>
+                                <span className="text-muted-foreground/70">/5</span>
                               </div>
                             ) : (
-                              <span className="text-slate-500">Sem avaliação</span>
+                              <span className="text-muted-foreground/70">Sem avaliação</span>
                             )}
 
                             {tecnico.last_seen && (
-                              <div className="text-slate-500 text-xs">
-                                Última atividade: {new Date(tecnico.last_seen).toLocaleTimeString('pt-BR')}
+                              <div className="text-muted-foreground/70 text-xs">
+                                Última atividade: {new Date(tecnico.last_seen).toLocaleTimeString('pt-PT')}
                               </div>
                             )}
                           </div>
 
                           {/* Ações */}
-                          <div className="flex gap-2 pt-2 border-t border-slate-600/30">
+                          <div className="flex gap-2 pt-2 border-t border-border">
                             <Button
                               variant="ghost"
                               size="sm"
                               onClick={() => abrirFormulario(tecnico, true)}
                               title="Visualizar"
-                              className="text-slate-400 hover:text-white hover:bg-slate-600 flex-1"
+                              className="text-muted-foreground hover:text-foreground hover:bg-accent flex-1"
                             >
                               <Eye className="h-4 w-4 mr-2" />
                               Ver
@@ -468,7 +468,7 @@ export default function TecnicosPage() {
                               size="sm"
                               onClick={() => abrirFormulario(tecnico)}
                               title="Editar"
-                              className="text-slate-400 hover:text-white hover:bg-slate-600 flex-1"
+                              className="text-muted-foreground hover:text-foreground hover:bg-accent flex-1"
                             >
                               <Edit className="h-4 w-4 mr-2" />
                               Editar
@@ -478,7 +478,7 @@ export default function TecnicosPage() {
                               size="sm"
                               onClick={() => excluirTecnico(tecnico.id)}
                               title="Excluir"
-                              className="text-slate-400 hover:text-red-400 hover:bg-slate-600 flex-1"
+                              className="text-muted-foreground hover:text-red-400 hover:bg-accent flex-1"
                             >
                               <Trash2 className="h-4 w-4 mr-2" />
                               Excluir
@@ -508,9 +508,9 @@ export default function TecnicosPage() {
 
       {/* Modal de Cadastro/Edição */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto bg-slate-800 border-slate-700 mx-4">
+        <DialogContent className="w-[95vw] max-w-md max-h-[90vh] overflow-y-auto border-border mx-4">
           <DialogHeader>
-            <DialogTitle className="text-white text-lg sm:text-xl">
+            <DialogTitle className="text-foreground text-lg sm:text-xl">
               {selectedTecnico
                 ? isEditing
                   ? `Visualizar: ${selectedTecnico.name}`
@@ -521,19 +521,19 @@ export default function TecnicosPage() {
 
           <div className="space-y-4 py-4">
             <div>
-              <Label htmlFor="nome" className="text-slate-200">Nome</Label>
+              <Label htmlFor="nome" className="text-foreground/80">Nome</Label>
               <Input
                 id="nome"
                 value={nome}
                 onChange={(e) => setNome(e.target.value)}
                 disabled={isEditing}
                 placeholder="Nome completo do técnico"
-                className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
               />
             </div>
 
             <div>
-              <Label htmlFor="email" className="text-slate-200">Email</Label>
+              <Label htmlFor="email" className="text-foreground/80">Email</Label>
               <Input
                 id="email"
                 type="email"
@@ -541,45 +541,45 @@ export default function TecnicosPage() {
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isEditing}
                 placeholder="email@exemplo.com"
-                className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
               />
             </div>
 
             <div>
-              <Label htmlFor="telefone" className="text-slate-200">Telefone</Label>
+              <Label htmlFor="telefone" className="text-foreground/80">Telefone</Label>
               <Input
                 id="telefone"
                 value={telefone}
                 onChange={(e) => setTelefone(e.target.value)}
                 disabled={isEditing}
                 placeholder="(00) 00000-0000"
-                className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
               />
             </div>
 
             <div>
-              <Label htmlFor="especialidade" className="text-slate-200">Especialidade</Label>
+              <Label htmlFor="especialidade" className="text-foreground/80">Especialidade</Label>
               <Input
                 id="especialidade"
                 value={especialidade}
                 onChange={(e) => setEspecialidade(e.target.value)}
                 disabled={isEditing}
                 placeholder="Ex: Solar, Baterias, Furo de Água..."
-                className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
               />
             </div>
 
             <div>
-              <Label htmlFor="status-select" className="text-slate-200">Status</Label>
+              <Label htmlFor="status-select" className="text-foreground/80">Status</Label>
               <Select
                 value={status}
                 onValueChange={(value: 'ativo' | 'inativo') => setStatus(value)}
                 disabled={isEditing}
               >
-                <SelectTrigger id="status-select" className="bg-slate-700/50 border-slate-600/50 text-white">
+                <SelectTrigger id="status-select" className="bg-secondary/60 border-input text-foreground">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectContent className="border-border">
                   <SelectItem value="ativo">Ativo</SelectItem>
                   <SelectItem value="inativo">Inativo</SelectItem>
                 </SelectContent>
@@ -591,13 +591,13 @@ export default function TecnicosPage() {
             <Button
               variant="outline"
               onClick={() => setIsDialogOpen(false)}
-              className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white w-full sm:w-auto"
+              className="border-border text-muted-foreground hover:bg-accent hover:text-foreground w-full sm:w-auto"
             >
               {isEditing ? 'Fechar' : 'Cancelar'}
             </Button>
 
             {!isEditing && (
-              <Button onClick={salvarTecnico} className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto">
+              <Button onClick={salvarTecnico} className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto">
                 {selectedTecnico ? 'Atualizar' : 'Cadastrar'}
               </Button>
             )}

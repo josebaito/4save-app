@@ -6,9 +6,11 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
 import { useSession } from 'next-auth/react';
 import { db } from '@/lib/db/supabase';
 import { toast } from 'sonner';
+import { Wrench, Shield, Star } from 'lucide-react';
 
 interface ProfileFormState {
   name: string;
@@ -117,21 +119,60 @@ export default function TecnicoPerfilPage() {
 
   return (
     <TecnicoLayout>
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold text-foreground">Meu Perfil</h1>
-          <p className="text-muted-foreground">Atualize suas informações e segurança</p>
+      <div className="space-y-6 max-w-4xl">
+        {/* Header */}
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Meu Perfil</h1>
+            <p className="text-sm text-muted-foreground">Gerir informações e segurança</p>
+          </div>
+          <Badge variant="outline" className="w-fit flex items-center gap-1.5 px-3 py-1.5 text-sm border-primary/30 text-primary">
+            <Wrench className="h-3.5 w-3.5" />
+            Técnico
+          </Badge>
         </div>
 
-        <Card className="bg-card/70 border-border">
+        {/* Avatar + Info rápida */}
+        {!loading && (
+          <Card className="bg-card border-border">
+            <CardContent className="pt-5 pb-5">
+              <div className="flex items-center gap-4">
+                <div className="h-14 w-14 rounded-full bg-gradient-to-tr from-primary to-orange-300 flex items-center justify-center shrink-0">
+                  <Wrench className="h-6 w-6 text-primary-foreground" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-foreground text-lg leading-tight truncate">{form.name || '—'}</p>
+                  <p className="text-sm text-muted-foreground truncate">{form.email}</p>
+                  <div className="flex flex-wrap items-center gap-3 mt-1.5">
+                    <Badge variant={form.disponibilidade ? 'finalizado' : 'muted'} className="text-xs">
+                      {form.disponibilidade ? 'Disponível' : 'Indisponível'}
+                    </Badge>
+                    {form.avaliacao != null && (
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <Star className="h-3 w-3 text-amber-400" />
+                        <span>{form.avaliacao.toFixed(1)}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        )}
+
+        {/* Informações pessoais */}
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-foreground">Informações do Técnico</CardTitle>
+            <CardTitle className="text-foreground text-base">Informações do Técnico</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {loading ? (
-              <p className="text-sm text-muted-foreground">Carregando...</p>
+              <div className="flex items-center gap-2 text-sm text-muted-foreground py-4">
+                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary" />
+                A carregar...
+              </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name">Nome</Label>
                   <Input
@@ -160,53 +201,50 @@ export default function TecnicoPerfilPage() {
                     onChange={(e) => setForm({ ...form, especialidade: e.target.value })}
                   />
                 </div>
-                <div className="space-y-2">
-                  <Label>Disponibilidade</Label>
-                  <Input value={form.disponibilidade ? 'Disponível' : 'Indisponível'} disabled />
-                </div>
-                <div className="space-y-2">
-                  <Label>Status</Label>
-                  <Input value={form.status || 'ativo'} disabled />
-                </div>
               </div>
             )}
-
-            <div className="flex justify-end">
-              <Button onClick={handleSave} disabled={saving}>
-                {saving ? 'Salvando...' : 'Salvar Alterações'}
+            <div className="flex justify-end pt-2">
+              <Button onClick={handleSave} disabled={saving} className="bg-primary hover:bg-primary/90 text-primary-foreground">
+                {saving ? 'A guardar...' : 'Guardar Alterações'}
               </Button>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-card/70 border-border">
+        {/* Segurança */}
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-foreground">Segurança</CardTitle>
+            <CardTitle className="text-foreground text-base flex items-center gap-2">
+              <Shield className="h-4 w-4 text-primary" />
+              Segurança
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="newPassword">Nova Senha</Label>
+                <Label htmlFor="newPassword">Nova Palavra-passe</Label>
                 <Input
                   id="newPassword"
                   type="password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="••••••••"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+                <Label htmlFor="confirmPassword">Confirmar Palavra-passe</Label>
                 <Input
                   id="confirmPassword"
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
+                  placeholder="••••••••"
                 />
               </div>
             </div>
-            <div className="flex justify-end">
-              <Button onClick={handlePasswordChange} disabled={passwordSaving}>
-                {passwordSaving ? 'Atualizando...' : 'Atualizar Senha'}
+            <div className="flex justify-end pt-2">
+              <Button onClick={handlePasswordChange} disabled={passwordSaving} variant="outline">
+                {passwordSaving ? 'A actualizar...' : 'Actualizar Palavra-passe'}
               </Button>
             </div>
           </CardContent>

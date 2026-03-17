@@ -177,7 +177,7 @@ export function RelatorioManutencao() {
           <CardDescription>Nenhum dado disponível</CardDescription>
         </CardHeader>
         <CardContent className="min-h-[400px] flex flex-col items-center justify-center">
-          <FileText className="h-16 w-16 text-gray-300 mb-4" />
+          <FileText className="h-16 w-16 text-muted-foreground mb-4" />
           <p className="text-muted-foreground">Não foi possível carregar os dados do relatório</p>
           <Button onClick={carregarRelatorio} variant="outline" className="mt-4">
             <RefreshCw className="h-4 w-4 mr-2" />
@@ -317,7 +317,7 @@ export function RelatorioManutencao() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b bg-muted/50">
+                    <tr className="border-b bg-secondary/60">
                       <th className="h-10 px-4 text-left font-medium">Cliente</th>
                       <th className="h-10 px-4 text-left font-medium">Contrato</th>
                       <th className="h-10 px-4 text-left font-medium">Tipo</th>
@@ -331,7 +331,7 @@ export function RelatorioManutencao() {
                         <td className="p-4">{item.cliente_nome}</td>
                         <td className="p-4">{item.contrato_descricao}</td>
                         <td className="p-4">
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${item.tipo_manutencao === 'preventiva' ? 'bg-blue-100 text-blue-800' : item.tipo_manutencao === 'corretiva' ? 'bg-red-100 text-red-800' : 'bg-purple-100 text-purple-800'}`}>
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${item.tipo_manutencao === 'preventiva' ? 'bg-blue-500/15 text-blue-400' : item.tipo_manutencao === 'corretiva' ? 'bg-red-500/15 text-red-400' : 'bg-purple-500/15 text-purple-400'}`}>
                             {item.tipo_manutencao}
                           </span>
                         </td>
@@ -357,7 +357,7 @@ export function RelatorioManutencao() {
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
-                    <tr className="border-b bg-muted/50">
+                    <tr className="border-b bg-secondary/60">
                       <th className="h-10 px-4 text-left font-medium">Título</th>
                       <th className="h-10 px-4 text-left font-medium">Cliente</th>
                       <th className="h-10 px-4 text-left font-medium">Técnico</th>
@@ -373,12 +373,12 @@ export function RelatorioManutencao() {
                         <td className="p-4">{ticket.cliente_nome}</td>
                         <td className="p-4">{ticket.tecnico_nome}</td>
                         <td className="p-4">
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${ticket.status === 'finalizado' ? 'bg-green-100 text-green-800' : ticket.status === 'em_andamento' ? 'bg-blue-100 text-blue-800' : ticket.status === 'pendente' ? 'bg-amber-100 text-amber-800' : 'bg-slate-500/15 text-foreground'}`}>
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${ticket.status === 'finalizado' ? 'bg-emerald-500/15 text-emerald-400' : ticket.status === 'em_andamento' ? 'bg-blue-500/15 text-blue-400' : ticket.status === 'pendente' ? 'bg-amber-500/15 text-amber-400' : 'bg-slate-500/15 text-foreground'}`}>
                             {ticket.status.replace('_', ' ')}
                           </span>
                         </td>
                         <td className="p-4">
-                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${ticket.prioridade === 'alta' ? 'bg-red-100 text-red-800' : ticket.prioridade === 'media' ? 'bg-amber-100 text-amber-800' : 'bg-green-100 text-green-800'}`}>
+                          <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${ticket.prioridade === 'alta' ? 'bg-red-500/15 text-red-400' : ticket.prioridade === 'media' ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/15 text-emerald-400'}`}>
                             {ticket.prioridade}
                           </span>
                         </td>

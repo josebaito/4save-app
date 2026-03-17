@@ -45,111 +45,103 @@
 }
 
 :root {
-  --radius: 0.3rem;
-  /* Precision radius (sharper) */
+  --radius: 0.5rem;
 
-  /* Industrial Precise Theme - Light Mode */
-  --background: oklch(0.985 0.002 247.858);
-  /* Slightly off-white */
-  --foreground: oklch(0.129 0.042 264.695);
-  /* Deep Slate */
+  /* 4Save Professional — Modo Claro */
+  --background: oklch(0.975 0.002 247.858);
+  --foreground: oklch(0.13 0.042 264.695);
 
   --card: oklch(1 0 0);
-  --card-foreground: oklch(0.129 0.042 264.695);
+  --card-foreground: oklch(0.13 0.042 264.695);
 
   --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.129 0.042 264.695);
+  --popover-foreground: oklch(0.13 0.042 264.695);
 
-  /* Safety Orange Primary */
-  --primary: oklch(0.55 0.22 45);
-  /* Intense Orange */
+  /* Safety Orange — Identidade 4Save */
+  --primary: oklch(0.62 0.22 45);
   --primary-foreground: oklch(1 0 0);
 
-  --secondary: oklch(0.968 0.007 247.896);
-  --secondary-foreground: oklch(0.208 0.042 265.755);
+  --secondary: oklch(0.965 0.007 247.896);
+  --secondary-foreground: oklch(0.21 0.042 265.755);
 
-  --muted: oklch(0.95 0.005 247.896);
-  --muted-foreground: oklch(0.45 0.04 257.417);
-  /* Darker muted text for readability */
+  --muted: oklch(0.945 0.005 247.896);
+  --muted-foreground: oklch(0.47 0.04 257.417);
 
-  --accent: oklch(0.95 0.01 45);
-  /* Light Orange tint */
-  --accent-foreground: oklch(0.35 0.15 45);
-  /* Dark Orange text */
+  --accent: oklch(0.952 0.012 45);
+  --accent-foreground: oklch(0.38 0.15 45);
 
   --destructive: oklch(0.571 0.224 22.083);
   --destructive-foreground: oklch(1 0 0);
 
-  --border: oklch(0.88 0.01 255.5);
-  /* Crisp borders */
-  --input: oklch(0.88 0.01 255.5);
-  --ring: oklch(0.55 0.22 45);
+  --border: oklch(0.875 0.012 255.5);
+  --input: oklch(0.875 0.012 255.5);
+  --ring: oklch(0.62 0.22 45);
 
-  --chart-1: oklch(0.55 0.22 45);
-  /* Orange */
+  /* Gráficos */
+  --chart-1: oklch(0.62 0.22 45);
   --chart-2: oklch(0.60 0.18 250);
-  /* Tech Blue */
-  --chart-3: oklch(0.6 0.118 184.704);
-  --chart-4: oklch(0.828 0.189 84.429);
+  --chart-3: oklch(0.65 0.18 150);
+  --chart-4: oklch(0.78 0.18 78);
   --chart-5: oklch(0.704 0.04 256.788);
 
-  --sidebar: oklch(0.97 0.005 247.858);
-  --sidebar-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-primary: oklch(0.55 0.22 45);
+  /* Barra lateral */
+  --sidebar: oklch(0.970 0.004 247.858);
+  --sidebar-foreground: oklch(0.13 0.042 264.695);
+  --sidebar-primary: oklch(0.62 0.22 45);
   --sidebar-primary-foreground: oklch(1 0 0);
-  --sidebar-accent: oklch(0.93 0.01 255.5);
-  --sidebar-accent-foreground: oklch(0.129 0.042 264.695);
-  --sidebar-border: oklch(0.90 0.01 255.5);
-  --sidebar-ring: oklch(0.55 0.22 45);
+  --sidebar-accent: oklch(0.925 0.012 255.5);
+  --sidebar-accent-foreground: oklch(0.13 0.042 264.695);
+  --sidebar-border: oklch(0.890 0.012 255.5);
+  --sidebar-ring: oklch(0.62 0.22 45);
 }
 
 .dark {
-  /* Industrial Precise Theme - Dark Mode */
-  --background: oklch(0.12 0.02 260);
-  /* Matte Black/Slate */
-  --foreground: oklch(0.985 0.002 247.858);
+  /* 4Save Professional — Modo Escuro */
+  --background: oklch(0.108 0.018 262);
+  --foreground: oklch(0.970 0.003 247.858);
 
-  --card: oklch(0.16 0.03 260);
-  /* Darker panel */
-  --card-foreground: oklch(0.985 0.002 247.858);
+  --card: oklch(0.180 0.022 260);
+  --card-foreground: oklch(0.970 0.003 247.858);
 
-  --popover: oklch(0.12 0.02 260);
-  --popover-foreground: oklch(0.985 0.002 247.858);
+  --popover: oklch(0.185 0.022 260);
+  --popover-foreground: oklch(0.970 0.003 247.858);
 
-  /* Orange pops more in dark mode */
-  --primary: oklch(0.60 0.20 45);
-  --primary-foreground: oklch(0.12 0.02 260);
+  /* Orange vibrante no dark */
+  --primary: oklch(0.66 0.23 45);
+  --primary-foreground: oklch(0.10 0.015 262);
 
-  --secondary: oklch(0.24 0.03 260);
-  --secondary-foreground: oklch(0.985 0.002 247.858);
+  --secondary: oklch(0.265 0.024 260);
+  --secondary-foreground: oklch(0.970 0.003 247.858);
 
-  --muted: oklch(0.20 0.02 260);
-  --muted-foreground: oklch(0.60 0.03 260);
+  --muted: oklch(0.230 0.018 262);
+  --muted-foreground: oklch(0.575 0.025 258);
 
-  --accent: oklch(0.24 0.03 260);
-  --accent-foreground: oklch(0.985 0.002 247.858);
+  --accent: oklch(0.265 0.024 260);
+  --accent-foreground: oklch(0.970 0.003 247.858);
 
-  --destructive: oklch(0.444 0.177 22.083);
+  --destructive: oklch(0.55 0.21 22);
   --destructive-foreground: oklch(1 0 0);
 
-  --border: oklch(0.25 0.02 260);
-  --input: oklch(0.25 0.02 260);
-  --ring: oklch(0.60 0.20 45);
+  --border: oklch(0.268 0.018 260);
+  --input: oklch(0.268 0.018 260);
+  --ring: oklch(0.66 0.23 45);
 
-  --chart-1: oklch(0.60 0.20 45);
-  --chart-2: oklch(0.55 0.20 250);
-  --chart-3: oklch(0.6 0.118 184.704);
-  --chart-4: oklch(0.828 0.189 84.429);
+  /* Gráficos */
+  --chart-1: oklch(0.66 0.23 45);
+  --chart-2: oklch(0.60 0.20 250);
+  --chart-3: oklch(0.65 0.18 150);
+  --chart-4: oklch(0.78 0.18 78);
   --chart-5: oklch(0.554 0.046 257.417);
 
-  --sidebar: oklch(0.14 0.02 260);
-  --sidebar-foreground: oklch(0.985 0.002 247.858);
-  --sidebar-primary: oklch(0.60 0.20 45);
-  --sidebar-primary-foreground: oklch(0.12 0.02 260);
-  --sidebar-accent: oklch(0.22 0.02 260);
-  --sidebar-accent-foreground: oklch(0.985 0.002 247.858);
-  --sidebar-border: oklch(0.22 0.02 260);
-  --sidebar-ring: oklch(0.60 0.20 45);
+  /* Barra lateral */
+  --sidebar: oklch(0.132 0.018 260);
+  --sidebar-foreground: oklch(0.970 0.003 247.858);
+  --sidebar-primary: oklch(0.66 0.23 45);
+  --sidebar-primary-foreground: oklch(0.10 0.015 262);
+  --sidebar-accent: oklch(0.212 0.018 260);
+  --sidebar-accent-foreground: oklch(0.970 0.003 247.858);
+  --sidebar-border: oklch(0.212 0.018 260);
+  --sidebar-ring: oklch(0.66 0.23 45);
 }
 
 @layer base {
@@ -161,21 +153,202 @@
     @apply bg-background text-foreground font-body;
   }
 
-  /* H1, H2, H3 use Outfit */
-  h1,
-  h2,
-  h3,
-  h4,
-  h5,
-  h6 {
+  h1, h2, h3, h4, h5, h6 {
     @apply font-heading tracking-tight;
+  }
+
+  /* Scrollbar personalizada */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/40;
+  }
+
+  /* Selecção de texto */
+  ::selection {
+    @apply bg-primary/20 text-foreground;
   }
 }
 
 @layer utilities {
+  /* Padrão de grid de fundo */
   .bg-grid-pattern {
-    background-size: 20px 20px;
+    background-size: 24px 24px;
     background-image: radial-gradient(circle, var(--color-border) 1px, transparent 1px);
-    mask-image: linear-gradient(to bottom, transparent, black, transparent);
+    mask-image: linear-gradient(to bottom, transparent, black 20%, black 80%, transparent);
+  }
+
+  /* Glassmorphism */
+  .glass {
+    @apply bg-card/80 backdrop-blur-md border border-border/50;
+  }
+
+  /* Texto com balanço de linha */
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  /* Sombras personalizadas */
+  .shadow-glow-primary {
+    box-shadow: 0 0 20px oklch(0.62 0.22 45 / 0.15);
+  }
+
+  .dark .shadow-glow-primary {
+    box-shadow: 0 0 24px oklch(0.66 0.23 45 / 0.20);
+  }
+
+  /* Animação de entrada */
+  .animate-fade-up {
+    animation: fade-up 0.4s ease-out both;
+  }
+
+  @keyframes fade-up {
+    from {
+      opacity: 0;
+      transform: translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* Estado ativo na sidebar */
+  .nav-item-active {
+    @apply bg-primary/10 text-primary;
+  }
+
+  /* Linha de status */
+  .status-dot {
+    @apply inline-flex h-2 w-2 rounded-full;
+  }
+
+  .status-dot-pending {
+    @apply bg-amber-400;
+  }
+
+  .status-dot-active {
+    @apply bg-blue-400;
+  }
+
+  .status-dot-done {
+    @apply bg-emerald-400;
+  }
+
+  .status-dot-cancelled {
+    @apply bg-red-400;
+  }
+
+  /* Badges semânticos de estado/prioridade */
+  .badge-pendente {
+    @apply bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30;
+  }
+
+  .badge-em-curso {
+    @apply bg-blue-500/15 text-blue-600 dark:text-blue-400 border border-blue-500/30;
+  }
+
+  .badge-finalizado {
+    @apply bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30;
+  }
+
+  .badge-cancelado {
+    @apply bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30;
+  }
+
+  .badge-urgente {
+    @apply bg-red-500/15 text-red-600 dark:text-red-400 border border-red-500/30;
+  }
+
+  .badge-alta {
+    @apply bg-orange-500/15 text-orange-600 dark:text-orange-400 border border-orange-500/30;
+  }
+
+  .badge-media {
+    @apply bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30;
+  }
+
+  .badge-baixa {
+    @apply bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30;
+  }
+
+  /* Cronograma status backgrounds */
+  .cronograma-vencida {
+    @apply border-red-500/30 bg-red-500/10;
+  }
+
+  .cronograma-proxima {
+    @apply border-amber-500/30 bg-amber-500/10;
+  }
+
+  /* ── Layout containers ── */
+  .page-container {
+    @apply w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  .page-header {
+    @apply flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between;
+  }
+
+  .section-title {
+    @apply text-lg font-semibold text-foreground tracking-tight;
+  }
+
+  .section-description {
+    @apply text-sm text-muted-foreground;
+  }
+
+  /* ── Table wrapper responsivo ── */
+  .table-wrapper {
+    @apply w-full overflow-x-auto rounded-lg border border-border;
+  }
+
+  /* ── Empty state ── */
+  .empty-state {
+    @apply flex flex-col items-center justify-center py-16 text-center text-muted-foreground gap-3;
+  }
+
+  /* ── Form section ── */
+  .form-section {
+    @apply space-y-4 rounded-lg border border-border p-4 sm:p-5;
+  }
+
+  .form-section-title {
+    @apply text-sm font-semibold text-foreground flex items-center gap-2 mb-3;
+  }
+
+  /* ── Mobile safe area ── */
+  .pb-safe {
+    padding-bottom: max(env(safe-area-inset-bottom, 0px), 1rem);
+  }
+
+  /* ── Animação fade-in ── */
+  .animate-fade-in {
+    animation: fade-in 0.25s ease-out both;
+  }
+
+  @keyframes fade-in {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  /* ── Status dots adicionais ── */
+  .status-dot-online  { @apply bg-emerald-400 animate-pulse; }
+  .status-dot-offline { @apply bg-muted-foreground/40; }
+
+  /* ── Divisor ── */
+  .divider {
+    @apply border-t border-border my-4;
   }
 }

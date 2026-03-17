@@ -78,12 +78,12 @@ export function EstatisticasManutencao() {
         {[1, 2, 3, 4].map((i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="h-4 w-20 bg-slate-600 rounded animate-pulse"></div>
-              <div className="h-5 w-5 bg-slate-600 rounded animate-pulse"></div>
+              <div className="h-4 w-20 bg-muted rounded animate-pulse"></div>
+              <div className="h-5 w-5 bg-muted rounded animate-pulse"></div>
             </CardHeader>
             <CardContent>
-              <div className="h-8 w-12 bg-slate-600 rounded animate-pulse mb-1"></div>
-              <div className="h-3 w-24 bg-slate-600 rounded animate-pulse"></div>
+              <div className="h-8 w-12 bg-muted rounded animate-pulse mb-1"></div>
+              <div className="h-3 w-24 bg-muted rounded animate-pulse"></div>
             </CardContent>
           </Card>
         ))}
@@ -93,61 +93,61 @@ export function EstatisticasManutencao() {
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <Card className="bg-card/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-card/15">
+      <Card className="bg-card border-border shadow-xl hover:shadow-2xl transition-all hover:bg-card/90">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-slate-200">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             Próximas Manutenções
           </CardTitle>
           <Calendar className="h-5 w-5 text-blue-400" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-white">{stats.proximasManutencoes}</div>
-          <p className="text-xs text-slate-300 mt-1">
+          <div className="text-2xl font-bold text-foreground">{stats.proximasManutencoes}</div>
+          <p className="text-xs text-muted-foreground mt-1">
             Agendadas para os próximos 7 dias
           </p>
         </CardContent>
       </Card>
 
-      <Card className="bg-card/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-card/15">
+      <Card className="bg-card border-border shadow-xl hover:shadow-2xl transition-all hover:bg-card/90">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-slate-200">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             Manutenções Pendentes
           </CardTitle>
           <AlertTriangle className="h-5 w-5 text-orange-400" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-white">{stats.manutencoesPendentes}</div>
-          <p className="text-xs text-slate-300 mt-1">
+          <div className="text-2xl font-bold text-foreground">{stats.manutencoesPendentes}</div>
+          <p className="text-xs text-muted-foreground mt-1">
             Manutenções vencidas
           </p>
         </CardContent>
       </Card>
 
-      <Card className="bg-card/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-card/15">
+      <Card className="bg-card border-border shadow-xl hover:shadow-2xl transition-all hover:bg-card/90">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-slate-200">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             Manutenções Realizadas
           </CardTitle>
           <CheckCircle className="h-5 w-5 text-green-400" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-white">{stats.manutencoesRealizadas}</div>
-          <p className="text-xs text-slate-300 mt-1">
+          <div className="text-2xl font-bold text-foreground">{stats.manutencoesRealizadas}</div>
+          <p className="text-xs text-muted-foreground mt-1">
             Total de manutenções concluídas
           </p>
         </CardContent>
       </Card>
 
-      <Card className="bg-card/10 border-white/20 shadow-xl hover:shadow-2xl transition-all hover:bg-card/15">
+      <Card className="bg-card border-border shadow-xl hover:shadow-2xl transition-all hover:bg-card/90">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium text-slate-200">
+          <CardTitle className="text-sm font-medium text-muted-foreground">
             Tickets Abertos
           </CardTitle>
           <Clock className="h-5 w-5 text-purple-400" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-white">{stats.ticketsAbertos}</div>
-          <p className="text-xs text-slate-300 mt-1">
+          <div className="text-2xl font-bold text-foreground">{stats.ticketsAbertos}</div>
+          <p className="text-xs text-muted-foreground mt-1">
             Tickets de manutenção em andamento
           </p>
         </CardContent>

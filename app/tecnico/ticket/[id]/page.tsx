@@ -1128,30 +1128,30 @@ export default function TicketDetailsPage() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case "pendente":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-amber-500/15 text-amber-400";
       case "em_curso":
-        return "bg-blue-100 text-blue-800";
+        return "bg-blue-500/15 text-blue-400";
       case "finalizado":
-        return "bg-green-100 text-green-800";
+        return "bg-emerald-500/15 text-emerald-400";
       case "cancelado":
-        return "bg-red-100 text-red-800";
+        return "bg-red-500/15 text-red-400";
       default:
-        return "bg-slate-500/15 text-foreground";
+        return "bg-muted text-muted-foreground";
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "urgente":
-        return "bg-red-100 text-red-800";
+        return "bg-red-500/15 text-red-400";
       case "alta":
-        return "bg-orange-100 text-orange-800";
+        return "bg-orange-500/15 text-orange-400";
       case "media":
-        return "bg-yellow-100 text-yellow-800";
+        return "bg-amber-500/15 text-amber-400";
       case "baixa":
-        return "bg-green-100 text-green-800";
+        return "bg-emerald-500/15 text-emerald-400";
       default:
-        return "bg-slate-500/15 text-foreground";
+        return "bg-muted text-muted-foreground";
     }
   };
 
@@ -1177,11 +1177,12 @@ export default function TicketDetailsPage() {
 
   return (
     <TecnicoLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 p-4 md:p-6">
         {/* Header */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-start gap-3">
           <Button
             variant="ghost"
+            size="sm"
             onClick={async () => {
               try {
                 // Salvar tempo E estado do fluxo antes de sair
@@ -1200,16 +1201,16 @@ export default function TicketDetailsPage() {
                 router.push("/tecnico");
               }
             }}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 h-10 shrink-0 mt-0.5"
           >
             <ArrowLeft className="h-4 w-4" />
             Voltar
           </Button>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-foreground">
+          <div className="flex-1 min-w-0">
+            <h1 className="text-lg sm:text-2xl font-bold text-foreground leading-tight">
               {ticket.titulo}
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground mt-0.5">
               {ticket.tipo === "instalacao" ? "Instalação" : "Manutenção"} -{" "}
               {ticket.contrato?.numero}
             </p>
@@ -1218,14 +1219,14 @@ export default function TicketDetailsPage() {
 
         {/* Timer Display - sempre visível quando ticket em curso */}
         {ticket.status === "em_curso" && currentStep !== "concluido" && currentStep !== "cancelado" && (
-          <Card className={`${isTimerRunning ? "border-blue-200 bg-blue-50" : "border-yellow-200 bg-yellow-50"}`}>
+          <Card className={`${isTimerRunning ? "border-blue-500/30 bg-blue-500/10" : "border-amber-500/30 bg-amber-500/10"}`}>
             <CardContent className="p-4">
-              <div className="flex items-center justify-center gap-4">
-                <Clock className={`h-6 w-6 ${isTimerRunning ? "text-blue-600" : "text-yellow-600"}`} />
-                <span className={`text-2xl font-mono font-bold ${isTimerRunning ? "text-blue-800" : "text-yellow-800"}`}>
+              <div className="flex flex-wrap items-center justify-center gap-3">
+                <Clock className={`h-5 w-5 ${isTimerRunning ? "text-blue-400" : "text-amber-400"}`} />
+                <span className={`text-2xl font-mono font-bold ${isTimerRunning ? "text-blue-400" : "text-amber-400"}`}>
                   {formatTime(timerSeconds)}
                 </span>
-                <span className={`text-sm ${isTimerRunning ? "text-blue-600" : "text-yellow-600"}`}>
+                <span className={`text-sm ${isTimerRunning ? "text-blue-400/80" : "text-amber-400/80"}`}>
                   {isTimerRunning ? "Tempo de execução" : "Pausado"}
                 </span>
                 {/* Botão Pausar/Retomar */}
@@ -1234,7 +1235,7 @@ export default function TicketDetailsPage() {
                     variant="outline"
                     size="sm"
                     onClick={pausarTimer}
-                    className="border-blue-400 text-blue-700 hover:bg-blue-100"
+                    className="h-9 border-blue-500/40 text-blue-400 hover:bg-blue-500/10"
                   >
                     <Pause className="h-4 w-4 mr-1" />
                     Pausar
@@ -1244,7 +1245,7 @@ export default function TicketDetailsPage() {
                     variant="outline"
                     size="sm"
                     onClick={startTimer}
-                    className="border-green-400 text-green-700 hover:bg-green-100"
+                    className="h-9 border-emerald-500/40 text-emerald-400 hover:bg-emerald-500/10"
                   >
                     <Play className="h-4 w-4 mr-1" />
                     Retomar
@@ -1258,9 +1259,9 @@ export default function TicketDetailsPage() {
         {/* Ticket Info */}
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
+            <CardTitle className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
               <span>Informações do Ticket</span>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <Badge className={getPriorityColor(ticket.prioridade)}>
                   {ticket.prioridade}
                 </Badge>
@@ -1290,7 +1291,7 @@ export default function TicketDetailsPage() {
                   <Calendar className="h-4 w-4" />
                   <span>
                     Criado:{" "}
-                    {new Date(ticket.created_at).toLocaleDateString("pt-BR")}
+                    {new Date(ticket.created_at).toLocaleDateString("pt-PT")}
                   </span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -1478,18 +1479,18 @@ export default function TicketDetailsPage() {
 
               {/* Resumo do relatório inicial */}
               {relatorio?.observacoes_iniciais && (
-                <div className="bg-slate-50 dark:bg-slate-800/50 rounded-lg p-3 space-y-1 text-sm">
-                  <p className="font-medium text-slate-700 dark:text-slate-300">Relatório Inicial:</p>
-                  <p className="text-slate-600 dark:text-slate-400">
+                <div className="bg-secondary/40 rounded-lg p-3 space-y-1 text-sm">
+                  <p className="font-medium text-foreground">Relatório Inicial:</p>
+                  <p className="text-muted-foreground">
                     <span className="font-medium">Observações:</span> {relatorio.observacoes_iniciais.substring(0, 100)}{relatorio.observacoes_iniciais.length > 100 ? "..." : ""}
                   </p>
                   {relatorio.diagnostico && (
-                    <p className="text-slate-600 dark:text-slate-400">
+                    <p className="text-muted-foreground">
                       <span className="font-medium">Diagnóstico:</span> {relatorio.diagnostico.substring(0, 100)}{relatorio.diagnostico.length > 100 ? "..." : ""}
                     </p>
                   )}
                   {fotosAntes.length > 0 && (
-                    <p className="text-slate-600 dark:text-slate-400">
+                    <p className="text-muted-foreground">
                       <span className="font-medium">Fotos antes:</span> {fotosAntes.length} foto(s)
                     </p>
                   )}
@@ -1698,11 +1699,11 @@ export default function TicketDetailsPage() {
 
                 {/* Assinatura Técnico */}
                 <div className="space-y-2">
-                  <Label className="text-white font-medium">Assinatura do Técnico</Label>
-                  <p className="text-xs text-slate-400">Assine no campo branco abaixo</p>
+                  <Label className="text-foreground font-medium">Assinatura do Técnico</Label>
+                  <p className="text-xs text-muted-foreground">Assine no campo branco abaixo</p>
                   <div
                     ref={sigTecnicoContainerRef}
-                    className="border-2 border-slate-500 rounded-lg overflow-hidden bg-card"
+                    className="border-2 border-border rounded-lg overflow-hidden bg-card w-full"
                     style={{ height: "200px" }}
                   >
                     <SignatureCanvas
@@ -1719,7 +1720,7 @@ export default function TicketDetailsPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => sigTecnicoRef?.clear()}
-                    className="text-slate-300 border-slate-600 hover:bg-slate-700"
+                    className="text-muted-foreground border-border hover:bg-accent"
                   >
                     Limpar Assinatura
                   </Button>
@@ -1727,11 +1728,11 @@ export default function TicketDetailsPage() {
 
                 {/* Assinatura Cliente */}
                 <div className="space-y-2">
-                  <Label className="text-white font-medium">Assinatura do Cliente</Label>
-                  <p className="text-xs text-slate-400">O cliente deve assinar no campo branco abaixo</p>
+                  <Label className="text-foreground font-medium">Assinatura do Cliente</Label>
+                  <p className="text-xs text-muted-foreground">O cliente deve assinar no campo branco abaixo</p>
                   <div
                     ref={sigClienteContainerRef}
-                    className="border-2 border-slate-500 rounded-lg overflow-hidden bg-card"
+                    className="border-2 border-border rounded-lg overflow-hidden bg-card w-full"
                     style={{ height: "200px" }}
                   >
                     <SignatureCanvas
@@ -1748,7 +1749,7 @@ export default function TicketDetailsPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => sigClienteRef?.clear()}
-                    className="text-slate-300 border-slate-600 hover:bg-slate-700"
+                    className="text-muted-foreground border-border hover:bg-accent"
                   >
                     Limpar Assinatura
                   </Button>
@@ -1814,9 +1815,9 @@ export default function TicketDetailsPage() {
                   O ticket foi cancelado e registado o motivo.
                 </p>
                 {ticket.motivo_cancelamento && (
-                  <div className="bg-red-50 p-4 rounded-lg">
-                    <p className="text-sm font-medium text-red-800">Motivo:</p>
-                    <p className="text-sm text-red-700 mt-1">
+                  <div className="bg-red-500/10 border border-red-500/20 p-4 rounded-lg">
+                    <p className="text-sm font-medium text-red-400">Motivo:</p>
+                    <p className="text-sm text-red-400/80 mt-1">
                       {ticket.motivo_cancelamento}
                     </p>
                   </div>

@@ -150,30 +150,30 @@ export function CalendarioManutencao() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'pendente':
-        return 'bg-yellow-900/30 text-yellow-300';
+        return 'bg-amber-500/10 text-amber-600 dark:text-amber-400';
       case 'em_curso':
-        return 'bg-blue-900/30 text-blue-300';
+        return 'bg-blue-500/10 text-blue-600 dark:text-blue-400';
       case 'finalizado':
-        return 'bg-green-900/30 text-green-300';
+        return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
       case 'cancelado':
-        return 'bg-red-900/30 text-red-300';
+        return 'bg-red-500/10 text-red-500 dark:text-red-400';
       default:
-        return 'bg-slate-600 text-slate-200';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
   const getPrioridadeColor = (prioridade: string) => {
     switch (prioridade) {
       case 'baixa':
-        return 'bg-green-900/30 text-green-300';
+        return 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400';
       case 'media':
-        return 'bg-yellow-900/30 text-yellow-300';
+        return 'bg-amber-500/10 text-amber-600 dark:text-amber-400';
       case 'alta':
-        return 'bg-orange-900/30 text-orange-300';
+        return 'bg-orange-500/10 text-orange-600 dark:text-orange-400';
       case 'urgente':
-        return 'bg-red-900/30 text-red-300';
+        return 'bg-red-500/10 text-red-500 dark:text-red-400';
       default:
-        return 'bg-slate-600 text-slate-200';
+        return 'bg-muted text-muted-foreground';
     }
   };
 
@@ -207,7 +207,7 @@ export function CalendarioManutencao() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-4 text-slate-300">
+          <div className="text-center py-4 text-muted-foreground">
             Carregando calendário...
           </div>
         </CardContent>
@@ -238,8 +238,8 @@ export function CalendarioManutencao() {
                 today: (date) => isToday(date)
               }}
               modifiersClassNames={{
-                event: 'bg-blue-100 text-blue-900 font-medium',
-                today: 'bg-orange-100 text-orange-900 font-medium'
+                event: 'bg-blue-500/15 text-blue-600 dark:text-blue-300 font-medium',
+                today: 'bg-amber-500/15 text-amber-600 dark:text-amber-300 font-medium'
               }}
             />
           </div>
@@ -251,7 +251,7 @@ export function CalendarioManutencao() {
             </h3>
 
             {selectedDateEvents.tickets.length === 0 && selectedDateEvents.cronogramas.length === 0 ? (
-              <div className="text-center py-4 text-slate-300">
+              <div className="text-center py-4 text-muted-foreground">
                 Nenhum evento para esta data.
               </div>
             ) : (
@@ -268,7 +268,7 @@ export function CalendarioManutencao() {
                 {/* Tab de Tickets */}
                 <TabsContent value="tickets" className="space-y-4 mt-4">
                   {selectedDateEvents.tickets.length === 0 ? (
-                    <div className="text-center py-4 text-slate-300">
+                    <div className="text-center py-4 text-muted-foreground">
                       Nenhum ticket para esta data.
                     </div>
                   ) : (
@@ -276,12 +276,12 @@ export function CalendarioManutencao() {
                       {selectedDateEvents.tickets.map((ticket) => (
                         <div
                           key={ticket.id}
-                          className="p-3 rounded-lg border border-slate-600/30 bg-slate-700/20"
+                          className="p-3 rounded-lg border border-border bg-secondary/30"
                         >
                           <div className="flex justify-between items-start">
                             <div>
-                              <h4 className="font-medium text-white">{ticket.titulo}</h4>
-                              <p className="text-sm text-slate-300">
+                              <h4 className="font-medium text-foreground">{ticket.titulo}</h4>
+                              <p className="text-sm text-muted-foreground">
                                 Cliente: {ticket.cliente?.nome || 'N/A'}
                               </p>
                             </div>
@@ -295,13 +295,13 @@ export function CalendarioManutencao() {
                             </div>
                           </div>
                           <div className="mt-2">
-                            <p className="text-sm text-slate-300 line-clamp-2">{ticket.descricao}</p>
+                            <p className="text-sm text-muted-foreground line-clamp-2">{ticket.descricao}</p>
                           </div>
                           <div className="mt-2">
                             <Button
                               variant="outline"
                               size="sm"
-                              className="w-full border-slate-600 text-slate-300 hover:bg-slate-600 hover:text-white"
+                              className="w-full border-border text-muted-foreground hover:bg-accent hover:text-foreground"
                               onClick={() => window.location.href = `/tecnico/ticket/${ticket.id}`}
                             >
                               Ver Ticket
@@ -316,7 +316,7 @@ export function CalendarioManutencao() {
                 {/* Tab de Cronogramas */}
                 <TabsContent value="cronogramas" className="space-y-4 mt-4">
                   {selectedDateEvents.cronogramas.length === 0 ? (
-                    <div className="text-center py-4 text-slate-300">
+                    <div className="text-center py-4 text-muted-foreground">
                       Nenhum cronograma para esta data.
                     </div>
                   ) : (
@@ -324,14 +324,14 @@ export function CalendarioManutencao() {
                       {selectedDateEvents.cronogramas.map((cronograma) => (
                         <div
                           key={cronograma.id}
-                          className={`p-3 rounded-lg border ${isVencida(cronograma.proxima_manutencao) ? 'border-red-500/30 bg-red-500/10' : isProxima(cronograma.proxima_manutencao) ? 'border-yellow-500/30 bg-yellow-500/10' : 'border-slate-600/30 bg-slate-700/20'}`}
+                          className={`p-3 rounded-lg border ${isVencida(cronograma.proxima_manutencao) ? 'border-red-500/30 bg-red-500/10' : isProxima(cronograma.proxima_manutencao) ? 'border-yellow-500/30 bg-yellow-500/10' : 'border-border bg-secondary/30'}`}
                         >
                           <div className="flex justify-between items-start">
                             <div>
-                              <h4 className="font-medium text-white">
+                              <h4 className="font-medium text-foreground">
                                 {cronograma.contrato?.descricao || `Contrato #${cronograma.contrato_id.substring(0, 8)}`}
                               </h4>
-                              <p className="text-sm text-slate-300">
+                              <p className="text-sm text-muted-foreground">
                                 Cliente: {cronograma.contrato?.cliente?.nome || 'N/A'}
                               </p>
                             </div>
@@ -339,22 +339,22 @@ export function CalendarioManutencao() {
                               <Badge className={`${cronograma.tipo_manutencao === 'preventiva' ? 'bg-blue-500/20 text-blue-300 border-blue-500/30' : cronograma.tipo_manutencao === 'corretiva' ? 'bg-red-500/20 text-red-300 border-red-500/30' : 'bg-purple-500/20 text-purple-300 border-purple-500/30'}`}>
                                 {cronograma.tipo_manutencao}
                               </Badge>
-                              <Badge className="bg-slate-600/50 text-slate-200 border-slate-500/50">
+                              <Badge className="bg-muted text-muted-foreground border-border">
                                 {cronograma.frequencia}
                               </Badge>
                             </div>
                           </div>
                           <div className="mt-2 flex flex-wrap gap-4">
                             <div className="flex items-center gap-1">
-                              <CalendarIcon className="h-4 w-4 text-slate-400" />
-                              <span className="text-sm text-slate-300">
-                                Próxima: <span className={`font-medium ${isVencida(cronograma.proxima_manutencao) ? 'text-red-400' : isProxima(cronograma.proxima_manutencao) ? 'text-yellow-400' : 'text-slate-300'}`}>{formatarData(cronograma.proxima_manutencao)}</span>
+                              <CalendarIcon className="h-4 w-4 text-muted-foreground" />
+                              <span className="text-sm text-muted-foreground">
+                                Próxima: <span className={`font-medium ${isVencida(cronograma.proxima_manutencao) ? 'text-red-500 dark:text-red-400' : isProxima(cronograma.proxima_manutencao) ? 'text-amber-500 dark:text-amber-400' : 'text-muted-foreground'}`}>{formatarData(cronograma.proxima_manutencao)}</span>
                               </span>
                             </div>
                             {cronograma.ultima_manutencao && (
                               <div className="flex items-center gap-1">
-                                <Clock className="h-4 w-4 text-slate-400" />
-                                <span className="text-sm text-slate-300">
+                                <Clock className="h-4 w-4 text-muted-foreground" />
+                                <span className="text-sm text-muted-foreground">
                                   Última: {formatarData(cronograma.ultima_manutencao)}
                                 </span>
                               </div>

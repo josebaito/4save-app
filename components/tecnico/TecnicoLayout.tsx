@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { useSession, signOut } from 'next-auth/react';
@@ -17,6 +17,9 @@ import {
   WifiOff,
   Calendar,
   User,
+  Zap,
+  ChevronLeft,
+  ChevronRight,
 } from 'lucide-react';
 import { offlineSync } from '@/lib/offline/sync';
 import { toast } from 'sonner';
@@ -164,53 +167,70 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
     }
   };
 
+  const currentPage = navigation.find((item) => item.href === pathname)?.name || 'Dashboard';
+
   return (
     <AdminTheme>
       <div className="flex h-screen w-full overflow-hidden bg-background">
+        {/* Overlay mobile */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 z-[90] bg-black/80 lg:hidden backdrop-blur-sm"
+            className="fixed inset-0 z-[90] bg-black/60 lg:hidden backdrop-blur-sm"
             onClick={() => setSidebarOpen(false)}
           />
         )}
 
+        {/* Sidebar */}
         <aside
           className={cn(
-            'fixed inset-y-0 left-0 z-[100] flex w-72 flex-col bg-card shadow-2xl transition-transform duration-300 ease-in-out lg:static lg:translate-x-0 border-r border-border',
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full',
-            sidebarCollapsed ? 'lg:w-20' : 'lg:w-72'
+            'fixed inset-y-0 left-0 z-[100] flex flex-col bg-sidebar border-r border-sidebar-border transition-all duration-300 ease-in-out lg:static lg:translate-x-0',
+            sidebarOpen ? 'translate-x-0 w-72' : '-translate-x-full w-72',
+            sidebarCollapsed ? 'lg:w-[72px]' : 'lg:w-72'
           )}
         >
+          {/* Logo */}
           <div
             className={cn(
-              'flex h-16 items-center border-b border-border',
-              sidebarCollapsed ? 'justify-center' : 'justify-between px-6'
+              'flex h-16 items-center border-b border-sidebar-border shrink-0',
+              sidebarCollapsed ? 'justify-center px-0' : 'px-5 justify-between'
             )}
           >
             {!sidebarCollapsed && (
-              <h2 className="text-xl font-bold bg-gradient-to-r from-primary to-orange-300 bg-clip-text text-transparent">
-                4Save Técnico
-              </h2>
+              <Link href="/tecnico" className="flex items-center gap-2.5">
+                <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/15 border border-primary/20 shrink-0">
+                  <Zap className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="text-sm font-heading font-bold text-sidebar-foreground leading-none">4Save</span>
+                  <span className="text-[10px] font-mono text-sidebar-foreground/40 leading-none mt-0.5 uppercase tracking-wider">Técnico</span>
+                </div>
+              </Link>
+            )}
+            {sidebarCollapsed && (
+              <div className="flex items-center justify-center w-8 h-8 rounded-lg bg-primary/15 border border-primary/20">
+                <Zap className="w-4 h-4 text-primary" />
+              </div>
             )}
             <Button
               variant="ghost"
               size="sm"
-              className="hidden lg:flex text-muted-foreground hover:text-foreground"
+              className="hidden lg:flex h-8 w-8 p-0 text-sidebar-foreground/50 hover:text-sidebar-foreground hover:bg-sidebar-accent rounded-lg"
               onClick={toggleSidebar}
             >
-              <Menu className="h-4 w-4" />
+              {sidebarCollapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
             </Button>
             <Button
               variant="ghost"
               size="sm"
-              className="lg:hidden text-muted-foreground hover:text-foreground"
+              className="lg:hidden h-8 w-8 p-0 text-sidebar-foreground/50 hover:text-sidebar-foreground"
               onClick={() => setSidebarOpen(false)}
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
 
-          <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-1">
+          {/* Navegação */}
+          <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-0.5">
             {navigation.map((item) => {
               const isActive = pathname === item.href;
               return (
@@ -218,129 +238,157 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
                   key={item.name}
                   href={item.href}
                   className={cn(
-                    'flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 group relative',
+                    'flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-all duration-150 group relative',
                     isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-accent/60',
+                      ? 'bg-primary/12 text-primary'
+                      : 'text-sidebar-foreground/60 hover:text-sidebar-foreground hover:bg-sidebar-accent',
                     sidebarCollapsed ? 'justify-center' : ''
                   )}
-                  onClick={() => setSidebarOpen(false)}
-                  title={sidebarCollapsed ? item.name : undefined}
+                  onClick={() => { setSidebarOpen(false); }}
+                  title={item.name}
                 >
                   {isActive && (
-                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-primary rounded-r-full" />
+                    <div className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-5 bg-primary rounded-r-full" />
                   )}
                   <item.icon
                     className={cn(
-                      'h-5 w-5 transition-colors',
-                      isActive ? 'text-primary' : 'text-muted-foreground group-hover:text-foreground',
-                      sidebarCollapsed ? '' : 'mr-3'
+                      'h-[18px] w-[18px] shrink-0 transition-colors',
+                      isActive ? 'text-primary' : 'text-sidebar-foreground/50 group-hover:text-sidebar-foreground',
+                      !sidebarCollapsed && 'mr-3'
                     )}
                   />
-                  {!sidebarCollapsed && item.name}
+                  {!sidebarCollapsed && (
+                    <span className="truncate">{item.name}</span>
+                  )}
                 </Link>
               );
             })}
           </nav>
 
-          <div
-            className={cn(
-              'border-t border-border p-4 space-y-2 bg-card',
-              sidebarCollapsed ? 'px-2 items-center flex flex-col' : ''
-            )}
-          >
+          {/* Rodapé da sidebar */}
+          <div className={cn(
+            'border-t border-sidebar-border p-3 space-y-2 shrink-0',
+            sidebarCollapsed && 'flex flex-col items-center'
+          )}>
+            {/* Dados pendentes */}
             {!sidebarCollapsed && syncStatus.hasPendingData && (
-              <div className="mb-2 p-2 bg-amber-500/10 border border-amber-500/20 rounded-lg">
-                <div className="flex items-center gap-2 text-amber-300">
-                  <div className="w-2 h-2 bg-amber-400 rounded-full animate-pulse"></div>
-                  <span className="text-xs font-medium">
-                    {syncStatus.pendingCount} pendente(s)
+              <div className="px-3 py-2 rounded-lg bg-amber-500/10 border border-amber-500/20">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 bg-amber-400 rounded-full animate-pulse shrink-0" />
+                  <span className="text-xs font-medium text-amber-500">
+                    {syncStatus.pendingCount} pendente(s) por sincronizar
                   </span>
                 </div>
               </div>
             )}
 
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleSync}
-              className={cn(
-                'w-full',
-                sidebarCollapsed ? 'h-10 w-10 p-0 justify-center' : 'justify-start'
-              )}
-              disabled={syncing || !isOnline}
-              title={sidebarCollapsed ? (syncing ? 'Sincronizando...' : isOnline ? 'Sincronizar' : 'Offline') : undefined}
-            >
-              {syncing ? (
-                <RefreshCw className={cn('h-4 w-4 animate-spin', !sidebarCollapsed && 'mr-2')} />
-              ) : isOnline ? (
-                <Wifi className={cn('h-4 w-4 text-emerald-400', !sidebarCollapsed && 'mr-2')} />
-              ) : (
-                <WifiOff className={cn('h-4 w-4 text-rose-400', !sidebarCollapsed && 'mr-2')} />
-              )}
-              {!sidebarCollapsed && (syncing ? 'Sincronizando...' : isOnline ? 'Sincronizar' : 'Offline')}
-            </Button>
-
-            {!sidebarCollapsed && syncStatus.lastSync && (
-              <p className="text-[10px] text-muted-foreground text-center">
-                Última: {new Date(syncStatus.lastSync).toLocaleTimeString('pt-BR')}
-              </p>
-            )}
-
-            <ThemeToggle collapsed={sidebarCollapsed} />
-          </div>
-        </aside>
-
-        <div className="flex flex-1 flex-col overflow-hidden min-w-0 bg-background">
-          <header className="flex h-16 items-center justify-between border-b border-border bg-card/70 px-4 lg:px-8 backdrop-blur-sm shrink-0">
-            <div className="flex items-center">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="mr-4 text-muted-foreground lg:hidden"
-                onClick={() => setSidebarOpen(true)}
-              >
-                <Menu className="h-5 w-5" />
-              </Button>
-              <h1 className="text-lg font-semibold text-foreground">
-                {navigation.find((item) => item.href === pathname)?.name || 'Dashboard'}
-              </h1>
-            </div>
-
-            <div className="flex items-center gap-4">
-              <div className="hidden md:flex items-center gap-3 px-3 py-1.5 rounded-full bg-card border border-border">
-                <div className="h-6 w-6 rounded-full bg-gradient-to-tr from-primary to-orange-300 flex items-center justify-center text-[10px] font-bold text-primary-foreground shadow-lg">
-                  {session?.user?.name?.charAt(0).toUpperCase()}
+            {/* Info do utilizador */}
+            {!sidebarCollapsed && (
+              <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-sidebar-accent/60">
+                <div className="relative shrink-0">
+                  <div className="h-7 w-7 rounded-full bg-gradient-to-tr from-primary to-orange-300 flex items-center justify-center text-[11px] font-bold text-primary-foreground">
+                    {session?.user?.name?.charAt(0).toUpperCase()}
+                  </div>
+                  <span className={cn(
+                    'absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 border-2 border-sidebar rounded-full',
+                    isOnline ? 'bg-emerald-400' : 'bg-red-400'
+                  )} />
                 </div>
-                <div className="flex flex-col">
-                  <span className="text-xs font-medium text-foreground leading-none">{session?.user?.name}</span>
-                  <span className="text-[10px] text-muted-foreground leading-none mt-0.5">{session?.user?.email}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-medium text-sidebar-foreground truncate leading-none">{session?.user?.name}</p>
+                  <p className="text-[10px] text-sidebar-foreground/50 truncate leading-none mt-0.5">{session?.user?.email}</p>
                 </div>
               </div>
+            )}
+
+            {/* Acções */}
+            <div className={cn('flex', sidebarCollapsed ? 'flex-col items-center gap-1' : 'gap-1.5')}>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={handleSync}
+                className={cn(
+                  'border-sidebar-border bg-transparent hover:bg-sidebar-accent transition-colors rounded-lg',
+                  sidebarCollapsed ? 'h-9 w-9 p-0 justify-center' : 'flex-1 justify-start gap-2'
+                )}
+                disabled={syncing || !isOnline}
+                title={sidebarCollapsed ? (syncing ? 'A sincronizar...' : isOnline ? 'Sincronizar' : 'Sem ligação') : undefined}
+              >
+                {syncing ? (
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin text-muted-foreground shrink-0" />
+                ) : isOnline ? (
+                  <Wifi className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                ) : (
+                  <WifiOff className="h-3.5 w-3.5 text-red-400 shrink-0" />
+                )}
+                {!sidebarCollapsed && (
+                  <span className="text-xs text-muted-foreground">{syncing ? 'A sincronizar...' : isOnline ? 'Sincronizar' : 'Sem ligação'}</span>
+                )}
+              </Button>
+              <ThemeToggle collapsed={sidebarCollapsed} />
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
-                className="text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors"
-                title="Sair"
+                className={cn(
+                  'text-sidebar-foreground/50 hover:text-red-400 hover:bg-red-500/10 transition-colors rounded-lg',
+                  sidebarCollapsed ? 'h-9 w-9 p-0' : 'h-9 px-3 justify-start gap-2'
+                )}
+                title={sidebarCollapsed ? 'Sair' : undefined}
               >
-                <LogOut className="h-4 w-4" />
+                <LogOut className="h-3.5 w-3.5 shrink-0" />
+                {!sidebarCollapsed && <span className="text-xs">Sair</span>}
               </Button>
+            </div>
+
+            {!sidebarCollapsed && syncStatus.lastSync && (
+              <p className="text-[10px] text-sidebar-foreground/30 text-center font-mono">
+                Última sincronização: {new Date(syncStatus.lastSync).toLocaleTimeString('pt-PT')}
+              </p>
+            )}
+          </div>
+        </aside>
+
+        {/* Conteúdo principal */}
+        <div className="flex flex-1 flex-col overflow-hidden min-w-0">
+          {/* Header */}
+          <header className="flex h-14 items-center justify-between border-b border-border bg-background/80 px-4 lg:px-6 backdrop-blur-sm shrink-0">
+            <div className="flex items-center gap-3">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 text-muted-foreground lg:hidden"
+                onClick={() => setSidebarOpen(true)}
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-muted-foreground hidden sm:block">4Save</span>
+                <span className="text-muted-foreground/40 hidden sm:block">/</span>
+                <h1 className="text-sm font-semibold text-foreground">{currentPage}</h1>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 text-xs text-muted-foreground font-mono">
+              <div className={cn(
+                'w-1.5 h-1.5 rounded-full',
+                isOnline ? 'bg-emerald-400 animate-pulse' : 'bg-red-400'
+              )} />
+              <span className="hidden sm:block">{isOnline ? 'online' : 'offline'}</span>
             </div>
           </header>
 
-          <main className="flex-1 overflow-y-auto p-4 lg:p-6 scroll-smooth">
-            <div className="mx-auto max-w-7xl animate-in fade-in slide-in-from-bottom-4 duration-500">
-              <div className="mb-6">
+          {/* Área de conteúdo */}
+          <main className="flex-1 overflow-y-auto p-4 lg:p-6">
+            <div className="mx-auto max-w-7xl animate-in fade-in slide-in-from-bottom-2 duration-300">
+              <div className="mb-4">
                 <LocationTracker />
               </div>
-
               {children}
             </div>
-
             <div className="mt-8 pt-4 border-t border-border flex justify-center pb-4">
-              <span className="text-xs text-muted-foreground">
-                © 2024 4Save - Sistema de Gestão Técnico
+              <span className="text-xs text-muted-foreground font-mono">
+                © 2024 4Save — Sistema de Gestão Técnica
               </span>
             </div>
           </main>

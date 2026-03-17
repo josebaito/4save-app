@@ -453,21 +453,22 @@ export default function ContratosPage() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-3">
           <div>
-            <h1 className="text-3xl font-bold text-white">Contratos</h1>
-            <p className="text-slate-400">Gerencie contratos de clientes</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Contratos</h1>
+            <p className="text-muted-foreground">Gerencie contratos de clientes</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button
               onClick={handleSincronizarCronogramas}
               variant="outline"
-              className="flex items-center gap-2 text-slate-300 border-slate-600 hover:bg-slate-700"
+              className="flex items-center gap-2 h-10 text-muted-foreground border-border hover:bg-accent"
             >
               <RefreshCw className="h-4 w-4" />
-              Sincronizar Cronogramas
+              <span className="hidden sm:inline">Sincronizar Cronogramas</span>
+              <span className="sm:hidden">Sincronizar</span>
             </Button>
-            <Button onClick={handleNew} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
+            <Button onClick={handleNew} className="flex items-center gap-2 h-10 bg-primary hover:bg-primary/90 text-primary-foreground">
               <Plus className="h-4 w-4" />
               Novo Contrato
             </Button>
@@ -475,23 +476,23 @@ export default function ContratosPage() {
         </div>
 
         {/* Filters */}
-        <Card className="bg-slate-800/50 border-slate-700/50">
+        <Card className="bg-card border-border">
           <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <div className="flex flex-col sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por número, descrição ou cliente..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                  className="pl-10 bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
                 />
               </div>
               <Select value={filterCliente} onValueChange={setFilterCliente}>
-                <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                   <SelectValue placeholder="Filtrar por cliente" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectContent>
                   <SelectItem value="all">Todos os clientes</SelectItem>
                   {clientes.map((cliente) => (
                     <SelectItem key={cliente.id} value={cliente.id}>
@@ -501,10 +502,10 @@ export default function ContratosPage() {
                 </SelectContent>
               </Select>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                   <SelectValue placeholder="Filtrar por status" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectContent>
                   <SelectItem value="all">Em vigor (ativos e vencidos)</SelectItem>
                   <SelectItem value="ativo">Ativo</SelectItem>
                   <SelectItem value="vencido">Vencido</SelectItem>
@@ -518,7 +519,7 @@ export default function ContratosPage() {
                   setFilterCliente('all');
                   setFilterStatus('all');
                 }}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                className="border-border text-muted-foreground hover:bg-accent hover:text-foreground"
               >
                 Limpar Filtros
               </Button>
@@ -527,16 +528,16 @@ export default function ContratosPage() {
         </Card>
 
         {/* Contratos List */}
-        <Card className="bg-slate-800/50 border-slate-700/50">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">
+            <CardTitle className="text-foreground">
               Contratos ({filteredContratos.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
             ) : filteredContratos.length > 0 ? (
               <>
@@ -544,43 +545,41 @@ export default function ContratosPage() {
                   {paginatedContratos.map((contrato) => (
                   <div
                     key={contrato.id}
-                    className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl hover:bg-slate-700/50 transition-colors border border-slate-600/30"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-secondary/40 rounded-xl hover:bg-secondary/60 transition-colors border border-border gap-3"
                   >
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h4 className="font-semibold text-white">{contrato.numero}</h4>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-2">
+                        <h4 className="font-semibold text-foreground">{contrato.numero}</h4>
                         {isVencido(contrato.data_fim) && (
-                          <Badge className="bg-red-500/20 text-red-300 border-red-500/30 text-xs">Vencido</Badge>
+                          <Badge variant="cancelado" className="text-xs">Vencido</Badge>
                         )}
                       </div>
-                      <p className="text-sm text-slate-300 mb-1">
+                      <p className="text-sm text-muted-foreground mb-1 truncate">
                         Cliente: {contrato.cliente?.nome}
                       </p>
-                      <p className="text-sm text-slate-400 mb-1">
+                      <p className="text-sm text-muted-foreground mb-1 line-clamp-2">
                         {contrato.descricao}
                       </p>
-                      <div className="flex items-center gap-4 text-xs text-slate-500">
+                      <div className="flex flex-wrap items-center gap-3 text-xs text-muted-foreground/70">
                         <span className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
-                          {new Date(contrato.data_inicio).toLocaleDateString('pt-BR')} - {new Date(contrato.data_fim).toLocaleDateString('pt-BR')}
+                          {new Date(contrato.data_inicio).toLocaleDateString('pt-PT')} - {new Date(contrato.data_fim).toLocaleDateString('pt-PT')}
                         </span>
                         <span className="flex items-center gap-1">
                           <DollarSign className="h-3 w-3" />
-                          €{contrato.valor.toLocaleString('pt-BR')}
+                          €{contrato.valor.toLocaleString('pt-PT')}
                         </span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className={contrato.status === 'ativo' ? 'bg-green-500/20 text-green-300 border-green-500/30' :
-                        contrato.status === 'vencido' ? 'bg-red-500/20 text-red-300 border-red-500/30' :
-                          'bg-slate-600/50 text-slate-300 border-slate-500/50'}>
+                    <div className="flex items-center gap-2 self-end sm:self-auto">
+                      <Badge variant={contrato.status === 'ativo' ? 'finalizado' : contrato.status === 'vencido' ? 'cancelado' : 'muted'}>
                         {contrato.status}
                       </Badge>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleView(contrato)}
-                        className="text-slate-400 hover:text-white hover:bg-slate-600"
+                        className="text-muted-foreground hover:text-foreground hover:bg-accent"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -588,7 +587,7 @@ export default function ContratosPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(contrato)}
-                        className="text-slate-400 hover:text-white hover:bg-slate-600"
+                        className="text-muted-foreground hover:text-foreground hover:bg-accent"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -597,7 +596,7 @@ export default function ContratosPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => handleEliminarClick(contrato)}
-                          className="text-slate-400 hover:text-red-300 hover:bg-red-500/20"
+                          className="text-muted-foreground hover:text-red-300 hover:bg-red-500/20"
                           title="Marcar como inativo"
                         >
                           <Trash2 className="h-4 w-4" />
@@ -619,8 +618,8 @@ export default function ContratosPage() {
                 )}
               </>
             ) : (
-              <div className="text-center py-8 text-slate-500">
-                <p className="text-slate-400">Nenhum contrato encontrado</p>
+              <div className="text-center py-8 text-muted-foreground/70">
+                <p className="text-muted-foreground">Nenhum contrato encontrado</p>
               </div>
             )}
           </CardContent>
@@ -628,13 +627,13 @@ export default function ContratosPage() {
 
         {/* Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto bg-slate-800 border-slate-700">
+          <DialogContent className="sm:max-w-[800px] max-h-[85dvh] overflow-y-auto pb-6">
             <DialogHeader>
-              <DialogTitle className="text-white">
+              <DialogTitle className="text-foreground">
                 {isEditing ? 'Editar Contrato' : selectedContrato ? 'Detalhes do Contrato' : 'Novo Contrato'}
               </DialogTitle>
               {!isEditing && !selectedContrato && (
-                <p className="text-sm text-slate-400 mt-2">
+                <p className="text-sm text-muted-foreground mt-2">
                   Ao criar um novo contrato, um ticket de instalação será criado automaticamente.
                 </p>
               )}
@@ -643,51 +642,51 @@ export default function ContratosPage() {
             {/* Modo Ver Detalhes: vista só de leitura com datas e plano organizados */}
             {selectedContrato && !isEditing ? (
               <div className="space-y-6">
-                <div className="rounded-lg border border-slate-600/50 bg-slate-700/30 p-4 space-y-4">
-                  <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wide">Dados do contrato</h3>
-                  <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                <div className="rounded-lg border border-border bg-secondary/40 p-4 space-y-4">
+                  <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide">Dados do contrato</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
                     <div>
-                      <span className="text-slate-500 block">Cliente</span>
-                      <span className="text-white">{clientes.find(c => c.id === selectedContrato.cliente_id)?.nome ?? '—'}</span>
+                      <span className="text-muted-foreground/70 block">Cliente</span>
+                      <span className="text-foreground">{clientes.find(c => c.id === selectedContrato.cliente_id)?.nome ?? '—'}</span>
                     </div>
                     <div>
-                      <span className="text-slate-500 block">Número</span>
-                      <span className="text-white">{selectedContrato.numero}</span>
+                      <span className="text-muted-foreground/70 block">Número</span>
+                      <span className="text-foreground">{selectedContrato.numero}</span>
                     </div>
                     <div>
-                      <span className="text-slate-500 block">Data de início</span>
-                      <span className="text-white">{formatDateDisplay(selectedContrato.data_inicio)}</span>
+                      <span className="text-muted-foreground/70 block">Data de início</span>
+                      <span className="text-foreground">{formatDateDisplay(selectedContrato.data_inicio)}</span>
                     </div>
                     <div>
-                      <span className="text-slate-500 block">Data de fim</span>
-                      <span className="text-white">{formatDateDisplay(selectedContrato.data_fim)}</span>
+                      <span className="text-muted-foreground/70 block">Data de fim</span>
+                      <span className="text-foreground">{formatDateDisplay(selectedContrato.data_fim)}</span>
                     </div>
                     {selectedContrato.created_at && (
                       <div>
-                        <span className="text-slate-500 block">Data de criação</span>
-                        <span className="text-white">{formatDateDisplay(selectedContrato.created_at)}</span>
+                        <span className="text-muted-foreground/70 block">Data de criação</span>
+                        <span className="text-foreground">{formatDateDisplay(selectedContrato.created_at)}</span>
                       </div>
                     )}
                     <div>
-                      <span className="text-slate-500 block">Valor</span>
-                      <span className="text-white">€{selectedContrato.valor.toLocaleString('pt-PT')}</span>
+                      <span className="text-muted-foreground/70 block">Valor</span>
+                      <span className="text-foreground">€{selectedContrato.valor.toLocaleString('pt-PT')}</span>
                     </div>
                     <div>
-                      <span className="text-slate-500 block">Tipo de produto</span>
-                      <span className="text-white">{tipoProdutoOptions.find(o => o.value === selectedContrato.tipo_produto)?.label ?? selectedContrato.tipo_produto}</span>
+                      <span className="text-muted-foreground/70 block">Tipo de produto</span>
+                      <span className="text-foreground">{tipoProdutoOptions.find(o => o.value === selectedContrato.tipo_produto)?.label ?? selectedContrato.tipo_produto}</span>
                     </div>
                     <div>
-                      <span className="text-slate-500 block">Segmento</span>
-                      <span className="text-white capitalize">{selectedContrato.segmento}</span>
+                      <span className="text-muted-foreground/70 block">Segmento</span>
+                      <span className="text-foreground capitalize">{selectedContrato.segmento}</span>
                     </div>
                     <div>
-                      <span className="text-slate-500 block">Status</span>
-                      <Badge className={selectedContrato.status === 'ativo' ? 'bg-green-500/20 text-green-300' : selectedContrato.status === 'vencido' ? 'bg-red-500/20 text-red-300' : 'bg-slate-600/50'}>{selectedContrato.status}</Badge>
+                      <span className="text-muted-foreground/70 block">Status</span>
+                      <Badge variant={selectedContrato.status === 'ativo' ? 'finalizado' : selectedContrato.status === 'vencido' ? 'cancelado' : 'muted'}>{selectedContrato.status}</Badge>
                     </div>
                   </div>
                   <div>
-                    <span className="text-slate-500 block text-sm mb-1">Descrição</span>
-                    <p className="text-white text-sm">{selectedContrato.descricao || '—'}</p>
+                    <span className="text-muted-foreground/70 block text-sm mb-1">Descrição</span>
+                    <p className="text-foreground text-sm">{selectedContrato.descricao || '—'}</p>
                   </div>
                 </div>
 
@@ -697,31 +696,31 @@ export default function ContratosPage() {
                       <span className="w-2 h-2 rounded-full bg-emerald-500" />
                       Plano de manutenção
                     </h3>
-                    <div className="grid grid-cols-2 gap-x-6 gap-y-3 text-sm">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3 text-sm">
                       <div>
-                        <span className="text-slate-500 block">Tipo</span>
-                        <span className="text-white capitalize">{selectedContrato.plano_manutencao.tipo_manutencao}</span>
+                        <span className="text-muted-foreground/70 block">Tipo</span>
+                        <span className="text-foreground capitalize">{selectedContrato.plano_manutencao.tipo_manutencao}</span>
                       </div>
                       <div>
-                        <span className="text-slate-500 block">Frequência</span>
-                        <span className="text-white capitalize">{selectedContrato.plano_manutencao.frequencia}</span>
+                        <span className="text-muted-foreground/70 block">Frequência</span>
+                        <span className="text-foreground capitalize">{selectedContrato.plano_manutencao.frequencia}</span>
                       </div>
                       <div>
-                        <span className="text-slate-500 block">Início da manutenção</span>
-                        <span className="text-white">{formatDateDisplay(selectedContrato.plano_manutencao.inicio_manutencao)}</span>
+                        <span className="text-muted-foreground/70 block">Início da manutenção</span>
+                        <span className="text-foreground">{formatDateDisplay(selectedContrato.plano_manutencao.inicio_manutencao)}</span>
                       </div>
                       <div>
-                        <span className="text-slate-500 block">Duração</span>
-                        <span className="text-white">{selectedContrato.plano_manutencao.duracao_contrato} meses</span>
+                        <span className="text-muted-foreground/70 block">Duração</span>
+                        <span className="text-foreground">{selectedContrato.plano_manutencao.duracao_contrato} meses</span>
                       </div>
                       <div>
-                        <span className="text-slate-500 block">Valor manutenção</span>
-                        <span className="text-white">€{Number(selectedContrato.plano_manutencao.valor_manutencao ?? 0).toLocaleString('pt-PT')}</span>
+                        <span className="text-muted-foreground/70 block">Valor manutenção</span>
+                        <span className="text-foreground">€{Number(selectedContrato.plano_manutencao.valor_manutencao ?? 0).toLocaleString('pt-PT')}</span>
                       </div>
                       {selectedContrato.plano_manutencao.observacoes && (
                         <div className="col-span-2">
-                          <span className="text-slate-500 block">Observações</span>
-                          <p className="text-white">{selectedContrato.plano_manutencao.observacoes}</p>
+                          <span className="text-muted-foreground/70 block">Observações</span>
+                          <p className="text-foreground">{selectedContrato.plano_manutencao.observacoes}</p>
                         </div>
                       )}
                     </div>
@@ -729,14 +728,14 @@ export default function ContratosPage() {
                 )}
 
                 {!temPlanoVinculado(selectedContrato) && (
-                  <p className="text-slate-500 text-sm">Este contrato não tem plano de manutenção vinculado.</p>
+                  <p className="text-muted-foreground/70 text-sm">Este contrato não tem plano de manutenção vinculado.</p>
                 )}
 
                 <div className="flex justify-end gap-2 pt-2">
-                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="border-slate-600 text-slate-300 hover:bg-slate-700">
+                  <Button type="button" variant="outline" onClick={() => setIsDialogOpen(false)} className="border-border text-muted-foreground hover:bg-accent hover:text-foreground">
                     Fechar
                   </Button>
-                  <Button type="button" onClick={() => selectedContrato && handleEdit(selectedContrato)} className="bg-blue-600 hover:bg-blue-700">
+                  <Button type="button" onClick={() => selectedContrato && handleEdit(selectedContrato)} className="bg-primary hover:bg-primary/90 text-primary-foreground">
                     <Edit className="h-4 w-4 mr-2" />
                     Editar contrato
                   </Button>
@@ -744,18 +743,18 @@ export default function ContratosPage() {
               </div>
             ) : (
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="cliente_id" className="text-slate-200">Cliente</Label>
+                    <Label htmlFor="cliente_id" className="text-foreground/80">Cliente</Label>
                     <Select
                       value={formData.cliente_id}
                       onValueChange={(value) => setFormData({ ...formData, cliente_id: value })}
                       disabled={!!selectedContrato}
                     >
-                      <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                      <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                         <SelectValue placeholder="Selecione um cliente" />
                       </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-slate-700">
+                      <SelectContent>
                         {clientes.map((cliente) => (
                           <SelectItem key={cliente.id} value={cliente.id}>
                             {cliente.nome}
@@ -765,23 +764,23 @@ export default function ContratosPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="numero" className="text-slate-200">Número do Contrato</Label>
+                    <Label htmlFor="numero" className="text-foreground/80">Número do Contrato</Label>
                     <Input
                       id="numero"
                       placeholder="CTR-2024-001 (automático se vazio)"
                       value={formData.numero}
                       onChange={(e) => setFormData({ ...formData, numero: e.target.value })}
                       disabled={isEditing && !!selectedContrato}
-                      className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                      className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
                     />
                     {isEditing && selectedContrato && (
-                      <p className="text-xs text-slate-500">O número do contrato não pode ser alterado.</p>
+                      <p className="text-xs text-muted-foreground/70">O número do contrato não pode ser alterado.</p>
                     )}
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="descricao" className="text-slate-200">Descrição</Label>
+                  <Label htmlFor="descricao" className="text-foreground/80">Descrição</Label>
                   <Textarea
                     id="descricao"
                     placeholder="Descrição do contrato..."
@@ -790,13 +789,13 @@ export default function ContratosPage() {
                     required
                     rows={3}
                     disabled={isEditing && !!selectedContrato && isPlanoOnlyMode}
-                    className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                    className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
                   />
                 </div>
 
-                <div className="grid grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="valor" className="text-slate-200">Valor (€)</Label>
+                    <Label htmlFor="valor" className="text-foreground/80">Valor (€)</Label>
                     <Input
                       id="valor"
                       type="number"
@@ -806,11 +805,11 @@ export default function ContratosPage() {
                       onChange={(e) => setFormData({ ...formData, valor: e.target.value })}
                       required
                       disabled={isEditing && !!selectedContrato && isPlanoOnlyMode}
-                      className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                      className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="data_inicio" className="text-slate-200">Data de Início</Label>
+                    <Label htmlFor="data_inicio" className="text-foreground/80">Data de Início</Label>
                     <Input
                       id="data_inicio"
                       type="date"
@@ -818,11 +817,11 @@ export default function ContratosPage() {
                       onChange={(e) => setFormData({ ...formData, data_inicio: e.target.value })}
                       required
                       disabled={isEditing && !!selectedContrato && isPlanoOnlyMode}
-                      className="bg-slate-700/50 border-slate-600/50 text-white"
+                      className="bg-secondary/60 border-input text-foreground"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="data_fim" className="text-slate-200">Data de Fim</Label>
+                    <Label htmlFor="data_fim" className="text-foreground/80">Data de Fim</Label>
                     <Input
                       id="data_fim"
                       type="date"
@@ -830,23 +829,23 @@ export default function ContratosPage() {
                       onChange={(e) => setFormData({ ...formData, data_fim: e.target.value })}
                       required
                       disabled={isEditing && !!selectedContrato && isPlanoOnlyMode}
-                      className="bg-slate-700/50 border-slate-600/50 text-white"
+                      className="bg-secondary/60 border-input text-foreground"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="tipo_produto" className="text-slate-200">Tipo de Produto</Label>
+                    <Label htmlFor="tipo_produto" className="text-foreground/80">Tipo de Produto</Label>
                     <Select
                       value={formData.tipo_produto}
                       onValueChange={(value: TipoProduto) => setFormData({ ...formData, tipo_produto: value })}
                       disabled={isEditing && !!selectedContrato && isPlanoOnlyMode}
                     >
-                      <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                      <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-slate-700">
+                      <SelectContent>
                         {tipoProdutoOptions.map((option) => (
                           <SelectItem key={option.value} value={option.value}>
                             {option.label}
@@ -856,16 +855,16 @@ export default function ContratosPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="segmento" className="text-slate-200">Segmento</Label>
+                    <Label htmlFor="segmento" className="text-foreground/80">Segmento</Label>
                     <Select
                       value={formData.segmento}
                       onValueChange={(value: 'domestico' | 'industrial' | 'outro') => setFormData({ ...formData, segmento: value })}
                       disabled={isEditing && !!selectedContrato && isPlanoOnlyMode}
                     >
-                      <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                      <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent className="bg-slate-800 border-slate-700">
+                      <SelectContent>
                         <SelectItem value="domestico">Doméstico</SelectItem>
                         <SelectItem value="industrial">Industrial</SelectItem>
                         <SelectItem value="outro">Outro</SelectItem>
@@ -875,16 +874,16 @@ export default function ContratosPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="status" className="text-slate-200">Status</Label>
+                  <Label htmlFor="status" className="text-foreground/80">Status</Label>
                   <Select
                     value={formData.status}
                     onValueChange={(value: 'ativo' | 'inativo' | 'vencido') => setFormData({ ...formData, status: value })}
                     disabled={isEditing && !!selectedContrato && isPlanoOnlyMode}
                   >
-                    <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                    <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectContent>
                       <SelectItem value="ativo">Ativo</SelectItem>
                       <SelectItem value="inativo">Inativo</SelectItem>
                       <SelectItem value="vencido">Vencido</SelectItem>
@@ -894,11 +893,11 @@ export default function ContratosPage() {
 
                 {/* Secção Plano de Manutenção: em edição = vincular ou editar plano de forma clara */}
                 {isEditing && (
-                  <div className="space-y-4 border-t border-slate-700 pt-4">
-                    <h3 className="text-lg font-medium text-white">Plano de manutenção</h3>
+                  <div className="space-y-4 border-t border-border pt-4">
+                    <h3 className="text-lg font-medium text-foreground">Plano de manutenção</h3>
                     {!showPlanoManutencao ? (
-                      <div className="rounded-lg border border-slate-600/50 bg-slate-700/30 p-4 text-center">
-                        <p className="text-slate-400 mb-3">
+                      <div className="rounded-lg border border-border bg-secondary/40 p-4 text-center">
+                        <p className="text-muted-foreground mb-3">
                           {temPlanoVinculado(selectedContrato ?? null)
                             ? 'Este contrato tem um plano de manutenção vinculado. Clique em "Editar plano" para alterar os dados.'
                             : 'Nenhum plano de manutenção vinculado a este contrato. Use o botão abaixo para vincular um plano.'}
@@ -908,15 +907,15 @@ export default function ContratosPage() {
                           variant="outline"
                           size="sm"
                           onClick={() => setShowPlanoManutencao(true)}
-                          className="text-slate-300 border-slate-600 hover:bg-slate-700"
+                          className="text-muted-foreground border-border hover:bg-accent hover:text-foreground"
                         >
                           {temPlanoVinculado(selectedContrato ?? null) ? 'Editar plano' : 'Vincular plano de manutenção'}
                         </Button>
                       </div>
                     ) : (
-                      <div className="rounded-lg border border-slate-600/50 bg-slate-700/30 p-4 space-y-4">
+                      <div className="rounded-lg border border-border bg-secondary/40 p-4 space-y-4">
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-slate-300">
+                          <span className="text-sm text-muted-foreground">
                             {temPlanoVinculado(selectedContrato ?? null) ? 'Editar dados do plano' : 'Configurar novo plano'}
                           </span>
                           <Button
@@ -924,15 +923,15 @@ export default function ContratosPage() {
                             variant="ghost"
                             size="sm"
                             onClick={() => setShowPlanoManutencao(false)}
-                            className="text-slate-400 hover:text-white"
+                            className="text-muted-foreground hover:text-foreground"
                           >
                             {temPlanoVinculado(selectedContrato ?? null) ? 'Ocultar formulário' : 'Cancelar'}
                           </Button>
                         </div>
                         <div className="space-y-4">
-                          <div className="grid grid-cols-2 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                              <Label htmlFor="tipo_manutencao" className="text-slate-200">Tipo de Manutenção</Label>
+                              <Label htmlFor="tipo_manutencao" className="text-foreground/80">Tipo de Manutenção</Label>
                               <Select
                                 value={formData.plano_manutencao.tipo_manutencao}
                                 onValueChange={(value: 'preventiva' | 'corretiva' | 'preditiva') =>
@@ -942,10 +941,10 @@ export default function ContratosPage() {
                                   })
                                 }
                               >
-                                <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                                <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                                   <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent className="bg-slate-800 border-slate-700">
+                                <SelectContent>
                                   <SelectItem value="preventiva">Preventiva</SelectItem>
                                   <SelectItem value="corretiva">Corretiva</SelectItem>
                                   <SelectItem value="preditiva">Preditiva</SelectItem>
@@ -953,7 +952,7 @@ export default function ContratosPage() {
                               </Select>
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="frequencia" className="text-slate-200">Frequência</Label>
+                              <Label htmlFor="frequencia" className="text-foreground/80">Frequência</Label>
                               <Select
                                 value={formData.plano_manutencao.frequencia}
                                 onValueChange={(value: 'mensal' | 'trimestral' | 'semestral' | 'anual') =>
@@ -963,10 +962,10 @@ export default function ContratosPage() {
                                   })
                                 }
                               >
-                                <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                                <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                                   <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent className="bg-slate-800 border-slate-700">
+                                <SelectContent>
                                   <SelectItem value="mensal">Mensal</SelectItem>
                                   <SelectItem value="trimestral">Trimestral</SelectItem>
                                   <SelectItem value="semestral">Semestral</SelectItem>
@@ -975,9 +974,9 @@ export default function ContratosPage() {
                               </Select>
                             </div>
                           </div>
-                          <div className="grid grid-cols-3 gap-4">
+                          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div className="space-y-2">
-                              <Label htmlFor="inicio_manutencao" className="text-slate-200">Início da Manutenção</Label>
+                              <Label htmlFor="inicio_manutencao" className="text-foreground/80">Início da Manutenção</Label>
                               <Input
                                 id="inicio_manutencao"
                                 type="date"
@@ -988,11 +987,11 @@ export default function ContratosPage() {
                                     plano_manutencao: { ...formData.plano_manutencao, inicio_manutencao: e.target.value }
                                   })
                                 }
-                                className="bg-slate-700/50 border-slate-600/50 text-white"
+                                className="bg-secondary/60 border-input text-foreground"
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="duracao_contrato" className="text-slate-200">Duração (meses)</Label>
+                              <Label htmlFor="duracao_contrato" className="text-foreground/80">Duração (meses)</Label>
                               <Input
                                 id="duracao_contrato"
                                 type="number"
@@ -1004,11 +1003,11 @@ export default function ContratosPage() {
                                     plano_manutencao: { ...formData.plano_manutencao, duracao_contrato: parseInt(e.target.value) || 12 }
                                   })
                                 }
-                                className="bg-slate-700/50 border-slate-600/50 text-white"
+                                className="bg-secondary/60 border-input text-foreground"
                               />
                             </div>
                             <div className="space-y-2">
-                              <Label htmlFor="valor_manutencao" className="text-slate-200">Valor Manutenção (€)</Label>
+                              <Label htmlFor="valor_manutencao" className="text-foreground/80">Valor Manutenção (€)</Label>
                               <Input
                                 id="valor_manutencao"
                                 type="number"
@@ -1021,12 +1020,12 @@ export default function ContratosPage() {
                                     plano_manutencao: { ...formData.plano_manutencao, valor_manutencao: parseFloat(e.target.value) || 0 }
                                   })
                                 }
-                                className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                                className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
                               />
                             </div>
                           </div>
                           <div className="space-y-2">
-                            <Label htmlFor="observacoes_manutencao" className="text-slate-200">Observações do Plano</Label>
+                            <Label htmlFor="observacoes_manutencao" className="text-foreground/80">Observações do Plano</Label>
                             <Textarea
                               id="observacoes_manutencao"
                               placeholder="Observações sobre o plano de manutenção..."
@@ -1038,7 +1037,7 @@ export default function ContratosPage() {
                                 })
                               }
                               rows={3}
-                              className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                              className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
                             />
                           </div>
                         </div>
@@ -1058,11 +1057,11 @@ export default function ContratosPage() {
                       setIsDialogOpen(false);
                       setIsPlanoOnlyMode(false);
                     }}
-                    className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                    className="border-border text-muted-foreground hover:bg-accent hover:text-foreground"
                   >
                     Cancelar
                   </Button>
-                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                  <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
                     {isEditing ? 'Atualizar' : 'Criar'}
                   </Button>
                 </div>
@@ -1074,11 +1073,11 @@ export default function ContratosPage() {
 
         {/* Confirmação: marcar contrato como inativo */}
         <Dialog open={!!contratoToEliminar} onOpenChange={(open) => !open && setContratoToEliminar(null)}>
-          <DialogContent className="sm:max-w-[420px] bg-slate-800 border-slate-700">
+          <DialogContent className="sm:max-w-[420px]">
             <DialogHeader>
-              <DialogTitle className="text-white">Marcar como inativo</DialogTitle>
-              <p className="text-slate-400 text-sm mt-2">
-                O contrato <strong className="text-white">{contratoToEliminar?.numero}</strong> será marcado como inativo.
+              <DialogTitle className="text-foreground">Marcar como inativo</DialogTitle>
+              <p className="text-muted-foreground text-sm mt-2">
+                O contrato <strong className="text-foreground">{contratoToEliminar?.numero}</strong> será marcado como inativo.
                 Deixará de aparecer na lista por defeito; pode ver os inativos escolhendo o filtro &quot;Inativos&quot;.
               </p>
             </DialogHeader>
@@ -1088,7 +1087,7 @@ export default function ContratosPage() {
                 variant="outline"
                 onClick={() => setContratoToEliminar(null)}
                 disabled={eliminando}
-                className="border-slate-600 text-slate-300 hover:bg-slate-700"
+                className="border-border text-muted-foreground hover:bg-accent hover:text-foreground"
               >
                 Cancelar
               </Button>
@@ -1096,7 +1095,7 @@ export default function ContratosPage() {
                 type="button"
                 onClick={handleEliminarConfirm}
                 disabled={eliminando}
-                className="bg-amber-600 hover:bg-amber-700 text-white"
+                className="bg-amber-600 hover:bg-amber-700 text-primary-foreground"
               >
                 {eliminando ? 'A processar...' : 'Marcar como inativo'}
               </Button>
@@ -1106,16 +1105,16 @@ export default function ContratosPage() {
 
         {/* Dialog para perguntar sobre plano de manutenção após criar contrato */}
         <Dialog open={perguntaPlanoDialog} onOpenChange={setPerguntaPlanoDialog}>
-          <DialogContent className="sm:max-w-[500px] bg-slate-800 border-slate-700">
+          <DialogContent className="sm:max-w-[500px]">
             <DialogHeader>
-              <DialogTitle className="text-white">Plano de Manutenção</DialogTitle>
-              <p className="text-slate-400 mt-2">
+              <DialogTitle className="text-foreground">Plano de Manutenção</DialogTitle>
+              <p className="text-muted-foreground mt-2">
                 O contrato foi criado com sucesso! Deseja configurar um plano de manutenção para este contrato?
               </p>
             </DialogHeader>
 
             <div className="space-y-4">
-              <div className="text-sm text-slate-300">
+              <div className="text-sm text-muted-foreground">
                 <p>Um plano de manutenção permite:</p>
                 <ul className="list-disc list-inside mt-2 space-y-1">
                   <li>Criação automática de tickets de manutenção</li>
@@ -1129,7 +1128,7 @@ export default function ContratosPage() {
                   type="button"
                   onClick={handleNaoCriarPlano}
                   variant="outline"
-                  className="flex-1 text-slate-300 border-slate-600 hover:bg-slate-700"
+                  className="flex-1 text-muted-foreground border-border hover:bg-accent hover:text-foreground"
                 >
                   Não, obrigado
                 </Button>
@@ -1169,7 +1168,7 @@ export default function ContratosPage() {
 
                     setIsDialogOpen(true);
                   }}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700"
+                  className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground"
                 >
                   Sim, configurar plano
                 </Button>

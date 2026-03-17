@@ -241,17 +241,17 @@ export default function TicketsPage() {
     <AdminLayout>
       <div className="space-y-6">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="text-3xl font-bold text-white">Tickets</h1>
-            <p className="text-slate-400">Gerencie os tickets de atendimento</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Tickets</h1>
+            <p className="text-sm text-muted-foreground">Gerir os tickets de atendimento</p>
           </div>
-          <div className="flex items-center gap-2">
-            <Button onClick={loadData} className="flex items-center gap-2 bg-slate-700 hover:bg-slate-600">
+          <div className="flex items-center gap-2 shrink-0">
+            <Button onClick={loadData} variant="outline" size="sm" className="flex items-center gap-2">
               <RefreshCw className="h-4 w-4" />
-              Refresh
+              <span className="hidden sm:inline">Actualizar</span>
             </Button>
-            <Button onClick={handleNewTicket} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
+            <Button onClick={handleNewTicket} size="sm" className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground">
               <Plus className="h-4 w-4" />
               Novo Ticket
             </Button>
@@ -266,7 +266,7 @@ export default function TicketsPage() {
                 <div className="flex items-center gap-3">
                   <AlertTriangle className="h-5 w-5 text-red-400" />
                   <div>
-                    <h3 className="font-semibold text-red-300">
+                    <h3 className="font-semibold text-red-500 dark:text-red-400">
                       Tickets Cancelados Requerem Atenção
                     </h3>
                     <p className="text-sm text-red-400">
@@ -278,7 +278,7 @@ export default function TicketsPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => setFilterStatus('cancelado')}
-                  className="border-red-500/30 text-red-300 hover:bg-red-500/20"
+                  className="border-red-500/30 text-red-500 dark:text-red-400 hover:bg-red-500/10"
                 >
                   Ver Cancelados
                 </Button>
@@ -288,33 +288,33 @@ export default function TicketsPage() {
         )}
 
         {/* Search */}
-        <Card className="bg-slate-800/50 border-slate-700/50">
+        <Card className="bg-card border-border">
           <CardContent className="pt-6">
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por título, cliente ou descrição..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                  className="pl-10 bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
                 />
               </div>
               <Select value={filterTipo} onValueChange={setFilterTipo}>
-                <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                   <SelectValue placeholder="Filtrar por tipo" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectContent>
                   <SelectItem value="all">Todos os tipos</SelectItem>
                   <SelectItem value="instalacao">Instalação</SelectItem>
                   <SelectItem value="manutencao">Manutenção</SelectItem>
                 </SelectContent>
               </Select>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                   <SelectValue placeholder="Filtrar por status" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectContent>
                   <SelectItem value="all">Todos os status</SelectItem>
                   <SelectItem value="pendente">Pendente</SelectItem>
                   <SelectItem value="em_curso">Em curso</SelectItem>
@@ -323,10 +323,10 @@ export default function TicketsPage() {
                 </SelectContent>
               </Select>
               <Select value={filterTecnico} onValueChange={setFilterTecnico}>
-                <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                   <SelectValue placeholder="Filtrar por técnico" />
                 </SelectTrigger>
-                <SelectContent className="bg-slate-800 border-slate-700">
+                <SelectContent>
                   <SelectItem value="all">Todos os técnicos</SelectItem>
                   <SelectItem value="sem_tecnico">Sem técnico atribuído</SelectItem>
                   {tecnicos.map((tecnico) => (
@@ -344,7 +344,7 @@ export default function TicketsPage() {
                   setFilterStatus('all');
                   setFilterTecnico('all');
                 }}
-                className="col-span-4 border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                className="col-span-4 border-border text-muted-foreground hover:bg-accent hover:text-foreground"
               >
                 Limpar Filtros
               </Button>
@@ -353,16 +353,16 @@ export default function TicketsPage() {
         </Card>
 
         {/* Tickets List */}
-        <Card className="bg-slate-800/50 border-slate-700/50">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">
+            <CardTitle className="text-foreground">
               Tickets ({filteredTickets.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
             ) : filteredTickets.length > 0 ? (
               <>
@@ -370,95 +370,96 @@ export default function TicketsPage() {
                   {paginatedTickets.map((ticket) => (
                   <div
                     key={ticket.id}
-                    className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl hover:bg-slate-700/50 transition-colors border border-slate-600/30"
+                    className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 bg-secondary/40 rounded-xl hover:bg-secondary/60 transition-colors border border-border"
                   >
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-white">{ticket.titulo}</h4>
-                      <p className="text-sm text-slate-300 mt-1">
-                        Cliente: {ticket.cliente?.nome}
+                    {/* Info principal */}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <h4 className="font-semibold text-foreground truncate">{ticket.titulo}</h4>
+                        <Badge variant={ticket.tipo === 'instalacao' ? 'info' : 'muted'} className="shrink-0">
+                          {ticket.tipo === 'instalacao' ? 'Instalação' : 'Manutenção'}
+                        </Badge>
+                      </div>
+                      <p className="text-sm text-muted-foreground truncate">
+                        {ticket.cliente?.nome}
                       </p>
-                      <p className="text-sm text-slate-400 mt-1">
+                      <p className="text-xs text-muted-foreground/70 mt-0.5 line-clamp-1">
                         {ticket.descricao}
                       </p>
-                      <div className="flex items-center gap-2 mt-2">
+                      <div className="flex flex-wrap items-center gap-2 mt-2">
                         {ticket.tecnico ? (
-                          <div className="flex items-center gap-1 text-xs text-slate-400">
+                          <div className="flex items-center gap-1 text-xs text-muted-foreground">
                             <User className="h-3 w-3" />
-                            {ticket.tecnico.name}
+                            <span>{ticket.tecnico.name}</span>
                           </div>
                         ) : (
-                          <Badge className="text-xs bg-red-500/20 text-red-300 border-red-500/30">
-                            Necessita técnico
-                          </Badge>
+                          <Badge variant="warning" className="text-xs">Sem técnico</Badge>
                         )}
-                        <span className="text-xs text-slate-500">
-                          {new Date(ticket.created_at).toLocaleDateString('pt-BR')}
+                        <span className="text-xs text-muted-foreground/60">
+                          {new Date(ticket.created_at).toLocaleDateString('pt-PT')}
                         </span>
+                        {ticket.status === 'cancelado' && ticket.motivo_cancelamento && (
+                          <div className="flex items-center gap-1 text-xs text-red-400 bg-red-500/10 px-2 py-0.5 rounded border border-red-500/20 max-w-[200px]">
+                            <AlertTriangle className="h-3 w-3 shrink-0" />
+                            <span className="truncate" title={ticket.motivo_cancelamento}>
+                              {ticket.motivo_cancelamento}
+                            </span>
+                          </div>
+                        )}
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-yellow-500/20 text-yellow-300 border-yellow-500/30">
+
+                    {/* Badges + Acções */}
+                    <div className="flex flex-wrap items-center gap-2 shrink-0">
+                      <Badge variant={ticket.prioridade as 'alta' | 'media' | 'baixa' | 'urgente'}>
                         {ticket.prioridade}
                       </Badge>
-                      <Badge className="bg-blue-500/20 text-blue-300 border-blue-500/30">
+                      <Badge variant={ticket.status as 'pendente' | 'em_curso' | 'finalizado' | 'cancelado'}>
                         {ticket.status.replace('_', ' ')}
                       </Badge>
-                      <Badge className={ticket.tipo === 'instalacao' ? 'bg-purple-500/20 text-purple-300 border-purple-500/30' : 'bg-slate-600/50 text-slate-300 border-slate-500/50'}>
-                        {ticket.tipo === 'instalacao' ? 'Instalação' : 'Manutenção'}
-                      </Badge>
 
-                      {/* Motivo do cancelamento */}
-                      {ticket.status === 'cancelado' && ticket.motivo_cancelamento && (
-                        <div className="flex items-center gap-2 text-sm text-red-300 bg-red-500/10 px-2 py-1 rounded border border-red-500/20">
-                          <AlertTriangle className="h-3 w-3" />
-                          <span className="max-w-xs truncate" title={ticket.motivo_cancelamento}>
-                            {ticket.motivo_cancelamento}
-                          </span>
-                        </div>
-                      )}
-
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleView(ticket)}
-                        className="text-slate-400 hover:text-white hover:bg-slate-600"
-                      >
-                        <Eye className="h-4 w-4" />
-                      </Button>
-
-                      {!ticket.tecnico_id && ticket.status !== 'cancelado' && (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleAtribuicaoInteligente(ticket)}
-                          className="text-blue-300 hover:text-blue-200 hover:bg-blue-500/20 border-blue-500/30"
-                          title="Atribuir técnico automaticamente"
-                        >
-                          <Zap className="h-4 w-4 mr-1" />
-                          Auto
-                        </Button>
-                      )}
-
-                      {ticket.status === 'cancelado' ? (
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleReactivateTicket(ticket)}
-                          className="text-green-300 hover:text-green-200 hover:bg-green-500/20 border-green-500/30"
-                        >
-                          <RotateCcw className="h-4 w-4 mr-1" />
-                          Reativar
-                        </Button>
-                      ) : (
+                      <div className="flex items-center gap-1 ml-auto sm:ml-0">
                         <Button
                           variant="ghost"
                           size="sm"
-                          onClick={() => handleEdit(ticket)}
-                          className="text-slate-400 hover:text-white hover:bg-slate-600"
+                          onClick={() => handleView(ticket)}
+                          className="text-muted-foreground hover:text-foreground hover:bg-accent h-8 w-8 p-0"
                         >
-                          <Edit className="h-4 w-4" />
+                          <Eye className="h-4 w-4" />
                         </Button>
-                      )}
+
+                        {!ticket.tecnico_id && ticket.status !== 'cancelado' && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleAtribuicaoInteligente(ticket)}
+                            className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/15 border-blue-500/30 h-8 px-2"
+                            title="Atribuir técnico automaticamente"
+                          >
+                            <Zap className="h-3.5 w-3.5" />
+                          </Button>
+                        )}
+
+                        {ticket.status === 'cancelado' ? (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleReactivateTicket(ticket)}
+                            className="text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/15 border-emerald-500/30 h-8 px-2"
+                          >
+                            <RotateCcw className="h-3.5 w-3.5" />
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleEdit(ticket)}
+                            className="text-muted-foreground hover:text-foreground hover:bg-accent h-8 w-8 p-0"
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </div>
                   ))}
@@ -475,8 +476,8 @@ export default function TicketsPage() {
                 )}
               </>
             ) : (
-              <div className="text-center py-8 text-slate-500">
-                <p className="text-slate-400">Nenhum ticket encontrado</p>
+              <div className="text-center py-8 text-muted-foreground/70">
+                <p className="text-muted-foreground">Nenhum ticket encontrado</p>
               </div>
             )}
           </CardContent>
@@ -484,16 +485,16 @@ export default function TicketsPage() {
 
         {/* Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[700px] bg-slate-800 border-slate-700">
+          <DialogContent className="w-full max-w-[95vw] sm:max-w-[700px] max-h-[90dvh] overflow-y-auto">
             <DialogHeader>
-              <DialogTitle className="text-white">
+              <DialogTitle className="text-foreground">
                 {isEditing ? 'Editar Ticket' : selectedTicket ? 'Detalhes do Ticket' : 'Novo Ticket'}
               </DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="cliente_id" className="text-slate-200">Cliente</Label>
+                  <Label htmlFor="cliente_id" className="text-foreground/80">Cliente</Label>
                   <Select
                     value={formData.cliente_id}
                     onValueChange={(value) => {
@@ -501,10 +502,10 @@ export default function TicketsPage() {
                     }}
                     disabled={!isEditing && !!selectedTicket}
                   >
-                    <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                    <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                       <SelectValue placeholder="Selecione um cliente" />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectContent>
                       {clientes.map((cliente) => (
                         <SelectItem key={cliente.id} value={cliente.id}>
                           {cliente.nome}
@@ -514,16 +515,16 @@ export default function TicketsPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="contrato_id" className="text-slate-200">Contrato</Label>
+                  <Label htmlFor="contrato_id" className="text-foreground/80">Contrato</Label>
                   <Select
                     value={formData.contrato_id}
                     onValueChange={(value) => setFormData({ ...formData, contrato_id: value })}
                     disabled={!formData.cliente_id || (!isEditing && !!selectedTicket)}
                   >
-                    <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                    <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                       <SelectValue placeholder="Selecione um contrato" />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectContent>
                       {getClienteContratos(formData.cliente_id).map((contrato) => (
                         <SelectItem key={contrato.id} value={contrato.id}>
                           {contrato.numero} - {contrato.descricao}
@@ -534,18 +535,18 @@ export default function TicketsPage() {
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="titulo" className="text-slate-200">Título</Label>
+                <Label htmlFor="titulo" className="text-foreground/80">Título</Label>
                 <Input
                   id="titulo"
                   value={formData.titulo}
                   onChange={(e) => setFormData({ ...formData, titulo: e.target.value })}
                   required
                   disabled={!isEditing && !!selectedTicket}
-                  className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                  className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="descricao" className="text-slate-200">Descrição</Label>
+                <Label htmlFor="descricao" className="text-foreground/80">Descrição</Label>
                 <Textarea
                   id="descricao"
                   value={formData.descricao}
@@ -553,21 +554,21 @@ export default function TicketsPage() {
                   required
                   disabled={!isEditing && !!selectedTicket}
                   rows={3}
-                  className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                  className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
                 />
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="prioridade" className="text-slate-200">Prioridade</Label>
+                  <Label htmlFor="prioridade" className="text-foreground/80">Prioridade</Label>
                   <Select
                     value={formData.prioridade}
                     onValueChange={(value: 'baixa' | 'media' | 'alta' | 'urgente') => setFormData({ ...formData, prioridade: value })}
                     disabled={!isEditing && !!selectedTicket}
                   >
-                    <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                    <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectContent>
                       <SelectItem value="baixa">Baixa</SelectItem>
                       <SelectItem value="media">Média</SelectItem>
                       <SelectItem value="alta">Alta</SelectItem>
@@ -576,39 +577,39 @@ export default function TicketsPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="tipo" className="text-slate-200">Tipo de Ticket</Label>
+                  <Label htmlFor="tipo" className="text-foreground/80">Tipo de Ticket</Label>
                   <Select
                     value={formData.tipo}
                     onValueChange={(value: 'instalacao' | 'manutencao') => setFormData({ ...formData, tipo: value })}
                     disabled={(!isEditing && !!selectedTicket) || (isEditing && formData.tipo === 'instalacao')}
                   >
-                    <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                    <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectContent>
                       <SelectItem value="instalacao">Instalação</SelectItem>
                       <SelectItem value="manutencao">Manutenção</SelectItem>
                     </SelectContent>
                   </Select>
                   {formData.tipo === 'instalacao' && (
-                    <p className="text-xs text-slate-400 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Este é um ticket de instalação criado automaticamente a partir de um contrato.
                     </p>
                   )}
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="status" className="text-slate-200">Status</Label>
+                  <Label htmlFor="status" className="text-foreground/80">Status</Label>
                   <Select
                     value={formData.status}
                     onValueChange={(value: 'pendente' | 'em_curso' | 'finalizado') => setFormData({ ...formData, status: value })}
                     disabled={!isEditing && !!selectedTicket}
                   >
-                    <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                    <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                       <SelectValue />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectContent>
                       <SelectItem value="pendente">Pendente</SelectItem>
                       <SelectItem value="em_curso">Em Curso</SelectItem>
                       <SelectItem value="finalizado">Finalizado</SelectItem>
@@ -616,16 +617,16 @@ export default function TicketsPage() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="tecnico_id" className="text-slate-200">Técnico</Label>
+                  <Label htmlFor="tecnico_id" className="text-foreground/80">Técnico</Label>
                   <Select
                     value={formData.tecnico_id}
                     onValueChange={(value) => setFormData({ ...formData, tecnico_id: value })}
                     disabled={!isEditing && !!selectedTicket}
                   >
-                    <SelectTrigger className="bg-slate-700/50 border-slate-600/50 text-white">
+                    <SelectTrigger className="bg-secondary/60 border-input text-foreground">
                       <SelectValue placeholder="Selecione um técnico" />
                     </SelectTrigger>
-                    <SelectContent className="bg-slate-800 border-slate-700">
+                    <SelectContent>
                       <SelectItem value="none">Sem técnico</SelectItem>
                       {tecnicos.map((tecnico) => (
                         <SelectItem key={tecnico.id} value={tecnico.id}>
@@ -647,11 +648,11 @@ export default function TicketsPage() {
                     type="button"
                     variant="outline"
                     onClick={() => setIsDialogOpen(false)}
-                    className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                    className="border-border text-muted-foreground hover:bg-accent hover:text-foreground"
                   >
                     Cancelar
                   </Button>
-                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                  <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground">
                     {isEditing ? 'Atualizar' : 'Criar'}
                   </Button>
                 </div>

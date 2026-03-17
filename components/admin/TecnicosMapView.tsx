@@ -31,7 +31,7 @@ export interface TecnicoLocation {
 const MapWithNoSSR = dynamic(() => import('./MapComponent'), {
   ssr: false,
   loading: () => (
-    <div className="h-[500px] w-full flex items-center justify-center bg-slate-100">
+    <div className="h-[500px] w-full flex items-center justify-center bg-secondary">
       <div className="flex flex-col items-center">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
         <p className="mt-2 text-sm text-muted-foreground">Carregando mapa...</p>
@@ -229,7 +229,7 @@ export function TecnicosMapView() {
               
               {/* Lista de técnicos com localização */}
               {locations.length > 0 && (
-                <div className="bg-slate-50 rounded-md p-3">
+                <div className="bg-secondary/50 rounded-md p-3">
                   <h4 className="font-medium text-sm mb-2 flex items-center gap-1">
                     <User className="h-4 w-4" />
                     Técnicos Ativos
@@ -260,7 +260,7 @@ export function TecnicosMapView() {
               
               {/* Mensagem quando não há localizações */}
               {locations.length === 0 && !isLoading && (
-                <div className="text-center p-4 text-muted-foreground bg-slate-50 rounded-md">
+                <div className="text-center p-4 text-muted-foreground bg-secondary/50 rounded-md">
                   <MapPin className="h-8 w-8 mx-auto mb-2 opacity-50" />
                   <p>Nenhum técnico com localização ativa encontrado.</p>
                   <p className="text-xs mt-1">

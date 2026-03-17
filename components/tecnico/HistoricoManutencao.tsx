@@ -82,7 +82,7 @@ export function HistoricoManutencao() {
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="text-center py-4 text-slate-300">
+          <div className="text-center py-4 text-muted-foreground">
             Carregando histórico...
           </div>
         </CardContent>
@@ -100,7 +100,7 @@ export function HistoricoManutencao() {
       </CardHeader>
       <CardContent>
         {historico.length === 0 && ticketsFinalizados.length === 0 ? (
-          <div className="text-center py-4 text-slate-300">
+          <div className="text-center py-4 text-muted-foreground">
             Nenhum registro de manutenção encontrado.
           </div>
         ) : (
@@ -109,18 +109,18 @@ export function HistoricoManutencao() {
             {historico.map((registro) => (
               <div
                 key={registro.id}
-                className="p-4 rounded-lg border border-gray-200"
+                className="p-4 rounded-lg border border-border"
               >
                 <div className="flex justify-between items-start">
                   <div>
                     <h3 className="font-medium">
                       {registro.contrato?.descricao || `Contrato #${registro.contrato_id.substring(0, 8)}`}
                     </h3>
-                    <p className="text-sm text-slate-300">
+                    <p className="text-sm text-muted-foreground">
                       Cliente: {registro.contrato?.cliente?.nome || 'N/A'}
                     </p>
                   </div>
-                  <Badge className={`${registro.tipo_manutencao === 'preventiva' ? 'bg-blue-100 text-blue-800' : registro.tipo_manutencao === 'corretiva' ? 'bg-red-100 text-red-800' : 'bg-purple-100 text-purple-800'}`}>
+                  <Badge className={`${registro.tipo_manutencao === 'preventiva' ? 'bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-500/20' : registro.tipo_manutencao === 'corretiva' ? 'bg-red-500/10 text-red-500 dark:text-red-400 border border-red-500/20' : 'bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-500/20'}`}>
                     {registro.tipo_manutencao}
                   </Badge>
                 </div>
@@ -135,7 +135,7 @@ export function HistoricoManutencao() {
                   )}
                   {registro.data_agendada && (
                     <div className="flex items-center gap-1">
-                      <CalendarIcon className="h-4 w-4 text-slate-300" />
+                      <CalendarIcon className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">
                         Agendada: {formatarData(registro.data_agendada)}
                       </span>
@@ -144,7 +144,7 @@ export function HistoricoManutencao() {
                 </div>
                 {registro.observacoes && (
                   <div className="mt-2">
-                    <p className="text-sm text-slate-300">{registro.observacoes}</p>
+                    <p className="text-sm text-muted-foreground">{registro.observacoes}</p>
                   </div>
                 )}
                 {registro.ticket_id && (
@@ -169,25 +169,25 @@ export function HistoricoManutencao() {
               .map(ticket => (
                 <div
                   key={ticket.id}
-                  className="p-4 rounded-lg border border-gray-200"
+                  className="p-4 rounded-lg border border-border"
                 >
                   <div className="flex justify-between items-start">
                     <div>
                       <h3 className="font-medium">{ticket.titulo}</h3>
-                      <p className="text-sm text-slate-300">
+                      <p className="text-sm text-muted-foreground">
                         Cliente: {ticket.cliente?.nome || 'N/A'}
                       </p>
                     </div>
-                    <Badge className="bg-green-100 text-green-800">
+                    <Badge className="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                       Finalizado
                     </Badge>
                   </div>
                   <div className="mt-2">
-                    <p className="text-sm text-slate-300 line-clamp-2">{ticket.descricao}</p>
+                    <p className="text-sm text-muted-foreground line-clamp-2">{ticket.descricao}</p>
                   </div>
                   {ticket.updated_at && (
                     <div className="mt-2 flex items-center gap-1">
-                      <Clock className="h-4 w-4 text-slate-300" />
+                      <Clock className="h-4 w-4 text-muted-foreground" />
                       <span className="text-sm">
                         Finalizado: {formatarData(ticket.updated_at)}
                       </span>

@@ -30,8 +30,8 @@ export default function ManutencaoTecnicoPage() {
       <TecnicoLayout>
         <div className="flex items-center justify-center h-64">
           <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-400 mx-auto"></div>
-            <p className="mt-2 text-slate-400">Carregando...</p>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
+            <p className="mt-2 text-muted-foreground">A carregar...</p>
           </div>
         </div>
       </TecnicoLayout>
@@ -42,7 +42,7 @@ export default function ManutencaoTecnicoPage() {
     <TecnicoLayout>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold tracking-tight text-white">Manutenções</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">Manutenções</h1>
         </div>
         
         <div className="mb-6">

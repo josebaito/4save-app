@@ -73,7 +73,7 @@ export default function ClientesPage() {
     
     try {
       if (!(session as any)?.accessToken) {
-        toast.error('Erro de autenticaÃ§Ã£o');
+        toast.error('Erro de autenticação');
         return;
       }
       if (isEditing && selectedCliente) {
@@ -138,45 +138,45 @@ export default function ClientesPage() {
 
   return (
     <AdminLayout>
-      <div className="space-y-6">
+      <div className="space-y-4 max-w-full overflow-hidden">
         {/* Header */}
-        <div className="flex justify-between items-center">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold text-white">Clientes</h1>
-            <p className="text-slate-400">Gerencie os clientes do sistema</p>
+            <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Clientes</h1>
+            <p className="text-muted-foreground">Gira os clientes do sistema</p>
           </div>
-          <Button onClick={handleNewClient} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700">
+          <Button onClick={handleNewClient} className="flex items-center gap-2 bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto">
             <Plus className="h-4 w-4" />
             Novo Cliente
           </Button>
         </div>
 
         {/* Search */}
-        <Card className="bg-slate-800/50 border-slate-700/50">
+        <Card className="bg-card border-border">
           <CardContent className="pt-6">
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Buscar por nome, email ou CNPJ..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                className="pl-10 bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
               />
             </div>
           </CardContent>
         </Card>
 
         {/* Clientes List */}
-        <Card className="bg-slate-800/50 border-slate-700/50">
+        <Card className="bg-card border-border">
           <CardHeader>
-            <CardTitle className="text-white">
+            <CardTitle className="text-foreground">
               Clientes ({filteredClientes.length})
             </CardTitle>
           </CardHeader>
           <CardContent>
             {loading ? (
               <div className="flex items-center justify-center py-8">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-400"></div>
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
               </div>
             ) : filteredClientes.length > 0 ? (
               <>
@@ -184,25 +184,29 @@ export default function ClientesPage() {
                   {paginatedClientes.map((cliente) => (
                   <div
                     key={cliente.id}
-                    className="flex items-center justify-between p-4 bg-slate-700/30 rounded-xl hover:bg-slate-700/50 transition-colors border border-slate-600/30"
+                    className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 bg-secondary/40 rounded-xl hover:bg-secondary/60 transition-colors border border-border"
                   >
-                    <div className="flex-1">
-                      <h4 className="font-semibold text-white">{cliente.nome}</h4>
-                      <p className="text-sm text-slate-300">{cliente.email}</p>
-                      <p className="text-sm text-slate-400">
-                        {cliente.telefone} • {cliente.cnpj || 'CPF'}
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-foreground truncate">{cliente.nome}</h4>
+                      <p className="text-sm text-muted-foreground truncate">{cliente.email}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {cliente.telefone}{cliente.cnpj ? ` • ${cliente.cnpj}` : ''}
                       </p>
-                      <p className="text-xs text-slate-500 mt-1">{cliente.endereco}</p>
+                      <p className="text-xs text-muted-foreground/70 mt-1 truncate">{cliente.endereco}</p>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Badge className="bg-slate-600/50 text-slate-300 border-slate-500/50">
-                        {new Date(cliente.created_at).toLocaleDateString('pt-BR')}
+                    <div className="flex items-center gap-2 shrink-0">
+                      <Badge variant="muted" className="hidden sm:inline-flex">
+                        {new Date(cliente.created_at).toLocaleDateString('pt-PT')}
                       </Badge>
+                      <span className="text-xs text-muted-foreground/60 sm:hidden">
+                        {new Date(cliente.created_at).toLocaleDateString('pt-PT')}
+                      </span>
                       <Button
                         variant="ghost"
                         size="sm"
                         onClick={() => handleView(cliente)}
-                        className="text-slate-400 hover:text-white hover:bg-slate-600"
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-accent"
+                        title="Ver detalhes"
                       >
                         <Eye className="h-4 w-4" />
                       </Button>
@@ -210,7 +214,8 @@ export default function ClientesPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleEdit(cliente)}
-                        className="text-slate-400 hover:text-white hover:bg-slate-600"
+                        className="h-8 w-8 p-0 text-muted-foreground hover:text-foreground hover:bg-accent"
+                        title="Editar"
                       >
                         <Edit className="h-4 w-4" />
                       </Button>
@@ -230,8 +235,8 @@ export default function ClientesPage() {
                 )}
               </>
             ) : (
-              <div className="text-center py-8 text-slate-500">
-                <p className="text-slate-400">Nenhum cliente encontrado</p>
+              <div className="text-center py-8 text-muted-foreground/70">
+                <p className="text-muted-foreground">Nenhum cliente encontrado</p>
               </div>
             )}
           </CardContent>
@@ -239,27 +244,28 @@ export default function ClientesPage() {
 
         {/* Dialog */}
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="sm:max-w-[600px] bg-slate-800 border-slate-700">
+          <DialogContent className="w-[95vw] max-w-[600px] max-h-[90vh] overflow-y-auto border-border mx-4">
             <DialogHeader>
-              <DialogTitle className="text-white">
+              <DialogTitle className="text-foreground text-lg sm:text-xl">
                 {isEditing ? 'Editar Cliente' : selectedCliente ? 'Detalhes do Cliente' : 'Novo Cliente'}
               </DialogTitle>
             </DialogHeader>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+            <form onSubmit={handleSubmit} className="space-y-4 py-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="nome" className="text-slate-200">Nome/Razão Social</Label>
+                  <Label htmlFor="nome" className="text-foreground/80">Nome / Razão Social</Label>
                   <Input
                     id="nome"
                     value={formData.nome}
                     onChange={(e) => setFormData({ ...formData, nome: e.target.value })}
                     required
                     disabled={!isEditing && !!selectedCliente}
-                    className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                    placeholder="Nome completo ou razão social"
+                    className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="email" className="text-slate-200">Email</Label>
+                  <Label htmlFor="email" className="text-foreground/80">Email</Label>
                   <Input
                     id="email"
                     type="email"
@@ -267,55 +273,59 @@ export default function ClientesPage() {
                     onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                     required
                     disabled={!isEditing && !!selectedCliente}
-                    className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                    placeholder="email@exemplo.com"
+                    className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
                   />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <Label htmlFor="telefone" className="text-slate-200">Telefone</Label>
+                  <Label htmlFor="telefone" className="text-foreground/80">Telefone</Label>
                   <Input
                     id="telefone"
                     value={formData.telefone}
                     onChange={(e) => setFormData({ ...formData, telefone: e.target.value })}
                     required
                     disabled={!isEditing && !!selectedCliente}
-                    className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                    placeholder="+351 900 000 000"
+                    className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="cnpj" className="text-slate-200">CNPJ</Label>
+                  <Label htmlFor="cnpj" className="text-foreground/80">NIF / CNPJ</Label>
                   <Input
                     id="cnpj"
                     value={formData.cnpj}
                     onChange={(e) => setFormData({ ...formData, cnpj: e.target.value })}
                     disabled={!isEditing && !!selectedCliente}
-                    className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                    placeholder="000 000 000"
+                    className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label htmlFor="endereco" className="text-slate-200">Endereço</Label>
+                <Label htmlFor="endereco" className="text-foreground/80">Morada</Label>
                 <Input
                   id="endereco"
                   value={formData.endereco}
                   onChange={(e) => setFormData({ ...formData, endereco: e.target.value })}
                   required
                   disabled={!isEditing && !!selectedCliente}
-                  className="bg-slate-700/50 border-slate-600/50 text-white placeholder:text-slate-400"
+                  placeholder="Rua, número, cidade, código postal"
+                  className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
                 />
               </div>
               {(isEditing || !selectedCliente) && (
-                <div className="flex justify-end gap-2">
+                <div className="flex flex-col sm:flex-row sm:justify-end gap-2 pt-2">
                   <Button
                     type="button"
                     variant="outline"
                     onClick={() => setIsDialogOpen(false)}
-                    className="border-slate-600 text-slate-300 hover:bg-slate-700 hover:text-white"
+                    className="border-border text-muted-foreground hover:bg-accent hover:text-foreground w-full sm:w-auto"
                   >
                     Cancelar
                   </Button>
-                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
+                  <Button type="submit" className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto">
                     {isEditing ? 'Atualizar' : 'Criar'}
                   </Button>
                 </div>
