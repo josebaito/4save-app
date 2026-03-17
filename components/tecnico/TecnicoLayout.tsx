@@ -302,14 +302,20 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
             )}
 
             {/* Acções */}
-            <div className={cn('flex', sidebarCollapsed ? 'flex-col items-center gap-1' : 'gap-1.5')}>
+            <div
+              className={cn(
+                sidebarCollapsed
+                  ? 'flex flex-col items-center gap-1'
+                  : 'grid grid-cols-2 gap-1.5'
+              )}
+            >
               <Button
                 variant="outline"
                 size="sm"
                 onClick={handleSync}
                 className={cn(
                   'border-sidebar-border bg-transparent hover:bg-sidebar-accent transition-colors rounded-lg',
-                  sidebarCollapsed ? 'h-9 w-9 p-0 justify-center' : 'flex-1 justify-start gap-2'
+                  sidebarCollapsed ? 'h-9 w-9 p-0 justify-center' : 'col-span-2 justify-start gap-2 min-w-0'
                 )}
                 disabled={syncing || !isOnline}
                 title={sidebarCollapsed ? (syncing ? 'A sincronizar...' : isOnline ? 'Sincronizar' : 'Sem ligação') : undefined}
@@ -322,22 +328,27 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
                   <WifiOff className="h-3.5 w-3.5 text-red-400 shrink-0" />
                 )}
                 {!sidebarCollapsed && (
-                  <span className="text-xs text-muted-foreground">{syncing ? 'A sincronizar...' : isOnline ? 'Sincronizar' : 'Sem ligação'}</span>
+                  <span className="text-xs text-muted-foreground truncate">
+                    {syncing ? 'A sincronizar...' : isOnline ? 'Sincronizar' : 'Sem ligação'}
+                  </span>
                 )}
               </Button>
-              <ThemeToggle collapsed={sidebarCollapsed} />
+              <ThemeToggle
+                collapsed={sidebarCollapsed}
+                className={cn(!sidebarCollapsed && 'w-full')}
+              />
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
                 className={cn(
                   'text-sidebar-foreground/50 hover:text-red-400 hover:bg-red-500/10 transition-colors rounded-lg',
-                  sidebarCollapsed ? 'h-9 w-9 p-0' : 'h-9 px-3 justify-start gap-2'
+                  sidebarCollapsed ? 'h-9 w-9 p-0' : 'w-full h-9 px-3 justify-start gap-2 min-w-0'
                 )}
                 title={sidebarCollapsed ? 'Sair' : undefined}
               >
                 <LogOut className="h-3.5 w-3.5 shrink-0" />
-                {!sidebarCollapsed && <span className="text-xs">Sair</span>}
+                {!sidebarCollapsed && <span className="text-xs truncate">Sair</span>}
               </Button>
             </div>
 

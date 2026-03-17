@@ -29,8 +29,8 @@ export function ThemeToggle({ collapsed, className }: ThemeToggleProps) {
         size="sm"
         type="button"
         className={cn(
-          'w-full text-muted-foreground border-border hover:bg-accent hover:text-foreground transition-colors',
-          collapsed ? 'h-10 w-10 p-0 justify-center' : 'justify-start',
+          'min-w-0 text-muted-foreground border-border hover:bg-accent hover:text-foreground transition-colors',
+          collapsed ? 'h-10 w-10 p-0 justify-center' : 'h-9 px-3 justify-start',
           className
         )}
         disabled
@@ -49,8 +49,8 @@ export function ThemeToggle({ collapsed, className }: ThemeToggleProps) {
       type="button"
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
       className={cn(
-        'w-full text-muted-foreground border-border hover:bg-accent hover:text-foreground transition-colors',
-        collapsed ? 'h-10 w-10 p-0 justify-center' : 'justify-start',
+        'min-w-0 text-muted-foreground border-border hover:bg-accent hover:text-foreground transition-colors',
+        collapsed ? 'h-10 w-10 p-0 justify-center' : 'h-9 px-3 justify-start',
         className
       )}
       title={collapsed ? label : undefined}

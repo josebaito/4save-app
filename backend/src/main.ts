@@ -18,8 +18,11 @@ async function bootstrap() {
 
   console.log('CORS allowed origins:', allowedOrigins);
 
+  const isProduction = process.env.NODE_ENV === 'production';
+
   app.enableCors({
-    origin: allowedOrigins,
+    // In dev, reflect the request origin to avoid LAN/IP mismatches (e.g. http://192.168.x.x:3001)
+    origin: isProduction ? allowedOrigins : true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'Accept'],
     credentials: true,

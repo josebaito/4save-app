@@ -173,20 +173,26 @@ export function AdminLayout({ children }: AdminLayoutProps) {
               </div>
             )}
 
-            <div className={cn('flex', sidebarCollapsed ? 'flex-col items-center gap-1' : 'gap-2')}>
-              <ThemeToggle collapsed={sidebarCollapsed} />
+            <div
+              className={cn(
+                sidebarCollapsed
+                  ? 'flex flex-col items-center gap-1'
+                  : 'grid grid-cols-2 gap-2'
+              )}
+            >
+              <ThemeToggle collapsed={sidebarCollapsed} className={cn(!sidebarCollapsed && 'w-full')} />
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={handleSignOut}
                 className={cn(
                   'text-sidebar-foreground/50 hover:text-red-400 hover:bg-red-500/10 transition-colors rounded-lg',
-                  sidebarCollapsed ? 'h-9 w-9 p-0' : 'flex-1 justify-start gap-2'
+                  sidebarCollapsed ? 'h-9 w-9 p-0' : 'w-full justify-start gap-2 min-w-0'
                 )}
                 title={sidebarCollapsed ? 'Sair' : undefined}
               >
                 <LogOut className="h-4 w-4 shrink-0" />
-                {!sidebarCollapsed && <span className="text-sm">Sair</span>}
+                {!sidebarCollapsed && <span className="text-sm truncate">Sair</span>}
               </Button>
             </div>
           </div>
