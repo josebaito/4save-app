@@ -10,8 +10,8 @@ interface DashboardHeaderProps {
 export function DashboardHeader({ onRefresh, onSync, loading }: DashboardHeaderProps) {
     return (
         <div className="sticky top-0 z-50 w-full mb-6 pt-4 pb-4 bg-card/90 backdrop-blur-md border-b border-border/50 transition-all duration-200">
-            <div className="flex justify-between items-center">
-                <div className="flex flex-col">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="flex flex-col min-w-0">
                     <h1 className="text-3xl font-heading font-bold text-foreground tracking-tight flex items-center gap-3">
                         Dashboard
                         <span className="flex h-2.5 w-2.5 relative">
@@ -24,7 +24,7 @@ export function DashboardHeader({ onRefresh, onSync, loading }: DashboardHeaderP
                     </p>
                 </div>
 
-                <div className="flex gap-2">
+                <div className="flex flex-wrap gap-2 justify-start sm:justify-end">
                     <Button
                         variant="outline"
                         size="sm"

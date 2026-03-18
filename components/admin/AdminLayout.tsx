@@ -8,6 +8,7 @@ import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
 import { AdminTheme } from './AdminTheme';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useAppConfig } from '@/components/AppConfigProvider';
 import {
   Home,
   Users,
@@ -48,6 +49,8 @@ export function AdminLayout({ children }: AdminLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { data: session } = useSession();
   const pathname = usePathname();
+  const { config } = useAppConfig();
+  const appName = config.appName || '4Save';
 
   const handleSignOut = async () => {
     await signOut({ callbackUrl: '/', redirect: true });
@@ -91,7 +94,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                   <Zap className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-heading font-bold text-sidebar-foreground leading-none">4Save</span>
+                  <span className="text-sm font-heading font-bold text-sidebar-foreground leading-none">{appName}</span>
                   <span className="text-[10px] font-mono text-sidebar-foreground/40 leading-none mt-0.5 uppercase tracking-wider">Administrador</span>
                 </div>
               </Link>
@@ -212,7 +215,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
                 <Menu className="h-5 w-5" />
               </Button>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground hidden sm:block">4Save</span>
+                <span className="text-xs text-muted-foreground hidden sm:block">{appName}</span>
                 <span className="text-muted-foreground/40 hidden sm:block">/</span>
                 <h1 className="text-sm font-semibold text-foreground">{currentPage}</h1>
               </div>

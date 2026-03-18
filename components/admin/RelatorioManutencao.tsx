@@ -313,7 +313,8 @@ export function RelatorioManutencao() {
           </TabsContent>
 
           <TabsContent value="historico">
-            <div className="rounded-md border">
+            {/* Tabela em md+ */}
+            <div className="hidden md:block rounded-md border">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -350,10 +351,44 @@ export function RelatorioManutencao() {
                 </table>
               </div>
             </div>
+
+            {/* Cards em mobile */}
+            <div className="md:hidden space-y-3">
+              {relatorio.historicoRecente.length > 0 ? (
+                relatorio.historicoRecente.map((item) => (
+                  <Card key={item.id} className="bg-card border-border">
+                    <CardContent className="p-4 space-y-2">
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{item.cliente_nome}</p>
+                          <p className="text-xs text-muted-foreground truncate">{item.contrato_descricao}</p>
+                        </div>
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-medium ${item.tipo_manutencao === 'preventiva' ? 'bg-blue-500/15 text-blue-400' : item.tipo_manutencao === 'corretiva' ? 'bg-red-500/15 text-red-400' : 'bg-purple-500/15 text-purple-400'}`}>
+                          {item.tipo_manutencao}
+                        </span>
+                      </div>
+                      <p className="text-xs text-muted-foreground">{item.data_realizada}</p>
+                      {item.observacoes && (
+                        <p className="text-xs text-muted-foreground line-clamp-2">
+                          {item.observacoes}
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <Card className="bg-card border-border">
+                  <CardContent className="py-6 text-center text-muted-foreground text-sm">
+                    Nenhum histórico de manutenção encontrado
+                  </CardContent>
+                </Card>
+              )}
+            </div>
           </TabsContent>
 
           <TabsContent value="tickets">
-            <div className="rounded-md border">
+            {/* Tabela em md+ */}
+            <div className="hidden md:block rounded-md border">
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
                   <thead>
@@ -395,6 +430,51 @@ export function RelatorioManutencao() {
                   </tbody>
                 </table>
               </div>
+            </div>
+
+            {/* Cards em mobile */}
+            <div className="md:hidden space-y-3">
+              {relatorio.ticketsRecentes.length > 0 ? (
+                relatorio.ticketsRecentes.map((ticket) => (
+                  <Card key={ticket.id} className="bg-card border-border">
+                    <CardContent className="p-4 space-y-2">
+                      <div className="flex justify-between items-start gap-2">
+                        <div className="min-w-0">
+                          <p className="text-sm font-medium text-foreground truncate">{ticket.titulo}</p>
+                          <p className="text-xs text-muted-foreground truncate">
+                            {ticket.cliente_nome}
+                          </p>
+                          {ticket.tecnico_nome && (
+                            <p className="text-[11px] text-muted-foreground/80 truncate">
+                              Técnico: {ticket.tecnico_nome}
+                            </p>
+                          )}
+                        </div>
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-medium ${ticket.prioridade === 'alta' ? 'bg-red-500/15 text-red-400' : ticket.prioridade === 'media' ? 'bg-amber-500/15 text-amber-400' : 'bg-emerald-500/15 text-emerald-400'}`}>
+                          {ticket.prioridade}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-center text-xs text-muted-foreground">
+                        <span>{ticket.data_criacao}</span>
+                        <span className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-[10px] font-medium ${ticket.status === 'finalizado' ? 'bg-emerald-500/15 text-emerald-400' : ticket.status === 'em_andamento' ? 'bg-blue-500/15 text-blue-400' : ticket.status === 'pendente' ? 'bg-amber-500/15 text-amber-400' : 'bg-slate-500/15 text-foreground'}`}>
+                          {ticket.status.replace('_', ' ')}
+                        </span>
+                      </div>
+                      {ticket.data_finalizacao && (
+                        <p className="text-[11px] text-muted-foreground/80">
+                          Finalizado: {ticket.data_finalizacao}
+                        </p>
+                      )}
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <Card className="bg-card border-border">
+                  <CardContent className="py-6 text-center text-muted-foreground text-sm">
+                    Nenhum ticket de manutenção encontrado
+                  </CardContent>
+                </Card>
+              )}
             </div>
           </TabsContent>
         </Tabs>

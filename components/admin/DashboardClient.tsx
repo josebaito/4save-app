@@ -281,7 +281,8 @@ export function DashboardClient({
                         </Button>
                     </div>
 
-                    <div className="border border-border rounded-xl bg-card shadow-sm overflow-hidden">
+                    {/* Tabela em md+ */}
+                    <div className="hidden md:block border border-border rounded-xl bg-card shadow-sm overflow-hidden">
                         <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead>
@@ -340,6 +341,48 @@ export function DashboardClient({
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+
+                    {/* Cards em mobile */}
+                    <div className="md:hidden space-y-3">
+                        {latestActivityTickets.length > 0 ? (
+                            latestActivityTickets.map((ticket) => (
+                                <Card key={ticket.id} className="bg-card border-border">
+                                    <CardContent className="p-4 space-y-2">
+                                        <div className="flex justify-between items-start gap-2">
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-mono text-muted-foreground">#{ticket.id.toString().slice(0, 8)}</p>
+                                                <p className="text-sm font-medium text-foreground truncate">{ticket.titulo}</p>
+                                                <p className="text-xs text-muted-foreground truncate">
+                                                    {ticket.cliente?.nome}
+                                                </p>
+                                            </div>
+                                            <Badge variant={ticket.prioridade as 'alta' | 'media' | 'baixa'} className="font-mono text-[10px] uppercase tracking-wider shrink-0">
+                                                {ticket.prioridade}
+                                            </Badge>
+                                        </div>
+                                        <div className="flex justify-between items-center text-xs text-muted-foreground">
+                                            <span>{new Date(ticket.created_at).toLocaleDateString('pt-BR')}</span>
+                                            <span className="flex items-center gap-1">
+                                                <span className={`h-1.5 w-1.5 rounded-full ${ticket.status === 'pendente' ? 'bg-amber-500' :
+                                                    ticket.status === 'em_curso' ? 'bg-blue-500' :
+                                                    ticket.status === 'cancelado' ? 'bg-red-500' :
+                                                        'bg-emerald-500'
+                                                    }`} />
+                                                <span className="capitalize">{ticket.status.replace('_', ' ')}</span>
+                                            </span>
+                                        </div>
+                                    </CardContent>
+                                </Card>
+                            ))
+                        ) : (
+                            <Card className="bg-card border-border">
+                                <CardContent className="py-6 flex flex-col items-center justify-center text-muted-foreground">
+                                    <FileText className="h-8 w-8 mb-2 opacity-20" />
+                                    <p className="text-sm">Nenhum registo de actividade</p>
+                                </CardContent>
+                            </Card>
+                        )}
                     </div>
                 </div>
             </div>

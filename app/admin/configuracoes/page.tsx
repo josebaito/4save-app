@@ -9,6 +9,7 @@ import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import Image from 'next/image';
 import type { PdfTemplate } from '@/lib/app-config';
+import { useAppConfig } from '@/components/AppConfigProvider';
 
 export default function ConfiguracoesPage() {
   const [loading, setLoading] = useState(true);
@@ -16,6 +17,7 @@ export default function ConfiguracoesPage() {
   const [appName, setAppName] = useState('4Save');
   const [reportLogoUrl, setReportLogoUrl] = useState('');
   const [pdfTemplate, setPdfTemplate] = useState<PdfTemplate>('classic');
+  const { refresh } = useAppConfig();
 
   useEffect(() => {
     loadConfig();
@@ -47,6 +49,7 @@ export default function ConfiguracoesPage() {
         body: JSON.stringify({ appName, reportLogoUrl, pdfTemplate }),
       });
       if (!res.ok) throw new Error('Erro ao salvar configurações');
+      await refresh();
       toast.success('Configurações salvas com sucesso');
     } catch (error) {
       console.error(error);
@@ -175,4 +178,4 @@ export default function ConfiguracoesPage() {
       </div>
     </AdminLayout>
   );
-}
+}

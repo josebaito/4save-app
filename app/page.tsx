@@ -5,10 +5,13 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Loader2 } from 'lucide-react';
+import { useAppConfig } from '@/components/AppConfigProvider';
 
 export default function HomePage() {
   const { data: session, status } = useSession();
   const router = useRouter();
+  const { config } = useAppConfig();
+  const appName = config.appName || '4Save';
 
   useEffect(() => {
     if (status === 'loading') return;
@@ -31,7 +34,7 @@ export default function HomePage() {
       <div className="min-h-screen flex items-center justify-center bg-background">
         <Card className="w-96 border-border shadow-sm">
           <CardHeader>
-            <CardTitle className="text-center text-primary">4Save</CardTitle>
+            <CardTitle className="text-center text-primary">{appName}</CardTitle>
           </CardHeader>
           <CardContent className="flex items-center justify-center py-8">
             <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -46,7 +49,7 @@ export default function HomePage() {
     <div className="min-h-screen flex items-center justify-center bg-background">
       <Card className="w-96 border-border shadow-sm">
         <CardHeader>
-          <CardTitle className="text-center text-primary">4Save</CardTitle>
+          <CardTitle className="text-center text-primary">{appName}</CardTitle>
         </CardHeader>
         <CardContent className="text-center">
           <p className="text-muted-foreground">Redirecionando...</p>

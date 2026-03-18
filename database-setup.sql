@@ -43,7 +43,7 @@ CREATE TABLE IF NOT EXISTS clientes (
   email TEXT NOT NULL,
   telefone TEXT NOT NULL,
   endereco TEXT NOT NULL,
-  cnpj TEXT,
+  cnpj TEXT, -- NIF (coluna histórica)
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
@@ -54,7 +54,6 @@ CREATE TABLE IF NOT EXISTS contratos (
   cliente_id UUID REFERENCES clientes(id) ON DELETE CASCADE,
   numero TEXT UNIQUE NOT NULL,
   descricao TEXT NOT NULL,
-  valor DECIMAL(10,2) NOT NULL,
   data_inicio DATE NOT NULL,
   data_fim DATE NOT NULL,
   equipamentos TEXT[] DEFAULT '{}',
@@ -255,12 +254,11 @@ VALUES ('Maria Santos', 'maria@email.com', '+351 987 654 321', 'Rua das Flores, 
 ON CONFLICT DO NOTHING;
 
 -- Inserir contrato de exemplo
-INSERT INTO contratos (cliente_id, numero, descricao, valor, data_inicio, data_fim, tipo_produto, segmento)
+INSERT INTO contratos (cliente_id, numero, descricao, data_inicio, data_fim, tipo_produto, segmento)
 SELECT 
   c.id,
   'CON-2024-001',
   'Instalação Solar Residencial',
-  5000.00,
   '2024-01-01',
   '2024-12-31',
   'solar_baterias',

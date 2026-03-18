@@ -246,7 +246,7 @@ export default function TicketsPage() {
             <h1 className="text-2xl sm:text-3xl font-bold text-foreground">Tickets</h1>
             <p className="text-sm text-muted-foreground">Gerir os tickets de atendimento</p>
           </div>
-          <div className="flex items-center gap-2 shrink-0">
+          <div className="flex flex-wrap items-center gap-2 shrink-0">
             <Button onClick={loadData} variant="outline" size="sm" className="flex items-center gap-2">
               <RefreshCw className="h-4 w-4" />
               <span className="hidden sm:inline">Actualizar</span>
@@ -287,11 +287,11 @@ export default function TicketsPage() {
           </Card>
         )}
 
-        {/* Search */}
+        {/* Search / Filtros */}
         <Card className="bg-card border-border">
           <CardContent className="pt-6">
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-              <div className="relative">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+              <div className="relative sm:col-span-2 lg:col-span-1">
                 <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Buscar por título, cliente ou descrição..."
@@ -301,7 +301,7 @@ export default function TicketsPage() {
                 />
               </div>
               <Select value={filterTipo} onValueChange={setFilterTipo}>
-                <SelectTrigger className="bg-secondary/60 border-input text-foreground">
+                <SelectTrigger className="bg-secondary/60 border-input text-foreground w-full">
                   <SelectValue placeholder="Filtrar por tipo" />
                 </SelectTrigger>
                 <SelectContent>
@@ -311,7 +311,7 @@ export default function TicketsPage() {
                 </SelectContent>
               </Select>
               <Select value={filterStatus} onValueChange={setFilterStatus}>
-                <SelectTrigger className="bg-secondary/60 border-input text-foreground">
+                <SelectTrigger className="bg-secondary/60 border-input text-foreground w-full">
                   <SelectValue placeholder="Filtrar por status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -323,7 +323,7 @@ export default function TicketsPage() {
                 </SelectContent>
               </Select>
               <Select value={filterTecnico} onValueChange={setFilterTecnico}>
-                <SelectTrigger className="bg-secondary/60 border-input text-foreground">
+                <SelectTrigger className="bg-secondary/60 border-input text-foreground w-full">
                   <SelectValue placeholder="Filtrar por técnico" />
                 </SelectTrigger>
                 <SelectContent>
@@ -336,18 +336,20 @@ export default function TicketsPage() {
                   ))}
                 </SelectContent>
               </Select>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setSearchTerm('');
-                  setFilterTipo('all');
-                  setFilterStatus('all');
-                  setFilterTecnico('all');
-                }}
-                className="col-span-4 border-border text-muted-foreground hover:bg-accent hover:text-foreground"
-              >
-                Limpar Filtros
-              </Button>
+              <div className="sm:col-span-2 lg:col-span-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setFilterTipo('all');
+                    setFilterStatus('all');
+                    setFilterTecnico('all');
+                  }}
+                  className="w-full border-border text-muted-foreground hover:bg-accent hover:text-foreground"
+                >
+                  Limpar Filtros
+                </Button>
+              </div>
             </div>
           </CardContent>
         </Card>

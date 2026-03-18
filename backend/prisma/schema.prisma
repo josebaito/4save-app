@@ -73,7 +73,6 @@ model Contrato {
   cliente       Cliente        @relation(fields: [cliente_id], references: [id], onDelete: Cascade)
   numero        String         @unique
   descricao     String
-  valor         Decimal        @db.Decimal(10, 2)
   data_inicio   DateTime       @db.Date
   data_fim      DateTime       @db.Date
   equipamentos  String[]       @default([])

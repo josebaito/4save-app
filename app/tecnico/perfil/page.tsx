@@ -50,6 +50,13 @@ export default function TecnicoPerfilPage() {
       const token = (session as any).accessToken;
       const user = await db.getTecnicoById(session.user.id, token);
       if (user) {
+        const avaliacaoNumber =
+          user.avaliacao == null
+            ? undefined
+            : typeof user.avaliacao === 'number'
+              ? user.avaliacao
+              : Number(user.avaliacao);
+
         setForm({
           name: user.name || '',
           email: user.email || '',
@@ -57,7 +64,7 @@ export default function TecnicoPerfilPage() {
           especialidade: user.especialidade || '',
           disponibilidade: user.disponibilidade,
           status: user.status,
-          avaliacao: user.avaliacao,
+          avaliacao: Number.isFinite(avaliacaoNumber as number) ? (avaliacaoNumber as number) : undefined,
         });
       }
     } catch (error) {
@@ -252,4 +259,4 @@ export default function TecnicoPerfilPage() {
       </div>
     </TecnicoLayout>
   );
-}
+}

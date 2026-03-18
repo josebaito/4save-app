@@ -457,7 +457,7 @@ ADMIN                              SISTEMA                        TÉCNICO
                         │ email               │
                         │ telefone            │
                         │ endereco            │
-                        │ cnpj                │
+                        │ nif (col. cnpj)     │
                         │ created_at          │
                         └──────────┬──────────┘
                                    │
@@ -470,7 +470,6 @@ ADMIN                              SISTEMA                        TÉCNICO
                         │ cliente_id (FK)    │
                         │ numero (UNIQUE)    │
                         │ descricao          │
-                        │ valor              │
                         │ data_inicio        │
                         │ data_fim           │
                         │ equipamentos       │

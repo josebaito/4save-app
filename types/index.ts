@@ -35,7 +35,6 @@ export interface Contrato {
   cliente_id: string;
   numero: string;
   descricao: string;
-  valor: number;
   data_inicio: string;
   data_fim: string;
   equipamentos: string[];

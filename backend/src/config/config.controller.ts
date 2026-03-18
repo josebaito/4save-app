@@ -2,7 +2,6 @@ import { Controller, Get, Put, Body, Req, UseGuards, ForbiddenException } from '
 import { ConfigService } from './config.service';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 
-@UseGuards(JwtAuthGuard)
 @Controller('config')
 export class ConfigController {
     constructor(private readonly configService: ConfigService) { }
@@ -14,11 +13,11 @@ export class ConfigController {
     }
 
     @Get()
-    getConfig(@Req() req: any) {
-        this.ensureAdmin(req);
+    getConfig() {
         return this.configService.getConfig();
     }
 
+    @UseGuards(JwtAuthGuard)
     @Put()
     updateConfig(
         @Req() req: any,

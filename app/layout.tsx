@@ -4,6 +4,7 @@ import "./globals.css";
 import { SessionProvider } from "@/components/SessionProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { Toaster } from "@/components/ui/sonner";
+import { AppConfigProvider } from "@/components/AppConfigProvider";
 
 const outfit = Outfit({
   subsets: ["latin"],
@@ -24,7 +25,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "4Save - Sistema de Gestão Técnica",
+  title: "Sistema de Gestão Técnica",
   description: "Sistema de gestão de tickets e relatórios técnicos",
 };
 
@@ -38,8 +39,10 @@ export default function RootLayout({
       <body suppressHydrationWarning className={`${outfit.variable} ${manrope.variable} ${jetbrainsMono.variable} font-body antialiased bg-background text-foreground relative overflow-x-hidden`}>
         <ThemeProvider>
           <SessionProvider>
-            {children}
-            <Toaster />
+            <AppConfigProvider>
+              {children}
+              <Toaster />
+            </AppConfigProvider>
           </SessionProvider>
         </ThemeProvider>
       </body>

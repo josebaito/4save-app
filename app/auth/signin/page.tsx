@@ -6,12 +6,15 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { Lock, Mail, ArrowRight, Loader2, Zap, Shield, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useAppConfig } from '@/components/AppConfigProvider';
 
 export default function SignInPage() {
   const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
+  const { config } = useAppConfig();
+  const appName = config.appName || '4Save';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -59,7 +62,7 @@ export default function SignInPage() {
             <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/15 border border-primary/20">
               <Zap className="w-5 h-5 text-primary" />
             </div>
-            <span className="text-xl font-heading font-bold text-foreground">4Save</span>
+            <span className="text-xl font-heading font-bold text-foreground">{appName}</span>
           </div>
 
           {/* Conteúdo central */}
@@ -115,7 +118,7 @@ export default function SignInPage() {
               <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-primary/15 border border-primary/20">
                 <Zap className="w-5 h-5 text-primary" />
               </div>
-              <span className="text-xl font-heading font-bold text-foreground">4Save</span>
+              <span className="text-xl font-heading font-bold text-foreground">{appName}</span>
             </div>
           </div>
 
@@ -187,7 +190,7 @@ export default function SignInPage() {
           {/* Versão */}
           <div className="mt-8 text-center">
             <p className="text-xs text-muted-foreground font-mono">
-              4Save PRO v2.0 &mdash; Sistema de Gestão Técnica
+              {appName} &mdash; Sistema de Gestão Técnica
             </p>
           </div>
         </div>

@@ -157,7 +157,7 @@ export default function ClientesPage() {
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Buscar por nome, email ou CNPJ..."
+                placeholder="Buscar por nome, email ou NIF..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10 bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
@@ -292,7 +292,7 @@ export default function ClientesPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="cnpj" className="text-foreground/80">NIF / CNPJ</Label>
+                  <Label htmlFor="cnpj" className="text-foreground/80">NIF</Label>
                   <Input
                     id="cnpj"
                     value={formData.cnpj}

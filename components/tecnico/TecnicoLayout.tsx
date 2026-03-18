@@ -27,6 +27,7 @@ import { db } from '@/lib/db/supabase';
 import { LocationTracker } from './LocationTracker';
 import { AdminTheme } from '../admin/AdminTheme';
 import { ThemeToggle } from '@/components/ThemeToggle';
+import { useAppConfig } from '@/components/AppConfigProvider';
 
 interface TecnicoLayoutProps {
   children: React.ReactNode;
@@ -46,6 +47,8 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [isOnline, setIsOnline] = useState(true);
   const [syncing, setSyncing] = useState(false);
+  const { config } = useAppConfig();
+  const appName = config.appName || '4Save';
   const [syncStatus, setSyncStatus] = useState<{
     pendingCount: number;
     lastSync: string;
@@ -201,7 +204,7 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
                   <Zap className="w-4 h-4 text-primary" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="text-sm font-heading font-bold text-sidebar-foreground leading-none">4Save</span>
+                  <span className="text-sm font-heading font-bold text-sidebar-foreground leading-none">{appName}</span>
                   <span className="text-[10px] font-mono text-sidebar-foreground/40 leading-none mt-0.5 uppercase tracking-wider">Técnico</span>
                 </div>
               </Link>
@@ -306,7 +309,7 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
               className={cn(
                 sidebarCollapsed
                   ? 'flex flex-col items-center gap-1'
-                  : 'grid grid-cols-2 gap-1.5'
+                  : 'grid grid-cols-1 gap-1.5'
               )}
             >
               <Button
@@ -315,7 +318,7 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
                 onClick={handleSync}
                 className={cn(
                   'border-sidebar-border bg-transparent hover:bg-sidebar-accent transition-colors rounded-lg',
-                  sidebarCollapsed ? 'h-9 w-9 p-0 justify-center' : 'col-span-2 justify-start gap-2 min-w-0'
+                  sidebarCollapsed ? 'h-9 w-9 p-0 justify-center' : 'w-full justify-start gap-2 min-w-0'
                 )}
                 disabled={syncing || !isOnline}
                 title={sidebarCollapsed ? (syncing ? 'A sincronizar...' : isOnline ? 'Sincronizar' : 'Sem ligação') : undefined}
@@ -374,7 +377,7 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
                 <Menu className="h-5 w-5" />
               </Button>
               <div className="flex items-center gap-2">
-                <span className="text-xs text-muted-foreground hidden sm:block">4Save</span>
+                <span className="text-xs text-muted-foreground hidden sm:block">{appName}</span>
                 <span className="text-muted-foreground/40 hidden sm:block">/</span>
                 <h1 className="text-sm font-semibold text-foreground">{currentPage}</h1>
               </div>
@@ -399,7 +402,7 @@ export function TecnicoLayout({ children }: TecnicoLayoutProps) {
             </div>
             <div className="mt-8 pt-4 border-t border-border flex justify-center pb-4">
               <span className="text-xs text-muted-foreground font-mono">
-                © 2024 4Save — Sistema de Gestão Técnica
+                © 2024 {appName} — Sistema de Gestão Técnica
               </span>
             </div>
           </main>

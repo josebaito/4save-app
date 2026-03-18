@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Badge } from '@/components/ui/badge';
-import { Search, Plus, Edit, Eye, Calendar, DollarSign, RefreshCw, Trash2 } from 'lucide-react';
+import { Search, Plus, Edit, Eye, Calendar, RefreshCw, Trash2 } from 'lucide-react';
 import { getSession, signOut } from 'next-auth/react';
 import { db } from '@/lib/db/supabase';
 import { Pagination } from '@/components/ui/pagination';
@@ -48,7 +48,6 @@ export default function ContratosPage() {
     cliente_id: '',
     numero: '',
     descricao: '',
-    valor: '',
     data_inicio: todayInputDate(),
     data_fim: '',
     tipo_produto: 'solar_baterias' as TipoProduto,
@@ -145,7 +144,6 @@ export default function ContratosPage() {
     try {
       const contratoData = {
         ...formData,
-        valor: parseFloat(formData.valor) || 0,
         numero: formData.numero || `CTR-${new Date().getFullYear()}-${String(contratos.length + 1).padStart(3, '0')}`,
         equipamentos: [],
         // ✅ NOVO: Incluir plano de manutenção
@@ -233,7 +231,6 @@ export default function ContratosPage() {
         cliente_id: '',
         numero: '',
         descricao: '',
-        valor: '',
         data_inicio: todayInputDate(),
         data_fim: '',
         tipo_produto: 'solar_baterias',
@@ -286,7 +283,6 @@ export default function ContratosPage() {
       cliente_id: contrato.cliente_id,
       numero: contrato.numero,
       descricao: contrato.descricao,
-      valor: contrato.valor.toString(),
       data_inicio: formatDateForInput(contrato.data_inicio),
       data_fim: formatDateForInput(contrato.data_fim),
       tipo_produto: contrato.tipo_produto || 'solar_baterias',
@@ -319,7 +315,6 @@ export default function ContratosPage() {
       cliente_id: contrato.cliente_id,
       numero: contrato.numero,
       descricao: contrato.descricao,
-      valor: contrato.valor.toString(),
       data_inicio: contrato.data_inicio,
       data_fim: contrato.data_fim,
       tipo_produto: contrato.tipo_produto || 'solar_baterias',
@@ -344,7 +339,6 @@ export default function ContratosPage() {
       cliente_id: '',
       numero: '',
       descricao: '',
-      valor: '',
       data_inicio: todayInputDate(),
       data_fim: '',
       tipo_produto: 'solar_baterias',
@@ -565,10 +559,7 @@ export default function ContratosPage() {
                           <Calendar className="h-3 w-3" />
                           {new Date(contrato.data_inicio).toLocaleDateString('pt-PT')} - {new Date(contrato.data_fim).toLocaleDateString('pt-PT')}
                         </span>
-                        <span className="flex items-center gap-1">
-                          <DollarSign className="h-3 w-3" />
-                          €{contrato.valor.toLocaleString('pt-PT')}
-                        </span>
+                        {/* Valor removido por enquanto */}
                       </div>
                     </div>
                     <div className="flex items-center gap-2 self-end sm:self-auto">
@@ -667,10 +658,6 @@ export default function ContratosPage() {
                         <span className="text-foreground">{formatDateDisplay(selectedContrato.created_at)}</span>
                       </div>
                     )}
-                    <div>
-                      <span className="text-muted-foreground/70 block">Valor</span>
-                      <span className="text-foreground">€{selectedContrato.valor.toLocaleString('pt-PT')}</span>
-                    </div>
                     <div>
                       <span className="text-muted-foreground/70 block">Tipo de produto</span>
                       <span className="text-foreground">{tipoProdutoOptions.find(o => o.value === selectedContrato.tipo_produto)?.label ?? selectedContrato.tipo_produto}</span>
@@ -793,21 +780,7 @@ export default function ContratosPage() {
                   />
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="valor" className="text-foreground/80">Valor (€)</Label>
-                    <Input
-                      id="valor"
-                      type="number"
-                      step="0.01"
-                      placeholder="0.00"
-                      value={formData.valor}
-                      onChange={(e) => setFormData({ ...formData, valor: e.target.value })}
-                      required
-                      disabled={isEditing && !!selectedContrato && isPlanoOnlyMode}
-                      className="bg-secondary/60 border-input text-foreground placeholder:text-muted-foreground/60"
-                    />
-                  </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="data_inicio" className="text-foreground/80">Data de Início</Label>
                     <Input
@@ -1149,7 +1122,6 @@ export default function ContratosPage() {
                         cliente_id: contratoCriado.cliente_id,
                         numero: contratoCriado.numero,
                         descricao: contratoCriado.descricao,
-                        valor: contratoCriado.valor.toString(),
                         data_inicio: contratoCriado.data_inicio,
                         data_fim: contratoCriado.data_fim,
                         tipo_produto: contratoCriado.tipo_produto || 'solar_baterias',

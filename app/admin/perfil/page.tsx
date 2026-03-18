@@ -36,6 +36,7 @@ export default function AdminPerfilPage() {
   });
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const sessionOnline = status === 'authenticated';
 
   useEffect(() => {
     if (status === 'authenticated') {
@@ -145,8 +146,8 @@ export default function AdminPerfilPage() {
                   <p className="font-semibold text-foreground text-lg leading-tight">{form.name || '—'}</p>
                   <p className="text-sm text-muted-foreground">{form.email}</p>
                   <div className="flex items-center gap-2 mt-1">
-                    <span className={`status-dot ${form.is_online ? 'status-dot-online' : 'status-dot-offline'}`} />
-                    <span className="text-xs text-muted-foreground">{form.is_online ? 'Online' : 'Offline'}</span>
+                    <span className={`status-dot ${sessionOnline ? 'status-dot-online' : 'status-dot-offline'}`} />
+                    <span className="text-xs text-muted-foreground">{sessionOnline ? 'Online' : 'Offline'}</span>
                   </div>
                 </div>
               </div>
@@ -246,4 +247,4 @@ export default function AdminPerfilPage() {
       </div>
     </AdminLayout>
   );
-}
+}

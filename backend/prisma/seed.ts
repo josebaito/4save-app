@@ -44,19 +44,20 @@ async function main() {
     });
 
     // Contrato
+    // Note: in some editor/TS setups the generated Prisma Client types can lag behind schema changes.
+    // This seed data stays aligned with the schema (no monetary fields), but we cast to avoid local type drift.
     const contrato = await prisma.contrato.create({
         data: {
-            cliente_id: cliente.id,
+            cliente: { connect: { id: cliente.id } },
             numero: 'CON-2024-001',
             descricao: 'Instalação Solar Residencial',
-            valor: 5000.00,
             data_inicio: new Date('2024-01-01'),
             data_fim: new Date('2024-12-31'),
             tipo_produto: 'solar_baterias',
             segmento: 'domestico',
             status: 'ativo'
-        }
-    });
+        } as any
+    } as any);
 
     // Ticket
     await prisma.ticket.create({

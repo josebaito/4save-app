@@ -54,7 +54,6 @@ CREATE TABLE "contratos" (
     "cliente_id" TEXT NOT NULL,
     "numero" TEXT NOT NULL,
     "descricao" TEXT NOT NULL,
-    "valor" DECIMAL(10,2) NOT NULL,
     "data_inicio" DATE NOT NULL,
     "data_fim" DATE NOT NULL,
     "equipamentos" TEXT[] DEFAULT ARRAY[]::TEXT[],

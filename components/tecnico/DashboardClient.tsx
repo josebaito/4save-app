@@ -214,12 +214,12 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
                                 {ticketsEmCurso.map((ticket) => (
                                     <div
                                         key={ticket.id}
-                                        className="flex items-center justify-between p-4 bg-blue-500/8 rounded-lg border border-blue-500/20"
+                                        className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 bg-blue-500/8 rounded-lg border border-blue-500/20"
                                     >
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-2">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-2 min-w-0">
                                                 {getPriorityIcon(ticket.prioridade)}
-                                                <h4 className="font-semibold text-foreground">{ticket.titulo}</h4>
+                                                <h4 className="font-semibold text-foreground truncate">{ticket.titulo}</h4>
                                             </div>
                                             <p className="text-sm text-muted-foreground mb-1">
                                                 Cliente: {ticket.cliente?.nome}
@@ -228,13 +228,13 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
                                                 {new Date(ticket.created_at).toLocaleDateString('pt-BR')}
                                             </p>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex flex-wrap items-center gap-2 justify-start sm:justify-end">
                                             <Badge className={getPriorityColor(ticket.prioridade)}>
                                                 {ticket.prioridade}
                                             </Badge>
                                             <Button
                                                 onClick={() => router.push(`/tecnico/ticket/${ticket.id}`)}
-                                                className="bg-primary hover:bg-primary/90 text-primary-foreground"
+                                                className="bg-primary hover:bg-primary/90 text-primary-foreground w-full sm:w-auto"
                                             >
                                                 Continuar
                                             </Button>
@@ -304,24 +304,24 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
                                 {ticketsPendentes.map((ticket) => (
                                     <div
                                         key={ticket.id}
-                                        className="flex items-center justify-between p-4 bg-muted/40 rounded-lg hover:bg-muted/60 transition-colors border border-border"
+                                        className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between p-4 bg-muted/40 rounded-lg hover:bg-muted/60 transition-colors border border-border"
                                     >
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-2">
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-2 min-w-0">
                                                 {getPriorityIcon(ticket.prioridade)}
-                                                <h4 className="font-semibold text-foreground">{ticket.titulo}</h4>
+                                                <h4 className="font-semibold text-foreground truncate">{ticket.titulo}</h4>
                                             </div>
                                             <p className="text-sm text-muted-foreground mb-1">
                                                 Cliente: {ticket.cliente?.nome}
                                             </p>
-                                            <p className="text-sm text-muted-foreground/80 mb-1">
+                                            <p className="text-sm text-muted-foreground/80 mb-1 break-words">
                                                 {ticket.descricao}
                                             </p>
                                             <p className="text-xs text-muted-foreground">
                                                 Criado em: {new Date(ticket.created_at).toLocaleDateString('pt-BR')}
                                             </p>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex flex-wrap items-center gap-2 justify-start sm:justify-end">
                                             <Badge className={getPriorityColor(ticket.prioridade)}>
                                                 {ticket.prioridade}
                                             </Badge>
@@ -331,7 +331,7 @@ export function DashboardClient({ initialTickets = [] }: DashboardClientProps) {
                                             <Button
                                                 onClick={() => handleStartTicket(ticket.id)}
                                                 variant="outline"
-                                                className="flex items-center gap-2"
+                                                className="flex items-center gap-2 w-full sm:w-auto"
                                             >
                                                 <PlayCircle className="h-4 w-4" />
                                                 Iniciar
